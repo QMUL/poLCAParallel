@@ -80,7 +80,7 @@ class Smoother {
   /** Number of data points */
   const std::size_t n_data_;
   /** Vector of the number of outcomes for each category */
-  NOutcomes n_outcomes_;
+  std::span<const std::size_t> n_outcomes_;
   /** Number of clusters to fit */
   const std::size_t n_cluster_;
 
@@ -110,14 +110,13 @@ class Smoother {
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
    * </ul>
-   * @param n_data Number of data points
    * @param n_outcomes Array of number of outcomes, for each category
    * @param sum_outcomes Sum of all integers in n_outcomes
    * @param n_cluster Number of clusters
    */
   Smoother(std::span<const double> probs, std::span<const double> prior,
            std::span<const double> posterior, std::size_t n_data,
-           NOutcomes n_outcomes, std::size_t n_cluster);
+           std::span<const std::size_t> n_outcomes, std::size_t n_cluster);
 
   /**
    * Smooth the probabilities probs_, prior_ and posterior_
@@ -142,14 +141,13 @@ class Smoother {
    *
    * (n_data * probs + num_add) / (n_data + demo_add)
    *
-   * @param probs array of probabilities to modify
-   * @param length length of the array probs
    * @param n_data number of data points used to estimate the probabilities
    * @param num_add see equation
    * @param demo_add see equation
+   * @param probs array of probabilities to modify
    */
-  void Smooth(double* probs, std::size_t length, double n_data, double num_add,
-              double demo_add);
+  void Smooth(double n_data, double num_add, double demo_add,
+              std::span<double> probs);
 };
 
 }  // namespace polca_parallel
