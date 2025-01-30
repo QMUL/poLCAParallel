@@ -54,8 +54,8 @@ void polca_parallel::StandardErrorRegress::CalcScorePrior(
         score_prior.cols((cluster_index - 1) * this->n_feature_,
                          cluster_index * this->n_feature_ - 1);
     score_prior_i = this->features_.each_col() %
-                    (this->posterior_.unsafe_col(cluster_index) -
-                     this->prior_.unsafe_col(cluster_index));
+                    (this->posterior_->unsafe_col(cluster_index) -
+                     this->prior_->unsafe_col(cluster_index));
   }
 }
 
@@ -68,8 +68,8 @@ void polca_parallel::StandardErrorRegress::CalcJacobianPrior(
       for (std::size_t i_feature = 0; i_feature < this->n_feature_;
            ++i_feature) {
         for (std::size_t i_data = 0; i_data < this->n_data_; ++i_data) {
-          double prior_i = this->prior_[i_cluster * this->n_data_ + i_data];
-          double prior_j = this->prior_[j_cluster * this->n_data_ + i_data];
+          double prior_i = (*this->prior_)[i_cluster * this->n_data_ + i_data];
+          double prior_j = (*this->prior_)[j_cluster * this->n_data_ + i_data];
           double jac_element = -prior_i * prior_j;
           if (i_cluster == j_cluster) {
             jac_element += prior_i;

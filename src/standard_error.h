@@ -75,7 +75,7 @@ class StandardError {
    *   <li>dim 1: for each cluster</li>
    * </ul>
    */
-  arma::Mat<double> prior_;
+  std::unique_ptr<const arma::Mat<double>> prior_;
   /**
    * Design matrix of posterior probabilities (also called responsibility)
    * probability data point is in cluster m given responses
@@ -85,7 +85,7 @@ class StandardError {
    *   <li>dim 1: for each cluster</li>
    * </ul>
    */
-  arma::Mat<double> posterior_;
+  std::unique_ptr<const arma::Mat<double>> posterior_;
   /** Number of data points */
   const std::size_t n_data_;
   /** Number of features */

@@ -128,13 +128,13 @@ class Smoother {
   void Smooth();
 
   /** Get the pointer to the array of smoothed probs */
-  [[nodiscard]] std::span<double> get_probs();
+  [[nodiscard]] std::span<const double> get_probs();
 
   /** Get the pointer to the array of prior probs */
-  [[nodiscard]] std::span<double> get_prior();
+  [[nodiscard]] std::span<const double> get_prior();
 
   /** Get the pointer to the array of posterior probs */
-  [[nodiscard]] std::span<double> get_posterior();
+  [[nodiscard]] std::span<const double> get_posterior();
 
  private:
   /**

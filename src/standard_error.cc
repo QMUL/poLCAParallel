@@ -36,8 +36,10 @@ polca_parallel::StandardError::StandardError(
     : responses_(const_cast<int*>(responses.data()), n_data, n_outcomes.size(),
                  false, true),
       probs_(probs),
-      prior_(prior.data(), n_data, n_cluster, false, true),
-      posterior_(posterior.data(), n_data, n_cluster, false, true),
+      prior_(std::make_unique<const arma::Mat<double>>(prior.data(), n_data,
+                                                       n_cluster, false, true)),
+      posterior_(std::make_unique<const arma::Mat<double>>(
+          posterior.data(), n_data, n_cluster, false, true)),
       n_data_(n_data),
       n_feature_(n_feature),
       n_outcomes_(n_outcomes),
@@ -69,12 +71,14 @@ void polca_parallel::StandardError::SmoothProbs() {
   if (this->smoother_) {
     this->smoother_->Smooth();
     this->probs_ = this->smoother_->get_probs();
-    std::span<double> prior = this->smoother_->get_prior();
-    this->prior_ = arma::Mat<double>(prior.data(), this->n_data_,
-                                     this->n_cluster_, false, true);
-    std::span<double> posterior = this->smoother_->get_posterior();
-    this->posterior_ = arma::Mat<double>(posterior.data(), this->n_data_,
-                                         this->n_cluster_, false, true);
+    std::span<const double> prior = this->smoother_->get_prior();
+    this->prior_ = std::make_unique<const arma::Mat<double>>(
+        const_cast<double*>(prior.data()), this->n_data_, this->n_cluster_,
+        false, true);
+    std::span<const double> posterior = this->smoother_->get_posterior();
+    this->posterior_ = std::make_unique<const arma::Mat<double>>(
+        const_cast<double*>(posterior.data()), this->n_data_, this->n_cluster_,
+        false, true);
   }
 }
 
@@ -100,8 +104,8 @@ void polca_parallel::StandardError::CalcScore(arma::Mat<double>& score) const {
 
 void polca_parallel::StandardError::CalcScorePrior(
     arma::subview<double>& score_prior) const {
-  score_prior = this->posterior_.cols(1, this->n_cluster_ - 1) -
-                this->prior_.cols(1, this->n_cluster_ - 1);
+  score_prior = this->posterior_->cols(1, this->n_cluster_ - 1) -
+                this->prior_->cols(1, this->n_cluster_ - 1);
 }
 
 void polca_parallel::StandardError::CalcScoreProbs(
@@ -113,7 +117,7 @@ void polca_parallel::StandardError::CalcScoreProbs(
   for (std::size_t cluster_index = 0; cluster_index < this->n_cluster_;
        ++cluster_index) {
     // posterior for the given cluster
-    auto posterior_i = this->posterior_.col(cluster_index);
+    auto posterior_i = this->posterior_->col(cluster_index);
     for (std::size_t category_index = 0;
          category_index < this->n_outcomes_.size(); ++category_index) {
       // response for the given category
@@ -174,7 +178,7 @@ void polca_parallel::StandardError::CalcJacobianPrior(
   std::vector<double> prior(this->n_cluster_);
   for (std::size_t cluster_index = 0; cluster_index < this->n_cluster_;
        ++cluster_index) {
-    prior[cluster_index] = this->prior_[cluster_index * this->n_data_];
+    prior[cluster_index] = (*this->prior_)[cluster_index * this->n_data_];
   }
   this->CalcJacobianBlock(std::span<const double>(prior.cbegin(), prior.size()),
                           jacobian_prior);

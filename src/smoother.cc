@@ -56,16 +56,17 @@ void polca_parallel::Smoother::Smooth() {
   // for posterior update, use E step in EmAlgorithm
 }
 
-std::span<double> polca_parallel::Smoother::get_probs() {
-  return std::span<double>(this->probs_.begin(), this->probs_.size());
+std::span<const double> polca_parallel::Smoother::get_probs() {
+  return std::span<const double>(this->probs_.begin(), this->probs_.size());
 }
 
-std::span<double> polca_parallel::Smoother::get_prior() {
-  return std::span<double>(this->prior_.begin(), this->prior_.size());
+std::span<const double> polca_parallel::Smoother::get_prior() {
+  return std::span<const double>(this->prior_.begin(), this->prior_.size());
 }
 
-std::span<double> polca_parallel::Smoother::get_posterior() {
-  return std::span<double>(this->posterior_.begin(), this->posterior_.size());
+std::span<const double> polca_parallel::Smoother::get_posterior() {
+  return std::span<const double>(this->posterior_.begin(),
+                                 this->posterior_.size());
 }
 
 void polca_parallel::Smoother::Smooth(double* probs, std::size_t length,
