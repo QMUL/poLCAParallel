@@ -48,8 +48,8 @@ void polca_parallel::EmAlgorithmArraySerial::SetSeed(unsigned seed) {
 }
 
 void polca_parallel::EmAlgorithmArraySerial::SetRng(
-    std::unique_ptr<std::mt19937_64>* rng) {
-  this->rng_ = std::move(*rng);
+    std::unique_ptr<std::mt19937_64>& rng) {
+  this->rng_ = std::move(rng);
 }
 
 std::unique_ptr<std::mt19937_64>

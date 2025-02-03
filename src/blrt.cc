@@ -73,7 +73,6 @@ void polca_parallel::Blrt::Run() {
 
 void polca_parallel::Blrt::RunThread() {
   bool is_working = true;
-  std::size_t i_bootstrap;
 
   // to store the bootstrap samples
   std::vector<int> bootstrap_data(this->n_data_ * this->n_outcomes_.size());
@@ -115,7 +114,7 @@ void polca_parallel::Blrt::RunThread() {
     this->n_bootstrap_done_lock_.lock();
     if (this->n_bootstrap_done_ < this->n_bootstrap_) {
       // increment for the next worker to work on
-      i_bootstrap = this->n_bootstrap_done_++;
+      std::size_t i_bootstrap = this->n_bootstrap_done_++;
       this->n_bootstrap_done_lock_.unlock();
 
       // instantiate a rng
@@ -163,7 +162,7 @@ void polca_parallel::Blrt::RunThread() {
           std::span<double>(fitted_prob_null.begin(), fitted_prob_null.size()),
           std::span<double>(fitted_regress_coeff_null.begin(),
                             fitted_regress_coeff_null.size()));
-      null_model.SetRng(&rng);
+      null_model.SetRng(rng);
       null_model.Fit<polca_parallel::EmAlgorithm>();
       rng = null_model.MoveRng();
 
@@ -179,7 +178,7 @@ void polca_parallel::Blrt::RunThread() {
           std::span<double>(fitted_prob_alt.begin(), fitted_prob_alt.size()),
           std::span<double>(fitted_regress_coeff_alt.begin(),
                             fitted_regress_coeff_alt.size()));
-      alt_model.SetRng(&rng);
+      alt_model.SetRng(rng);
       alt_model.Fit<polca_parallel::EmAlgorithm>();
       rng = alt_model.MoveRng();
 

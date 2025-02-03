@@ -18,7 +18,6 @@
 
 #include <array>
 #include <map>
-#include <memory>
 #include <span>
 #include <vector>
 
@@ -68,27 +67,25 @@ Rcpp::List GoodnessFitRcpp(Rcpp::IntegerMatrix responses,
 
   // get observed and expected frequencies for each unique response
   // having problems doing static allocation and passing the pointer
-  std::unique_ptr<std::map<std::vector<int>, polca_parallel::Frequency>>
-      unique_freq = std::make_unique<
-          std::map<std::vector<int>, polca_parallel::Frequency>>();
+  std::map<std::vector<int>, polca_parallel::Frequency> unique_freq;
   GetUniqueObserved(std::span<const int>(responses.cbegin(), responses.size()),
-                    n_data, n_category, *unique_freq);
+                    n_data, n_category, unique_freq);
   GetExpected(
       std::span<const double>(prior.cbegin(), prior.size()),
       std::span<const double>(outcome_prob.cbegin(), outcome_prob.size()),
-      n_obs, n_outcomes, n_cluster, *unique_freq);
+      n_obs, n_outcomes, n_cluster, unique_freq);
   // get log likelihood ratio and chi squared statistics
-  std::array<double, 2> stats = GetStatistics(*unique_freq, n_data);
+  std::array<double, 2> stats = GetStatistics(unique_freq, n_data);
 
   // transfer results from std::map unique_freq to a NumericMatrix
   // unique_freq_table
   // last two columns for observed and expected frequency
-  std::size_t n_unique = unique_freq->size();
+  std::size_t n_unique = unique_freq.size();
   Rcpp::NumericMatrix unique_freq_table(n_unique, n_category + 2);
   auto unique_freq_ptr = unique_freq_table.begin();
 
   std::size_t data_index = 0;
-  for (auto iter = unique_freq->begin(); iter != unique_freq->end(); ++iter) {
+  for (auto iter = unique_freq.cbegin(); iter != unique_freq.cend(); ++iter) {
     const std::vector<int>& response_i = iter->first;
     polca_parallel::Frequency frequency = iter->second;
 

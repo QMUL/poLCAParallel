@@ -45,9 +45,9 @@ void polca_parallel::Smoother::Smooth() {
 
   // smooth outcome probabilities
   auto probs = this->probs_.begin();
-  for (std::size_t i_cluster = 0; i_cluster < this->n_cluster_; ++i_cluster) {
+  for (double n_data_i : n_data) {
     for (std::size_t n_outcome_j : this->n_outcomes_) {
-      this->Smooth(n_data[i_cluster], 1.0, static_cast<double>(n_outcome_j),
+      this->Smooth(n_data_i, 1.0, static_cast<double>(n_outcome_j),
                    std::span<double>(probs, n_outcome_j));
       std::advance(probs, n_outcome_j);
     }
