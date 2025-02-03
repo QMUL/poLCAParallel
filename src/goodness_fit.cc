@@ -38,7 +38,7 @@ void polca_parallel::GetUniqueObserved(
   auto responses_iter = responses.begin();
   for (std::size_t i = 0; i < n_data; ++i) {
     bool fullyobserved = true;  // only considered fully observed responses
-    auto response_span_i = std::span<const int>(responses_iter, n_category);
+    std::span<const int> response_span_i(responses_iter, n_category);
 
     for (int response_i_j : response_span_i) {
       if (response_i_j == 0) {

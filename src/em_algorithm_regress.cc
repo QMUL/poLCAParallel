@@ -99,7 +99,7 @@ bool polca_parallel::EmAlgorithmRegress::MStep() {
     auto result = arma::solve(this->hessian_, this->gradient_,
                               arma::solve_opts::likely_sympd);
     this->regress_coeff_ -=
-        arma::reshape(std::move(result), arma::size(this->regress_coeff_));
+        arma::reshape(result, arma::size(this->regress_coeff_));
   } catch (const std::runtime_error&) {
     return true;
   }
@@ -128,7 +128,7 @@ void polca_parallel::EmAlgorithmRegress::CalcGrad() {
   for (std::size_t m = 1; m < this->n_cluster_; ++m) {
     auto posterior_m = this->posterior_.unsafe_col(m);
     auto prior_m = this->prior_.unsafe_col(m);
-    arma::Col<double> post_minus_prior = posterior_m - prior_m;
+    auto post_minus_prior = posterior_m - prior_m;
     for (std::size_t p = 0; p < this->n_feature_; ++p) {
       *gradient = arma::dot(this->features_.unsafe_col(p), post_minus_prior);
       std::advance(gradient, 1);
@@ -173,8 +173,7 @@ void polca_parallel::EmAlgorithmRegress::CalcHessSubBlock(
     posterior1 -= 1;
     prior1 -= 1;
   }
-  arma::Col<double> prior_post_inter =
-      prior0 % prior1 - posterior0 % posterior1;
+  auto prior_post_inter = prior0 % prior1 - posterior0 % posterior1;
 
   // iterate through features i, j, working out the elements of the hessian
   // symmetric matrix, so loop over diagonal and lower triangle

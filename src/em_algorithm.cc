@@ -48,10 +48,9 @@ polca_parallel::EmAlgorithm::EmAlgorithm(
       prior_(prior.data(), n_data, n_cluster, false, true),
       estimated_prob_(estimated_prob.data(), n_outcomes.sum(), n_cluster, false,
                       true),
-      ln_l_array_(n_data) {
-  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-  this->rng_ = std::make_unique<std::mt19937_64>(seed);
-}
+      ln_l_array_(n_data),
+      rng_(std::make_unique<std::mt19937_64>(
+          std::chrono::system_clock::now().time_since_epoch().count())) {}
 
 void polca_parallel::EmAlgorithm::Fit() {
   bool is_first_run = true;
@@ -191,15 +190,15 @@ double polca_parallel::EmAlgorithm::GetPrior(
 
 void polca_parallel::EmAlgorithm::EStep() {
   for (std::size_t i_data = 0; i_data < this->n_data_; ++i_data) {
-    auto responses_i = this->responses_.subspan(
+    std::span<const int> responses_i = this->responses_.subspan(
         i_data * this->n_outcomes_.size(), this->n_outcomes_.size());
     for (std::size_t i_cluster = 0; i_cluster < this->n_cluster_; ++i_cluster) {
       // access to posterior_ in this manner should result in cache misses
       // however PosteriorUnnormalize() is designed for cache efficiency
       double prior = this->GetPrior(i_data, i_cluster);
-      auto estimated_prob = this->estimated_prob_.unsafe_col(i_cluster);
       this->posterior_[i_cluster * this->n_data_ + i_data] =
-          this->PosteriorUnnormalize(responses_i, prior, estimated_prob);
+          this->PosteriorUnnormalize(
+              responses_i, prior, this->estimated_prob_.unsafe_col(i_cluster));
     }
   }
 

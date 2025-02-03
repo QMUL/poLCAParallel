@@ -144,13 +144,6 @@ void polca_parallel::EmAlgorithmArray::FitThread() {
   std::vector<double> regress_coeff(n_feature * (n_cluster - 1));
   std::vector<double> best_initial_prob(this->n_outcomes_.sum() * n_cluster);
 
-  // transfer pointer to data and where to store results
-  std::unique_ptr<polca_parallel::EmAlgorithm> fitter;
-
-  // which initial probability this thread is working on
-  std::size_t rep_index;
-  double ln_l;
-
   bool is_working = true;
   while (is_working) {
     // lock to retrive initial probability and other variables
@@ -160,21 +153,22 @@ void polca_parallel::EmAlgorithmArray::FitThread() {
     this->n_rep_done_lock_.lock();
     if (this->n_rep_done_ < this->n_rep_) {
       // increment for the next worker to work on
-      rep_index = this->n_rep_done_++;
+      std::size_t rep_index = this->n_rep_done_++;
 
       this->n_rep_done_lock_.unlock();
 
-      fitter = std::make_unique<EmAlgorithmType>(
-          this->features_, this->responses_,
-          this->initial_prob_.subspan(
-              rep_index * this->n_outcomes_.sum() * n_cluster,
-              this->n_outcomes_.sum() * n_cluster),
-          n_data, n_feature, this->n_outcomes_, n_cluster, this->max_iter_,
-          this->tolerance_,
-          std::span<double>(posterior.begin(), posterior.size()),
-          std::span<double>(prior.begin(), prior.size()),
-          std::span<double>(estimated_prob.begin(), estimated_prob.size()),
-          std::span<double>(regress_coeff.begin(), regress_coeff.size()));
+      std::unique_ptr<polca_parallel::EmAlgorithm> fitter =
+          std::make_unique<EmAlgorithmType>(
+              this->features_, this->responses_,
+              this->initial_prob_.subspan(
+                  rep_index * this->n_outcomes_.sum() * n_cluster,
+                  this->n_outcomes_.sum() * n_cluster),
+              n_data, n_feature, this->n_outcomes_, n_cluster, this->max_iter_,
+              this->tolerance_,
+              std::span<double>(posterior.begin(), posterior.size()),
+              std::span<double>(prior.begin(), prior.size()),
+              std::span<double>(estimated_prob.begin(), estimated_prob.size()),
+              std::span<double>(regress_coeff.begin(), regress_coeff.size()));
       if (this->best_initial_prob_) {
         fitter->set_best_initial_prob(std::span<double>(
             best_initial_prob.begin(), best_initial_prob.size()));
@@ -184,7 +178,7 @@ void polca_parallel::EmAlgorithmArray::FitThread() {
       this->SetFitterRng(rep_index, *fitter);
 
       fitter->Fit();
-      ln_l = fitter->get_ln_l();
+      double ln_l = fitter->get_ln_l();
       if (this->ln_l_array_) {
         this->ln_l_array_.value()[rep_index] = ln_l;
       }
