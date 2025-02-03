@@ -295,22 +295,22 @@ double polca_parallel::PosteriorUnnormalize(
     std::span<const int> responses_i, std::span<const std::size_t> n_outcomes,
     const arma::Col<double>& estimated_prob, double prior) {
   // designed for cache efficiency here
-
-  // used for calculating the posterior probability up to a constant
+  // calculating the posterior probability up to a constant
   // P(cluster m | Y^{(i)})
-  double posterior;
+
   // for getting a response from responses_
   auto responses_i_it = responses_i.begin();
-
-  bool use_sum_log = false;
+  auto estimated_prob_it = estimated_prob.cbegin();
 
   // used for likelihood calculation for a data point
   // P(Y^{(i)} | cluster m)
   double likelihood = 1;
 
-  auto estimated_prob_it = estimated_prob.cbegin();
-
   // calculate conditioned on cluster m likelihood
+  // underflow very likely to happen because we keep multiplying probabilities
+  // keep number of categories to a reasonable amount
+  //
+  // it is possible instead to do a sum of log likelihoods instead
   for (std::size_t n_outcome : n_outcomes) {
     int y = *responses_i_it;  // cache hit by accesing adjacent memory
     std::advance(responses_i_it, 1);
@@ -326,44 +326,8 @@ double polca_parallel::PosteriorUnnormalize(
 
     // increment to point to the next category
     std::advance(estimated_prob_it, n_outcome);
-
-    // check for underflow
-    if (likelihood < polca_parallel::EmAlgorithm::kUnderflowThreshold) {
-      use_sum_log = true;
-      break;
-    }
   }
-
-  // if underflow occured, use sum of logs instead
-  // restart calculation
-  if (!use_sum_log) {
-    posterior = likelihood * prior;
-  } else {
-    double log_likelihood = 0;
-    auto estimated_prob_it_2 = estimated_prob.cbegin();
-    // for getting a response from responses_
-    auto responses_i_it_2 = responses_i.begin();
-    // calculate conditioned on cluster m likelihood
-    for (std::size_t n_outcome : n_outcomes) {
-      int y = *responses_i_it_2;  // cache hit by accesing adjacent memory
-      std::advance(responses_i_it_2, 1);
-      // cache hit in estimated_prob by accessing memory n_outcomes + y -1
-      // away
-      if constexpr (is_check_zero) {
-        if (y > 0) {
-          log_likelihood += std::log(*std::next(estimated_prob_it_2, y - 1));
-        }
-      } else {
-        log_likelihood += std::log(*std::next(estimated_prob_it_2, y - 1));
-      }
-      // increment to point to the next category
-      std::advance(estimated_prob_it_2, n_outcome);
-    }
-    posterior = log_likelihood + std::log(prior);
-    posterior = std::exp(posterior);
-  }
-
-  return posterior;
+  return likelihood * prior;
 }
 
 void polca_parallel::GenerateNewProb(

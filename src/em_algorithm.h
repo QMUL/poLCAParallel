@@ -18,7 +18,6 @@
 #ifndef POLCAPARALLEL_SRC_EM_ALGORITHM_H_
 #define POLCAPARALLEL_SRC_EM_ALGORITHM_H_
 
-#include <limits>
 #include <memory>
 #include <optional>
 #include <random>
@@ -58,13 +57,6 @@ namespace polca_parallel {
  */
 class EmAlgorithm {
  public:
-  /**
-   * When multiplying probabilities together in PosteriorUnnormalize(), use the
-   * sum of logs instead when the resulting probability is less than this
-   * threshold
-   **/
-  static constexpr int kUnderflowThreshold = std::numeric_limits<double>::min();
-
  protected:
   /**
    * Design matrix TRANSPOSED of responses, matrix containing outcomes/responses
