@@ -240,11 +240,12 @@ may be useful for further troubleshooting.
 
 ### Development Notes
 
-* When calculating the likelihood, probabilities are iteratively multiplied,
-  this is much faster than taking the sum of log probabilities. However, to
-  avoid underflow errors, the calculation of the likelihood uses the sum of log
-  probabilities when an underflow is detected. See `PosteriorUnnormalize()` in
-  `src/em_algorithm.*` for the implementation.
+* It's very likelihood underflow occurs if the number of categories is too
+  large, more than ~300. This is because in the calculation of the
+  log-likelihood, the probabilities from each category are multiplied by each
+  other. If there are $J$ categories, then there are $J$ probabilities to
+  multiply together. This is addressed in commit 85ee419 but reverted. Consider
+  investigating further in future releases.
 * In the standard error calculations, the score matrix is typically
   ill-conditioned. Consider pre-conditioning the matrix.
 * In the poLCA regression model, consider using multiple Newton steps instead
