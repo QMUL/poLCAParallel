@@ -18,6 +18,8 @@
 #ifndef POLCAPARALLEL_SRC_EM_ALGORITHM_NAN_H_
 #define POLCAPARALLEL_SRC_EM_ALGORITHM_NAN_H_
 
+#include <cstddef>
+#include <span>
 #include <vector>
 
 #include "RcppArmadillo.h"
@@ -58,6 +60,8 @@ class EmAlgorithmNanTemplate : public T {
                          std::span<double> posterior, std::span<double> prior,
                          std::span<double> estimated_prob,
                          std::span<double> regress_coeff);
+
+  ~EmAlgorithmNanTemplate() override = default;
 
  protected:
   /**
@@ -101,6 +105,8 @@ class EmAlgorithmNan : public EmAlgorithmNanTemplate<EmAlgorithm> {
                  std::span<double> posterior, std::span<double> prior,
                  std::span<double> estimated_prob,
                  std::span<double> regress_coeff);
+
+  ~EmAlgorithmNan() override = default;
 };
 
 /**
@@ -127,6 +133,8 @@ class EmAlgorithmNanRegress
                         std::span<double> posterior, std::span<double> prior,
                         std::span<double> estimated_prob,
                         std::span<double> regress_coeff);
+
+  ~EmAlgorithmNanRegress() override = default;
 };
 
 /**

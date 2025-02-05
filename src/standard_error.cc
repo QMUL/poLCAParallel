@@ -17,14 +17,8 @@
 
 #include "standard_error.h"
 
-#include <algorithm>
-#include <memory>
-#include <span>
+#include <iterator>
 #include <vector>
-
-#include "RcppArmadillo.h"
-#include "error_solver.h"
-#include "util.h"
 
 polca_parallel::StandardError::StandardError(
     std::span<const double> features, std::span<const int> responses,

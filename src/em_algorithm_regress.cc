@@ -17,13 +17,8 @@
 
 #include "em_algorithm_regress.h"
 
-#include <algorithm>
-#include <random>
+#include <iterator>
 #include <stdexcept>
-#include <utility>
-#include <vector>
-
-#include "util.h"
 
 polca_parallel::EmAlgorithmRegress::EmAlgorithmRegress(
     std::span<const double> features, std::span<const int> responses,

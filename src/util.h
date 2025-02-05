@@ -18,6 +18,7 @@
 #ifndef POLCAPARALLEL_SRC_UTIL_H_
 #define POLCAPARALLEL_SRC_UTIL_H_
 
+#include <cstddef>
 #include <span>
 
 namespace polca_parallel {

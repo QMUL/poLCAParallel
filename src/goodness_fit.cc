@@ -18,18 +18,12 @@
 
 #include "goodness_fit.h"
 
-#include <algorithm>
-#include <array>
 #include <cmath>
-#include <cstring>
-#include <map>
-#include <span>
+#include <iterator>
 #include <stdexcept>
-#include <vector>
 
 #include "RcppArmadillo.h"
 #include "em_algorithm.h"
-#include "util.h"
 
 void polca_parallel::GetUniqueObserved(
     std::span<const int> responses, std::size_t n_data, std::size_t n_category,

@@ -18,6 +18,7 @@
 #ifndef POLCAPARALLEL_SRC_ERROR_SOLVER_H
 #define POLCAPARALLEL_SRC_ERROR_SOLVER_H
 
+#include <cstddef>
 #include <span>
 
 #include "RcppArmadillo.h"
@@ -111,6 +112,9 @@ class ErrorSolver {
               std::size_t info_size, std::size_t jacobian_width,
               std::span<double> prior_error, std::span<double> prob_error,
               std::span<double> regress_coeff_error);
+
+  virtual ~ErrorSolver() = default;
+
   /**
    * Solves equations to work out the standard error and saves it
    *
@@ -166,6 +170,8 @@ class InfoEigenSolver : public polca_parallel::ErrorSolver {
                   std::size_t info_size, std::size_t jacobian_width,
                   std::span<double> prior_error, std::span<double> prob_error,
                   std::span<double> regress_coeff_error);
+
+  ~InfoEigenSolver() override = default;
 
   void Solve(const arma::Mat<double>& score,
              const arma::Mat<double>& jacobian) override;
@@ -228,6 +234,8 @@ class InfoEigenRegressSolver : public polca_parallel::InfoEigenSolver {
                          std::span<double> prob_error,
                          std::span<double> regress_coeff_error);
 
+  ~InfoEigenRegressSolver() override = default;
+
  protected:
   void ExtractErrorGivenEigen(const arma::Col<double>& eigval_inv,
                               const arma::Mat<double>& eigvec,
@@ -270,6 +278,8 @@ class ScoreSvdSolver : public polca_parallel::ErrorSolver {
                  std::size_t info_size, std::size_t jacobian_width,
                  std::span<double> prior_error, std::span<double> prob_error,
                  std::span<double> regress_coeff_error);
+
+  ~ScoreSvdSolver() override = default;
 
   void Solve(const arma::Mat<double>& score,
              const arma::Mat<double>& jacobian) override;
@@ -328,6 +338,8 @@ class ScoreSvdRegressSolver : public polca_parallel::ScoreSvdSolver {
                         std::span<double> prior_error,
                         std::span<double> prob_error,
                         std::span<double> regress_coeff_error);
+
+  ~ScoreSvdRegressSolver() override = default;
 
  protected:
   void ExtractErrorGivenEigen(const arma::Col<double>& singular_inv,

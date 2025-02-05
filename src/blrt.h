@@ -18,14 +18,12 @@
 #ifndef POLCAPARALLEL_SRC_BLRT_H_
 #define POLCAPARALLEL_SRC_BLRT_H_
 
-#include <memory>
+#include <cstddef>
 #include <mutex>
 #include <random>
 #include <span>
 #include <vector>
 
-#include "em_algorithm.h"
-#include "em_algorithm_array_serial.h"
 #include "util.h"
 
 namespace polca_parallel {

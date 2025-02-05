@@ -20,6 +20,7 @@
 #define POLCAPARALLEL_SRC_GOODNESS_FIT_H_
 
 #include <array>
+#include <cstddef>
 #include <map>
 #include <span>
 #include <vector>

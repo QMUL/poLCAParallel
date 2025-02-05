@@ -18,11 +18,8 @@
 #include "error_solver.h"
 
 #include <algorithm>
-#include <cstring>
+#include <iterator>
 #include <limits>
-#include <span>
-
-#include "RcppArmadillo.h"
 
 polca_parallel::ErrorSolver::ErrorSolver(
     std::size_t n_data, std::size_t n_feature, std::size_t sum_outcomes,

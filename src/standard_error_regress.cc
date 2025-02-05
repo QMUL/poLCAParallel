@@ -17,13 +17,9 @@
 
 #include "standard_error_regress.h"
 
-#include <memory>
-#include <span>
+#include <iterator>
 
-#include "RcppArmadillo.h"
 #include "error_solver.h"
-#include "standard_error.h"
-#include "util.h"
 
 polca_parallel::StandardErrorRegress::StandardErrorRegress(
     std::span<const double> features, std::span<const int> responses,

@@ -19,13 +19,11 @@
 
 #include <algorithm>
 #include <chrono>
-#include <cstring>
+#include <iterator>
 #include <memory>
-#include <mutex>
-#include <random>
-#include <span>
 #include <thread>
-#include <vector>
+
+#include "em_algorithm_array_serial.h"
 
 polca_parallel::Blrt::Blrt(std::span<const double> prior_null,
                            std::span<const double> prob_null,

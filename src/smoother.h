@@ -18,10 +18,9 @@
 #ifndef POLCAPARALLEL_SRC_SMOOTHER_H
 #define POLCAPARALLEL_SRC_SMOOTHER_H
 
+#include <cstddef>
 #include <span>
 #include <vector>
-
-#include "util.h"
 
 namespace polca_parallel {
 

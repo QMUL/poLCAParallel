@@ -18,10 +18,13 @@
 #ifndef POLCAPARALLEL_SRC_EM_ALGORITHM_ARRAY_H_
 #define POLCAPARALLEL_SRC_EM_ALGORITHM_ARRAY_H_
 
+#include <cstddef>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <random>
+#include <span>
+#include <vector>
 
 #include "em_algorithm.h"
 #include "util.h"
@@ -236,6 +239,8 @@ class EmAlgorithmArray {
                    double tolerance, std::span<double> posterior,
                    std::span<double> prior, std::span<double> estimated_prob,
                    std::span<double> regress_coeff);
+
+  virtual ~EmAlgorithmArray() = default;
 
   /**
    * Fit (in parallel) using the EM algorithm
