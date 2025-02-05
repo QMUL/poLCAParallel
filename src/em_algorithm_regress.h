@@ -18,7 +18,9 @@
 #ifndef POLCAPARALLEL_SRC_EM_ALGORITHM_REGRESS_H_
 #define POLCAPARALLEL_SRC_EM_ALGORITHM_REGRESS_H_
 
-#include <vector>
+#include <cstddef>
+#include <random>
+#include <span>
 
 #include "RcppArmadillo.h"
 #include "em_algorithm.h"
@@ -156,6 +158,8 @@ class EmAlgorithmRegress : public polca_parallel::EmAlgorithm {
                      double tolerance, std::span<double> posterior,
                      std::span<double> prior, std::span<double> estimated_prob,
                      std::span<double> regress_coeff);
+
+  ~EmAlgorithmRegress() override = default;
 
  protected:
   /**

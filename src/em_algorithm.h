@@ -18,11 +18,11 @@
 #ifndef POLCAPARALLEL_SRC_EM_ALGORITHM_H_
 #define POLCAPARALLEL_SRC_EM_ALGORITHM_H_
 
+#include <cstddef>
 #include <memory>
 #include <optional>
 #include <random>
 #include <span>
-#include <vector>
 
 #include "RcppArmadillo.h"
 #include "util.h"
@@ -56,7 +56,6 @@ namespace polca_parallel {
  * </ul>
  */
 class EmAlgorithm {
- public:
  protected:
   /**
    * Design matrix TRANSPOSED of responses, matrix containing outcomes/responses
@@ -220,6 +219,8 @@ class EmAlgorithm {
               std::span<double> posterior, std::span<double> prior,
               std::span<double> estimated_prob,
               std::span<double> regress_coeff);
+
+  virtual ~EmAlgorithm() = default;
 
   /**
    * Fit data to model using EM algorithm
@@ -468,7 +469,6 @@ template <bool is_check_zero = false>
 /**
  * Generate random response probabilities
  *
-
  * @param n_outcomes vector length n_category, number of outcomes for each
  * category
  * @param n_cluster number of clusters

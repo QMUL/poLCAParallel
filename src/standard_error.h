@@ -18,6 +18,7 @@
 #ifndef POLCAPARALLEL_SRC_STANDARD_ERROR_H
 #define POLCAPARALLEL_SRC_STANDARD_ERROR_H
 
+#include <cstddef>
 #include <memory>
 #include <span>
 
@@ -179,6 +180,8 @@ class StandardError {
                 std::size_t n_cluster, std::span<double> prior_error,
                 std::span<double> prob_error,
                 std::span<double> regress_coeff_error);
+
+  virtual ~StandardError() = default;
 
   /**
    * Calculate the standard errors

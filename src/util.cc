@@ -18,7 +18,6 @@
 #include "util.h"
 
 #include <numeric>
-#include <span>
 
 polca_parallel::NOutcomes::NOutcomes(const std::size_t* data, std::size_t size)
     : std::span<const std::size_t>(data, size),

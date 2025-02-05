@@ -18,8 +18,10 @@
 #ifndef POLCAPARALLEL_SRC_EM_ALGORITHM_ARRAY_SERIAL_H_
 #define POLCAPARALLEL_SRC_EM_ALGORITHM_ARRAY_SERIAL_H_
 
+#include <cstddef>
 #include <memory>
 #include <random>
+#include <span>
 
 #include "em_algorithm_array.h"
 #include "util.h"
@@ -55,6 +57,8 @@ class EmAlgorithmArraySerial : public polca_parallel::EmAlgorithmArray {
       std::size_t n_rep, unsigned int max_iter, double tolerance,
       std::span<double> posterior, std::span<double> prior,
       std::span<double> estimated_prob, std::span<double> regress_coeff);
+
+  ~EmAlgorithmArraySerial() override = default;
 
   /**
    * Set the seed_array_ to contain only one seed and instantiate the rng_

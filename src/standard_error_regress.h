@@ -18,9 +18,11 @@
 #ifndef POLCAPARALLEL_SRC_STANDARD_ERROR_REGRESS_H_
 #define POLCAPARALLEL_SRC_STANDARD_ERROR_REGRESS_H_
 
+#include <cstddef>
 #include <memory>
 #include <span>
 
+#include "RcppArmadillo.h"
 #include "standard_error.h"
 #include "util.h"
 
@@ -109,6 +111,8 @@ class StandardErrorRegress : public polca_parallel::StandardError {
                        std::size_t n_cluster, std::span<double> prior_error,
                        std::span<double> prob_error,
                        std::span<double> regress_coeff_error);
+
+  ~StandardErrorRegress() override = default;
 
  protected:
   [[nodiscard]] std::unique_ptr<polca_parallel::ErrorSolver> InitErrorSolver()

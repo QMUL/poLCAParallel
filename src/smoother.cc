@@ -17,10 +17,9 @@
 
 #include "smoother.h"
 
-#include <span>
+#include <iterator>
 
 #include "RcppArmadillo.h"
-#include "util.h"
 
 polca_parallel::Smoother::Smoother(std::span<const double> probs,
                                    std::span<const double> prior,

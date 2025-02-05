@@ -17,11 +17,7 @@
 
 #include "em_algorithm_array_serial.h"
 
-#include <memory>
-#include <random>
 #include <utility>
-
-#include "util.h"
 
 polca_parallel::EmAlgorithmArraySerial::EmAlgorithmArraySerial(
     std::span<const double> features, std::span<const int> responses,

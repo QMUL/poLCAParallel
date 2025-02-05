@@ -18,13 +18,8 @@
 #include "regularised_error.h"
 
 #include <memory>
-#include <span>
 
-#include "RcppArmadillo.h"
 #include "smoother.h"
-#include "standard_error.h"
-#include "standard_error_regress.h"
-#include "util.h"
 
 polca_parallel::RegularisedError::RegularisedError(
     std::span<const double> features, std::span<const int> responses,

@@ -18,18 +18,7 @@
 #include "em_algorithm_nan.h"
 
 #include <algorithm>
-#include <vector>
-
-#include "RcppArmadillo.h"
-#include "em_algorithm.h"
-#include "em_algorithm_regress.h"
-#include "util.h"
-
-template class polca_parallel::EmAlgorithmNanTemplate<
-    polca_parallel::EmAlgorithm>;
-
-template class polca_parallel::EmAlgorithmNanTemplate<
-    polca_parallel::EmAlgorithmRegress>;
+#include <iterator>
 
 template <typename T>
 polca_parallel::EmAlgorithmNanTemplate<T>::EmAlgorithmNanTemplate(

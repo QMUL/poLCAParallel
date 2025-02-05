@@ -18,6 +18,7 @@
 #ifndef POLCAPARALLEL_SRC_REGULARISED_ERROR_H
 #define POLCAPARALLEL_SRC_REGULARISED_ERROR_H
 
+#include <cstddef>
 #include <span>
 
 #include "standard_error.h"
@@ -46,6 +47,8 @@ class RegularisedError : public polca_parallel::StandardError {
                    std::size_t n_cluster, std::span<double> prior_error,
                    std::span<double> prob_error,
                    std::span<double> regress_coeff_error);
+
+  ~RegularisedError() override = default;
 };
 
 /**
@@ -69,6 +72,8 @@ class RegularisedRegressError : public polca_parallel::StandardErrorRegress {
                           std::span<double> prior_error,
                           std::span<double> prob_error,
                           std::span<double> regress_coeff_error);
+
+  ~RegularisedRegressError() override = default;
 };
 }  // namespace polca_parallel
 

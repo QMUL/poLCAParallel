@@ -20,15 +20,9 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
-#include <cstring>
-#include <memory>
-#include <random>
-#include <span>
+#include <iterator>
 #include <utility>
 #include <vector>
-
-#include "RcppArmadillo.h"
-#include "util.h"
 
 polca_parallel::EmAlgorithm::EmAlgorithm(
     std::span<const double> features, std::span<const int> responses,
