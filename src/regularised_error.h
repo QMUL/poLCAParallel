@@ -15,18 +15,15 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef REGULARISED_ERROR_H
-#define REGULARISED_ERROR_H
+#ifndef POLCAPARALLEL_SRC_REGULARISED_ERROR_H
+#define POLCAPARALLEL_SRC_REGULARISED_ERROR_H
 
-#include <math.h>
+#include <cstddef>
+#include <span>
 
-#include <limits>
-#include <memory>
-
-#include "RcppArmadillo.h"
-#include "error_solver.h"
 #include "standard_error.h"
 #include "standard_error_regress.h"
+#include "util.h"
 
 namespace polca_parallel {
 
@@ -42,11 +39,16 @@ namespace polca_parallel {
 class RegularisedError : public polca_parallel::StandardError {
  public:
   /** @copydoc StandardError::StandardError */
-  RegularisedError(double* features, int* responses, double* probs,
-                   double* prior, double* posterior, int n_data, int n_feature,
-                   int n_category, int* n_outcomes, int sum_outcomes,
-                   int n_cluster, double* prior_error, double* prob_error,
-                   double* regress_coeff_error);
+  RegularisedError(std::span<const double> features,
+                   std::span<const int> responses,
+                   std::span<const double> probs, std::span<const double> prior,
+                   std::span<const double> posterior, std::size_t n_data,
+                   std::size_t n_feature, NOutcomes n_outcomes,
+                   std::size_t n_cluster, std::span<double> prior_error,
+                   std::span<double> prob_error,
+                   std::span<double> regress_coeff_error);
+
+  ~RegularisedError() override = default;
 };
 
 /**
@@ -61,12 +63,18 @@ class RegularisedError : public polca_parallel::StandardError {
 class RegularisedRegressError : public polca_parallel::StandardErrorRegress {
  public:
   /** @copydoc StandardErrorRegress::StandardErrorRegress */
-  RegularisedRegressError(double* features, int* responses, double* probs,
-                          double* prior, double* posterior, int n_data,
-                          int n_feature, int n_category, int* n_outcomes,
-                          int sum_outcomes, int n_cluster, double* prior_error,
-                          double* prob_error, double* regress_coeff_error);
+  RegularisedRegressError(std::span<const double> features,
+                          std::span<const int> responses,
+                          std::span<const double> probs,
+                          std::span<const double> prior,
+                          std::span<const double> posterior, std::size_t n_data,
+                          std::size_t n_feature, NOutcomes n_outcomes,
+                          std::size_t n_cluster, std::span<double> prior_error,
+                          std::span<double> prob_error,
+                          std::span<double> regress_coeff_error);
+
+  ~RegularisedRegressError() override = default;
 };
 }  // namespace polca_parallel
 
-#endif  // REGULARISED_ERROR_H
+#endif  // POLCAPARALLEL_SRC_REGULARISED_ERROR_H

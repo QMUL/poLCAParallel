@@ -15,17 +15,17 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef STANDARD_ERROR_H
-#define STANDARD_ERROR_H
+#ifndef POLCAPARALLEL_SRC_STANDARD_ERROR_H
+#define POLCAPARALLEL_SRC_STANDARD_ERROR_H
 
-#include <math.h>
-
+#include <cstddef>
 #include <memory>
-#include <vector>
+#include <span>
 
 #include "RcppArmadillo.h"
 #include "error_solver.h"
 #include "smoother.h"
+#include "util.h"
 
 namespace polca_parallel {
 
@@ -49,14 +49,6 @@ namespace polca_parallel {
 class StandardError {
  protected:
   /**
-   * Design matrix of features, matrix with dimensions
-   * <ul>
-   *   <li>dim 0: for each data point</li>
-   *   <li>dim 1: for each feature</li>
-   * </ul>
-   */
-  double* features_;
-  /**
    * Design matrix of responses, matrix containing outcomes/responses
    * for each category as integers 1, 2, 3, .... The matrix has dimensions
    * <ul>
@@ -64,7 +56,7 @@ class StandardError {
    *   <li>dim 1: for each category</li>
    * </ul>
    */
-  int* responses_;
+  const arma::Mat<int> responses_;
   /**
    * Vector of probabilities for each category and response,
    * flatten list of matrices
@@ -74,7 +66,7 @@ class StandardError {
    *   <li>dim 2: for each cluster</li>
    * </ul>
    */
-  double* probs_;
+  std::span<const double> probs_;
   /**
    * Design matrix of prior probabilities, probability data point is in
    * cluster m NOT given responses after calculations, it shall be in matrix
@@ -84,7 +76,7 @@ class StandardError {
    *   <li>dim 1: for each cluster</li>
    * </ul>
    */
-  double* prior_;
+  std::unique_ptr<const arma::Mat<double>> prior_;
   /**
    * Design matrix of posterior probabilities (also called responsibility)
    * probability data point is in cluster m given responses
@@ -94,24 +86,20 @@ class StandardError {
    *   <li>dim 1: for each cluster</li>
    * </ul>
    */
-  double* posterior_;
+  std::unique_ptr<const arma::Mat<double>> posterior_;
   /** Number of data points */
-  int n_data_;
+  const std::size_t n_data_;
   /** Number of features */
-  int n_feature_;
-  /** Number of categories */
-  int n_category_;
+  const std::size_t n_feature_;
   /** Vector of number of outcomes for each category */
-  int* n_outcomes_;
-  /** Sum of n_outcomes */
-  int sum_outcomes_;
+  NOutcomes n_outcomes_;
   /** Number of clusters to fit */
-  int n_cluster_;
+  const std::size_t n_cluster_;
   /**
    * Vector containing the standard error for the prior probabilities for each
    * cluster
    */
-  double* prior_error_;
+  std::span<double> prior_error_;
   /**
    * Vector containing the standard error for the outcome probabilities category
    * and cluster
@@ -122,13 +110,13 @@ class StandardError {
    *   <li>dim 2: for each cluster</li>
    * </ul>
    */
-  double* prob_error_;
+  std::span<double> prob_error_;
   /** Covariance matrix of the regression coefficient */
-  double* regress_coeff_error_;
+  std::span<double> regress_coeff_error_;
   /** The size of the information matrix*/
-  int info_size_;
+  const std::size_t info_size_;
   /** The width of the Jacobian matrix*/
-  int jacobian_width_;
+  const std::size_t jacobian_width_;
   /** For smoothing the probabilities in prior, posterior and probs */
   std::unique_ptr<polca_parallel::Smoother> smoother_;
 
@@ -170,9 +158,8 @@ class StandardError {
    * </ul>
    * @param n_data Number of data points
    * @param n_feature Number of features, required to be 1
-   * @param n_category Number of categories
-   * @param n_outcomes Array of number of outcomes, for each category
-   * @param sum_outcomes Sum of all integers in n_outcomes
+   * @param n_outcomes Array of number of outcomes, for each category, and its
+   * sum
    * @param n_cluster Number of clusters fitted
    * @param prior_error Vector to contain the standard error for the prior
    * probabilities for each cluster, modified after calling Calc()
@@ -186,11 +173,16 @@ class StandardError {
    * </ul>
    * @param regress_coeff_error Not used
    */
-  StandardError(double* features, int* responses, double* probs, double* prior,
-                double* posterior, int n_data, int n_feature, int n_category,
-                int* n_outcomes, int sum_outcomes, int n_cluster,
-                double* prior_error, double* prob_error,
-                double* regress_coeff_error);
+  StandardError(std::span<const double> features,
+                std::span<const int> responses, std::span<const double> probs,
+                std::span<const double> prior,
+                std::span<const double> posterior, std::size_t n_data,
+                std::size_t n_feature, NOutcomes n_outcomes,
+                std::size_t n_cluster, std::span<double> prior_error,
+                std::span<double> prob_error,
+                std::span<double> regress_coeff_error);
+
+  virtual ~StandardError() = default;
 
   /**
    * Calculate the standard errors
@@ -216,16 +208,15 @@ class StandardError {
   /**
    * Calculate the scores
    *
-   * Calculate the scores and saves it as a design matrix, at the provided
-   * pointer score
+   * Calculate the scores and saves it to the provided matrix
    *
-   * @param score pointer to save the scores
+   * @param score matrix to save the scores
    * <ul>
    *   <li>dim 0: for each data point</li>
    *   <li>dim 1: for each parameter</li>
    * </ul>
    */
-  void CalcScore(double* score);
+  void CalcScore(arma::Mat<double>& score) const;
 
   /**
    * Calculate the scores for the prior for all clusters except the zeroth one
@@ -233,10 +224,11 @@ class StandardError {
    * Calculate the scores for the prior for all clusters except the zeroth one
    * for all data points
    *
-   * @param score MODIFIED where to save the results, modified so that *score is
-   * shifited by n_data * (n_cluster - 1), ready for the next set of scores
+   * @param score_prior MODIFIED - submatrix of the complete score matrix, to
+   * fill in with scores of the prior probabilities (and regression parameter if
+   * applicable)
    */
-  virtual void CalcScorePrior(double** score);
+  virtual void CalcScorePrior(arma::subview<double>& score_prior) const;
 
   /**
    * Calculate the scores for ALL outcome probabilities (except zeroth outcome)
@@ -244,25 +236,28 @@ class StandardError {
    * Calculate the scores for outcome probabilities for all clusters, categories
    * and outcomes (except for the zeroth outcome) for all data points.
    *
-   * @param score MODIFIED where to save the results, modified so that *score is
-   * shifited by n_data * n_cluster * (sum_outcomes - n_category), ready for
-   * the next set of scores
+   * @param score_probs MODIFIED - submatrix of the complete score matrix, to
+   * fill in with the scores of the outcome probabilities
    */
-  void CalcScoreProbs(double** score);
+  void CalcScoreProbs(arma::subview<double>& score_probs) const;
 
   /**
    * Calculate the scores for the outcome probabilities
    *
-   * Calculate the scores for the outcome probabilities for a given category and
-   * outcome for all data points.
+   * Calculate the scores for the outcome probabilities for a given cluster,
+   * category and outcome for all data points.
    *
-   * @param outcome_index 1, 2, ..., n_outcomes[category_index]
-   * @param category_index 0, 1, 2, ..., n_category
-   * @param cluster_index 0, 1, 2, ..., n_cluster
-   * @param score pointer to save the results
+   * @param outcome_index 1, 2, ..., n_outcomes[for a given category]
+   * @param prob outcome probability for a given cluster, category and outcome
+   * @param responses_j responses for a given category
+   * @param posterior_i posterior for a given cluster
+   * @param score_col MODIFIED, column of the score matrix to modify for a given
+   * cluster, category and outcome
    */
-  void CalcScoreProbsCol(int outcome_index, int category_index,
-                         int cluster_index, double* score);
+  void CalcScoreProbsCol(std::size_t outcome_index, double prob,
+                         const arma::subview_col<int>& responses_j,
+                         const arma::subview_col<double>& posterior_i,
+                         arma::subview_col<double>& score_col) const;
 
   /**
    * Calculate the Jacobian matrix
@@ -272,7 +267,7 @@ class StandardError {
    *
    * @param jacobian pointer to save the Jacobian matrix
    */
-  void CalcJacobian(double* jacobian);
+  void CalcJacobian(arma::Mat<double>& jacobian) const;
 
   /**
    * Calculate the block matrix for the prior in the Jacobian matrix
@@ -286,7 +281,7 @@ class StandardError {
    * *jacobian_ptr is modified so that it points to the start of the next block
    * matrix after calling this method
    */
-  virtual void CalcJacobianPrior(double** jacobian_ptr);
+  virtual void CalcJacobianPrior(arma::subview<double>& jacobian_prior) const;
 
   /**
    * Calculate all block matrices for the probabilities in the Jacobian matrix
@@ -300,7 +295,7 @@ class StandardError {
    * *jacobian_ptr is modified so that it points to the start of the next block
    * matrix after calling this method
    */
-  void CalcJacobianProbs(double** jacobian_ptr);
+  void CalcJacobianProbs(arma::subview<double>& jacobian_probs) const;
 
   /**
    * Calculate a block matrix for given probabilities
@@ -310,15 +305,13 @@ class StandardError {
    * block matrix.
    *
    * @param probs array of probabilities to construct the block matrix with
-   * @param n_prob number of probabilities
-   * @param jacobian_ptr MODIFIED, the start of the block matrix in the Jacobian
-   * matrix, the calculated block matrix is saved in *jacobian_ptr.
-   * *jacobian_ptr is modified so that it points to the start of the next block
-   * matrix after calling this method
+   * @param jacobian_block MODIFIED, the block matrix in the Jacobian
+   * matrix
    */
-  void CalcJacobianBlock(double* probs, int n_prob, double** jacobian_ptr);
+  void CalcJacobianBlock(std::span<const double> probs,
+                         arma::subview<double>& jacobian_block) const;
 };
 
 }  // namespace polca_parallel
 
-#endif  // STANDARD_ERROR_H
+#endif  // POLCAPARALLEL_SRC_STANDARD_ERROR_H

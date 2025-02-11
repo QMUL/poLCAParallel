@@ -16,19 +16,16 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef GOODNESS_FIT_H_
-#define GOODNESS_FIT_H_
-
-#include <math.h>
+#ifndef POLCAPARALLEL_SRC_GOODNESS_FIT_H_
+#define POLCAPARALLEL_SRC_GOODNESS_FIT_H_
 
 #include <array>
-#include <cstring>
+#include <cstddef>
 #include <map>
-#include <stdexcept>
+#include <span>
 #include <vector>
 
-#include "RcppArmadillo.h"
-#include "em_algorithm.h"
+#include "util.h"
 
 namespace polca_parallel {
 
@@ -36,7 +33,7 @@ namespace polca_parallel {
  * For storing the observed and expected frequency, used for chi-squared test
  */
 struct Frequency {
-  int observed;
+  std::size_t observed;
   double expected;
 };
 
@@ -65,8 +62,9 @@ struct Frequency {
  *   times those unique responses were observed in the dataset</li>
  * </ul>
  */
-void GetUniqueObserved(int* responses, int n_data, int n_category,
-                       std::map<std::vector<int>, Frequency>* unique_freq);
+void GetUniqueObserved(std::span<const int> responses, std::size_t n_data,
+                       std::size_t n_category,
+                       std::map<std::vector<int>, Frequency>& unique_freq);
 
 /**
  * Update a map of observed responses to contain expected frequencies
@@ -84,9 +82,7 @@ void GetUniqueObserved(int* responses, int n_data, int n_category,
  *   <li>dim 1: for each category</li>
  *   <li>dim 2: for each cluster</li>
  * </ul>
- * @param n_data number of data points
  * @param n_obs number of fully observed data points
- * @param n_category number of categories
  * @param n_outcomes array of integers, number of outcomes for each category,
  * array of length n_category
  * @param n_cluster number of clusters (or classes)
@@ -96,9 +92,10 @@ void GetUniqueObserved(int* responses, int n_data, int n_category,
  *   <li>value: Frequency, the expected attributed shall be modified</li>
  * </ul>
  */
-void GetExpected(double* prior, double* outcome_prob, int n_data, int n_obs,
-                 int n_category, int* n_outcomes, int n_cluster,
-                 std::map<std::vector<int>, Frequency>* unique_freq);
+void GetExpected(std::span<const double> prior,
+                 std::span<const double> outcome_prob, std::size_t n_obs,
+                 NOutcomes n_outcomes, std::size_t n_cluster,
+                 std::map<std::vector<int>, Frequency>& unique_freq);
 
 /**
  * Get chi-squared and log-likelihood ratio statistics
@@ -112,8 +109,9 @@ void GetExpected(double* prior, double* outcome_prob, int n_data, int n_obs,
  * statistics
  */
 std::array<double, 2> GetStatistics(
-    std::map<std::vector<int>, Frequency>* unique_freq, int n_data);
+    const std::map<std::vector<int>, Frequency>& unique_freq,
+    std::size_t n_data);
 
 }  // namespace polca_parallel
 
-#endif  // GOODNESS_FIT_H_
+#endif  // POLCAPARALLEL_SRC_GOODNESS_FIT_H_

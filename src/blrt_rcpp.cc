@@ -15,8 +15,14 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+#include <cstddef>
+#include <random>
+#include <span>
+#include <vector>
+
 #include "RcppArmadillo.h"
 #include "blrt.h"
+#include "util.h"
 
 /**
  * Function to be exported to R, does bootstrap likelihood ratio test
@@ -43,7 +49,6 @@
  *   <li>dim 1: for each cluster</li>
  *   <li>dim 2: for each category</li>
  * </ul>
- * @param n_cluster_null Null model, number of clusters fitted
  * @param prior_alt Alt model, vector of prior probabilities for the null
  * model, probability data point is in cluster m NOT given responses
  * <ul>
@@ -57,10 +62,8 @@
  *   <li>dim 1: for each cluster</li>
  *   <li>dim 2: for each category</li>
  * </ul>
- * @param n_cluster_alt Alt model, number of clusters fitted
  * @param n_data Number of data points, used to bootstrap this many data
  * points
- * @param n_category Number of categories
  * @param n_outcomes Array of number of outcomes, for each category
  * @param n_bootstrap Number of bootstrap samples to generate
  * @param n_rep Number of initial values to try when fitting on the bootstrap
@@ -74,30 +77,31 @@
  */
 // [[Rcpp::export]]
 Rcpp::NumericVector BlrtRcpp(Rcpp::NumericVector prior_null,
-                             Rcpp::NumericVector prob_null, int n_cluster_null,
+                             Rcpp::NumericVector prob_null,
                              Rcpp::NumericVector prior_alt,
-                             Rcpp::NumericVector prob_alt, int n_cluster_alt,
-                             int n_data, int n_category,
-                             Rcpp::IntegerVector n_outcomes, int n_bootstrap,
-                             int n_rep, int n_thread, int max_iter,
+                             Rcpp::NumericVector prob_alt, std::size_t n_data,
+                             Rcpp::IntegerVector n_outcomes_int,
+                             std::size_t n_bootstrap, std::size_t n_rep,
+                             std::size_t n_thread, unsigned int max_iter,
                              double tolerance, Rcpp::IntegerVector seed) {
-  int sum_outcomes = 0;  // calculate sum of number of outcomes
-  int* n_outcomes_array = n_outcomes.begin();
-  for (int i = 0; i < n_category; ++i) {
-    sum_outcomes += n_outcomes_array[i];
-  }
+  std::vector<std::size_t> n_outcomes_size_t(n_outcomes_int.cbegin(),
+                                             n_outcomes_int.cend());
+  polca_parallel::NOutcomes n_outcomes(n_outcomes_size_t.data(),
+                                       n_outcomes_size_t.size());
 
   // allocate memory for storing log likelihood ratios
   Rcpp::NumericVector ratio_array(n_bootstrap);
 
   polca_parallel::Blrt blrt(
-      prior_null.begin(), prob_null.begin(), n_cluster_null, prior_alt.begin(),
-      prob_alt.begin(), n_cluster_alt, n_data, n_category, n_outcomes.begin(),
-      sum_outcomes, n_bootstrap, n_rep, n_thread, max_iter, tolerance,
-      ratio_array.begin());
+      std::span<const double>(prior_null.cbegin(), prior_null.size()),
+      std::span<const double>(prob_null.cbegin(), prob_null.size()),
+      std::span<const double>(prior_alt.cbegin(), prior_alt.size()),
+      std::span<const double>(prob_alt.cbegin(), prob_alt.size()), n_data,
+      n_outcomes, n_bootstrap, n_rep, n_thread, max_iter, tolerance,
+      std::span<double>(ratio_array.begin(), ratio_array.size()));
 
-  std::seed_seq seed_seq(seed.begin(), seed.end());
-  blrt.SetSeed(&seed_seq);
+  std::seed_seq seed_seq(seed.cbegin(), seed.cend());
+  blrt.SetSeed(seed_seq);
   blrt.Run();
 
   return ratio_array;

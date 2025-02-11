@@ -15,25 +15,32 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef EM_ALGORITHM_NAN_H_
-#define EM_ALGORITHM_NAN_H_
+#ifndef POLCAPARALLEL_SRC_EM_ALGORITHM_NAN_H_
+#define POLCAPARALLEL_SRC_EM_ALGORITHM_NAN_H_
 
+#include <cstddef>
+#include <span>
 #include <vector>
 
 #include "RcppArmadillo.h"
 #include "em_algorithm.h"
 #include "em_algorithm_regress.h"
+#include "util.h"
 
 namespace polca_parallel {
 
 /**
- * EM algorithm with NaN handling
+ * Template class for EmAlgorithmNan and EmAlgorithmNanRegress
  *
- * EM algorithm with NaN handling. NaN are encoded as zeros in reponses. The
- * methods responsible for probability estimation are overriden.
+ * Template class class for EmAlgorithmNan and EmAlgorithmNanRegress, which are
+ * subclasses of EmAlgorithm and EmAlgorithmRegress respectively. Methods are
+ * overridden so that they can handle response values of zero, the encoding of
+ * Nan
  *
+ * @tparam Either EmAlgorithm or EmAlgorithmRegress
  */
-class EmAlgorithmNan : public polca_parallel::EmAlgorithm {
+template <typename T>
+class EmAlgorithmNanTemplate : public T {
  protected:
   /** Temporary variable for summing posteriors for each category */
   std::vector<double> posterior_sum_;
@@ -44,11 +51,17 @@ class EmAlgorithmNan : public polca_parallel::EmAlgorithm {
    *
    * @copydoc EmAlgorithm::EmAlgorithm
    */
-  EmAlgorithmNan(double* features, int* responses, double* initial_prob,
-                 int n_data, int n_feature, int n_category, int* n_outcomes,
-                 int sum_outcomes, int n_cluster, int max_iter,
-                 double tolerance, double* posterior, double* prior,
-                 double* estimated_prob, double* regress_coeff);
+  EmAlgorithmNanTemplate(std::span<const double> features,
+                         std::span<const int> responses,
+                         std::span<const double> initial_prob,
+                         std::size_t n_data, std::size_t n_feature,
+                         NOutcomes n_outcomes, std::size_t n_cluster,
+                         unsigned int max_iter, double tolerance,
+                         std::span<double> posterior, std::span<double> prior,
+                         std::span<double> estimated_prob,
+                         std::span<double> regress_coeff);
+
+  ~EmAlgorithmNanTemplate() override = default;
 
  protected:
   /**
@@ -56,47 +69,79 @@ class EmAlgorithmNan : public polca_parallel::EmAlgorithm {
    *
    * @copydoc EmAlgorithm::WeightedSumProb
    */
-  void WeightedSumProb(int cluster_index) override;
+  void WeightedSumProb(const std::size_t cluster_index) override;
 
   /**
    * Overridden to estimate probabilities using posterior_sum
    *
    * @copydoc EmAlgorithm::NormalWeightedSumProb
    */
-  void NormalWeightedSumProb(int cluster_index) override;
-};
+  void NormalWeightedSumProb(const std::size_t cluster_index) override;
 
-class EmAlgorithmNanRegress : public polca_parallel::EmAlgorithmRegress {
- protected:
-  std::vector<double> posterior_sum_;
-
- public:
-  EmAlgorithmNanRegress(double* features, int* responses, double* initial_prob,
-                        int n_data, int n_feature, int n_category,
-                        int* n_outcomes, int sum_outcomes, int n_cluster,
-                        int max_iter, double tolerance, double* posterior,
-                        double* prior, double* estimated_prob,
-                        double* regress_coeff);
-
- protected:
-  /**
-   * Overridden to handle and ignore reponse zero and modify posterior_sum
-   *
-   * @copydoc EmAlgorithm::WeightedSumProb
-   */
-  void WeightedSumProb(int cluster_index) override;
-
-  /**
-   * Overridden to estimate probabilities using posterior_sum
-   *
-   * @copydoc EmAlgorithm::NormalWeightedSumProb
-   */
-  void NormalWeightedSumProb(int cluster_index) override;
+  [[nodiscard]] double PosteriorUnnormalize(
+      std::span<const int> responses_i, double prior,
+      const arma::Col<double>& estimated_prob) const override;
 };
 
 /**
- * Static version of WeightedSumProb and used to override
- * EmAlgorithm::WeightedSumProb()
+ * EM algorithm with NaN handling
+ *
+ * EM algorithm with NaN handling. NaN are encoded as zeros in reponses. The
+ * methods responsible for probability estimation are overriden.
+ *
+ */
+class EmAlgorithmNan : public EmAlgorithmNanTemplate<EmAlgorithm> {
+ public:
+  /**
+   * EM algorithm with NaN handling
+   *
+   * @copydoc EmAlgorithm::EmAlgorithm
+   */
+  EmAlgorithmNan(std::span<const double> features,
+                 std::span<const int> responses,
+                 std::span<const double> initial_prob, std::size_t n_data,
+                 std::size_t n_feature, NOutcomes n_outcomes,
+                 std::size_t n_cluster, unsigned int max_iter, double tolerance,
+                 std::span<double> posterior, std::span<double> prior,
+                 std::span<double> estimated_prob,
+                 std::span<double> regress_coeff);
+
+  ~EmAlgorithmNan() override = default;
+};
+
+/**
+ * EM algorithm for regression with NaN handling
+ *
+ * EM algorithm for regression  with NaN handling. NaN are encoded as zeros in
+ * reponses. The methods responsible for probability estimation are overriden.
+ *
+ */
+class EmAlgorithmNanRegress
+    : public EmAlgorithmNanTemplate<EmAlgorithmRegress> {
+ public:
+  /**
+   * EM algorithm for regression with NaN handling
+   *
+   * @copydoc EmAlgorithm::EmAlgorithmRegress
+   */
+  EmAlgorithmNanRegress(std::span<const double> features,
+                        std::span<const int> responses,
+                        std::span<const double> initial_prob,
+                        std::size_t n_data, std::size_t n_feature,
+                        NOutcomes n_outcomes, std::size_t n_cluster,
+                        unsigned int max_iter, double tolerance,
+                        std::span<double> posterior, std::span<double> prior,
+                        std::span<double> estimated_prob,
+                        std::span<double> regress_coeff);
+
+  ~EmAlgorithmNanRegress() override = default;
+};
+
+/**
+ * Static version of NanWeightedSumProb()
+ *
+ * Static version of NanWeightedSumProb() and the Nan version of
+ * WeightedSumProb(). Used to override EmAlgorithm::WeightedSumProb()
  *
  * Override so that is ignore response zero and do a cumulative sum of
  * posteriors for each category in posterior_sum
@@ -109,10 +154,7 @@ class EmAlgorithmNanRegress : public polca_parallel::EmAlgorithmRegress {
  *   <li>dim 0: for each category</li>
  *   <li>dim 1: for each data point</li>
  * </ul>
- * @param n_data Number of data points
- * @param n_category Number of categories
  * @param n_outcomes Vector of number of outcomes for each category
- * @param sum_outcomes Sum of n_outcomes
  * @param posterior Design matrix of posterior probabilities (also called
  * responsibility). It's the probability a data point is in cluster m given
  * responses. The matrix has the following dimensions
@@ -131,21 +173,23 @@ class EmAlgorithmNanRegress : public polca_parallel::EmAlgorithmRegress {
  * @param posterior_sum Modified to store the cumulative posterior sum for each
  * category
  */
-void NanWeightedSumProb(int cluster_index, int* responses, int n_data,
-                        int n_category, int* n_outcomes, int sum_outcomes,
-                        double* posterior, double* estimated_prob,
-                        std::vector<double>* posterior_sum);
+void NanWeightedSumProb(const std::size_t cluster_index,
+                        std::span<const int> responses,
+                        std::span<const std::size_t> n_outcomes,
+                        const arma::Mat<double>& posterior,
+                        arma::Mat<double>& estimated_prob,
+                        std::vector<double>& posterior_sum);
 
 /**
- * Static version of NormalWeightedSumProb and used to override
- * EmAlgorithm::NormalWeightedSumProb()
+ * Static version of NanNormalWeightedSumProb()
+ *
+ * Static version of NanNormalWeightedSumProb() and the Nan version of
+ * NormalWeightedSumProb() Used to override EmAlgorithm::NormalWeightedSumProb()
  *
  * Override so that it estimate probabilities using posterior_sum
  *
  * @param cluster_index which cluster to consider
- * @param n_category Number of categories
  * @param n_outcomes Vector of number of outcomes for each category
- * @param sum_outcomes Sum of n_outcomes
  * @param posterior_sum Vector which stores the resulting cumulative posterior
  * sum for each category
  * @param estimated_prob Modified to contain the estimated response
@@ -157,11 +201,11 @@ void NanWeightedSumProb(int cluster_index, int* responses, int n_data,
  *   <li>dim 2: for each cluster</li>
  * </ul>
  */
-void NanNormalWeightedSumProb(int cluster_index, int n_category,
-                              int* n_outcomes, int sum_outcomes,
-                              std::vector<double>* posterior_sum,
-                              double* estimated_prob);
+void NanNormalWeightedSumProb(const std::size_t cluster_index,
+                              std::span<const std::size_t> n_outcomes,
+                              std::vector<double>& posterior_sum,
+                              arma::Mat<double>& estimated_prob);
 
 }  // namespace polca_parallel
 
-#endif  // EM_ALGORITHM_NAN_H_
+#endif  // POLCAPARALLEL_SRC_EM_ALGORITHM_NAN_H_

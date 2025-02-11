@@ -15,12 +15,16 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+#include <cstddef>
 #include <memory>
+#include <span>
+#include <vector>
 
 #include "RcppArmadillo.h"
 #include "regularised_error.h"
 #include "standard_error.h"
 #include "standard_error_regress.h"
+#include "util.h"
 
 /**
  * To be exported to R, calculate the standard error for a poLCA model
@@ -60,29 +64,30 @@
  * </ul>
  * @param n_data Number of data points
  * @param n_feature Number of features
- * @param n_category Number of categories
  * @param n_outcomes Array of number of outcomes, for each category
  * @param n_cluster Number of clusters fitted
  * @param use_smooth True to smooth the outcome probabilities
  * @return Rcpp::List
  */
 // [[Rcpp::export]]
-Rcpp::List StandardErrorRcpp(
-    Rcpp::NumericVector features, Rcpp::IntegerMatrix responses,
-    Rcpp::NumericVector probs, Rcpp::NumericMatrix prior,
-    Rcpp::NumericMatrix posterior, int n_data, int n_feature, int n_category,
-    Rcpp::IntegerVector n_outcomes, int n_cluster, bool use_smooth) {
-  int sum_outcomes = 0;  // calculate sum of number of outcomes
-  int* n_outcomes_array = n_outcomes.begin();
-  for (int i = 0; i < n_category; ++i) {
-    sum_outcomes += n_outcomes_array[i];
-  }
+Rcpp::List StandardErrorRcpp(Rcpp::NumericVector features,
+                             Rcpp::IntegerMatrix responses,
+                             Rcpp::NumericVector probs,
+                             Rcpp::NumericMatrix prior,
+                             Rcpp::NumericMatrix posterior, std::size_t n_data,
+                             std::size_t n_feature,
+                             Rcpp::IntegerVector n_outcomes_int,
+                             std::size_t n_cluster, bool use_smooth) {
+  std::vector<std::size_t> n_outcomes_size_t(n_outcomes_int.cbegin(),
+                                             n_outcomes_int.cend());
+  polca_parallel::NOutcomes n_outcomes(n_outcomes_size_t.data(),
+                                       n_outcomes_size_t.size());
 
-  int len_regress_coeff = n_feature * (n_cluster - 1);
+  std::size_t len_regress_coeff = n_feature * (n_cluster - 1);
 
   // allocate matrices to pass pointers to C++ code
   Rcpp::NumericVector prior_error(n_cluster);
-  Rcpp::NumericVector probs_error(sum_outcomes * n_cluster);
+  Rcpp::NumericVector probs_error(n_outcomes.sum() * n_cluster);
   Rcpp::NumericMatrix regress_coeff_error(len_regress_coeff, len_regress_coeff);
 
   std::unique_ptr<polca_parallel::StandardError> error;
@@ -90,30 +95,54 @@ Rcpp::List StandardErrorRcpp(
   if (n_feature == 1) {
     if (use_smooth) {
       error = std::make_unique<polca_parallel::RegularisedError>(
-          features.begin(), responses.begin(), probs.begin(), prior.begin(),
-          posterior.begin(), n_data, n_feature, n_category, n_outcomes.begin(),
-          sum_outcomes, n_cluster, prior_error.begin(), probs_error.begin(),
-          regress_coeff_error.begin());
+          std::span<const double>(features.cbegin(), features.size()),
+          std::span<const int>(responses.cbegin(), responses.size()),
+          std::span<const double>(probs.cbegin(), probs.size()),
+          std::span<const double>(prior.begin(), prior.size()),
+          std::span<const double>(posterior.begin(), posterior.size()), n_data,
+          n_feature, n_outcomes, n_cluster,
+          std::span<double>(prior_error.begin(), prior_error.size()),
+          std::span<double>(probs_error.begin(), probs_error.size()),
+          std::span<double>(regress_coeff_error.begin(),
+                            regress_coeff_error.size()));
     } else {
       error = std::make_unique<polca_parallel::StandardError>(
-          features.begin(), responses.begin(), probs.begin(), prior.begin(),
-          posterior.begin(), n_data, n_feature, n_category, n_outcomes.begin(),
-          sum_outcomes, n_cluster, prior_error.begin(), probs_error.begin(),
-          regress_coeff_error.begin());
+          std::span<const double>(features.cbegin(), features.size()),
+          std::span<const int>(responses.cbegin(), responses.size()),
+          std::span<const double>(probs.cbegin(), probs.size()),
+          std::span<const double>(prior.begin(), prior.size()),
+          std::span<const double>(posterior.begin(), posterior.size()), n_data,
+          n_feature, n_outcomes, n_cluster,
+          std::span<double>(prior_error.begin(), prior_error.size()),
+          std::span<double>(probs_error.begin(), probs_error.size()),
+          std::span<double>(regress_coeff_error.begin(),
+                            regress_coeff_error.size()));
     }
   } else {
     if (use_smooth) {
       error = std::make_unique<polca_parallel::RegularisedRegressError>(
-          features.begin(), responses.begin(), probs.begin(), prior.begin(),
-          posterior.begin(), n_data, n_feature, n_category, n_outcomes.begin(),
-          sum_outcomes, n_cluster, prior_error.begin(), probs_error.begin(),
-          regress_coeff_error.begin());
+          std::span<const double>(features.cbegin(), features.size()),
+          std::span<const int>(responses.cbegin(), responses.size()),
+          std::span<const double>(probs.cbegin(), probs.size()),
+          std::span<const double>(prior.begin(), prior.size()),
+          std::span<const double>(posterior.begin(), posterior.size()), n_data,
+          n_feature, n_outcomes, n_cluster,
+          std::span<double>(prior_error.begin(), prior_error.size()),
+          std::span<double>(probs_error.begin(), probs_error.size()),
+          std::span<double>(regress_coeff_error.begin(),
+                            regress_coeff_error.size()));
     } else {
       error = std::make_unique<polca_parallel::StandardErrorRegress>(
-          features.begin(), responses.begin(), probs.begin(), prior.begin(),
-          posterior.begin(), n_data, n_feature, n_category, n_outcomes.begin(),
-          sum_outcomes, n_cluster, prior_error.begin(), probs_error.begin(),
-          regress_coeff_error.begin());
+          std::span<const double>(features.cbegin(), features.size()),
+          std::span<const int>(responses.cbegin(), responses.size()),
+          std::span<const double>(probs.cbegin(), probs.size()),
+          std::span<const double>(prior.begin(), prior.size()),
+          std::span<const double>(posterior.begin(), posterior.size()), n_data,
+          n_feature, n_outcomes, n_cluster,
+          std::span<double>(prior_error.begin(), prior_error.size()),
+          std::span<double>(probs_error.begin(), probs_error.size()),
+          std::span<double>(regress_coeff_error.begin(),
+                            regress_coeff_error.size()));
     }
   }
 

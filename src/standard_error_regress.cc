@@ -17,70 +17,66 @@
 
 #include "standard_error_regress.h"
 
+#include <iterator>
+
 #include "error_solver.h"
 
 polca_parallel::StandardErrorRegress::StandardErrorRegress(
-    double* features, int* responses, double* probs, double* prior,
-    double* posterior, int n_data, int n_feature, int n_category,
-    int* n_outcomes, int sum_outcomes, int n_cluster, double* prior_error,
-    double* prob_error, double* regress_coeff_error)
+    std::span<const double> features, std::span<const int> responses,
+    std::span<const double> probs, std::span<const double> prior,
+    std::span<const double> posterior, std::size_t n_data,
+    std::size_t n_feature, polca_parallel::NOutcomes n_outcomes,
+    std::size_t n_cluster, std::span<double> prior_error,
+    std::span<double> prob_error, std::span<double> regress_coeff_error)
     : polca_parallel::StandardError(
           features, responses, probs, prior, posterior, n_data, n_feature,
-          n_category, n_outcomes, sum_outcomes, n_cluster, prior_error,
-          prob_error, regress_coeff_error) {}
+          n_outcomes, n_cluster, prior_error, prob_error, regress_coeff_error),
+      features_(const_cast<double*>(features.data()), n_data, n_feature, false,
+                true) {}
 
 std::unique_ptr<polca_parallel::ErrorSolver>
 polca_parallel::StandardErrorRegress::InitErrorSolver() {
-  return (std::make_unique<polca_parallel::InfoEigenRegressSolver>(
-      this->n_data_, this->n_feature_, this->sum_outcomes_, this->n_cluster_,
-      this->info_size_, this->jacobian_width_, this->prior_error_,
-      this->prob_error_, this->regress_coeff_error_));
+  return std::make_unique<polca_parallel::InfoEigenRegressSolver>(
+      this->n_data_, this->n_feature_, this->n_outcomes_.sum(),
+      this->n_cluster_, this->info_size_, this->jacobian_width_,
+      this->prior_error_, this->prob_error_, this->regress_coeff_error_);
 }
 
-void polca_parallel::StandardErrorRegress::CalcScorePrior(double** score) {
-  arma::Mat<double> features_arma(this->features_, this->n_data_,
-                                  this->n_feature_, false);
-  for (int cluster_index = 1; cluster_index < this->n_cluster_;
+void polca_parallel::StandardErrorRegress::CalcScorePrior(
+    arma::subview<double>& score_prior) const {
+  for (std::size_t cluster_index = 1; cluster_index < this->n_cluster_;
        ++cluster_index) {
-    arma::Mat<double> score_i_arma(*score, this->n_data_, this->n_feature_,
-                                   false, true);
-    arma::Col<double> prior_i_arma(this->prior_ + cluster_index * this->n_data_,
-                                   this->n_data_, false);
-    arma::Col<double> posterior_i_arma(
-        this->posterior_ + cluster_index * this->n_data_, this->n_data_, false);
-
-    score_i_arma = features_arma.each_col() % (posterior_i_arma - prior_i_arma);
-    *score += this->n_data_ * this->n_feature_;
+    auto score_prior_i =
+        score_prior.cols((cluster_index - 1) * this->n_feature_,
+                         cluster_index * this->n_feature_ - 1);
+    score_prior_i = this->features_.each_col() %
+                    (this->posterior_->unsafe_col(cluster_index) -
+                     this->prior_->unsafe_col(cluster_index));
   }
 }
 
 void polca_parallel::StandardErrorRegress::CalcJacobianPrior(
-    double** jacobian_ptr) {
-  double jac_element;
-  double* jacobian = *jacobian_ptr;
-  double prior_i;
-  double prior_j;
-  double* feature;
-  for (int j_cluster = 0; j_cluster < this->n_cluster_; ++j_cluster) {
-    for (int i_cluster = 1; i_cluster < this->n_cluster_; ++i_cluster) {
-      feature = this->features_;
-      for (int i_feature = 0; i_feature < this->n_feature_; ++i_feature) {
-        for (int i_data = 0; i_data < this->n_data_; ++i_data) {
-          prior_i = this->prior_[i_cluster * this->n_data_ + i_data];
-          prior_j = this->prior_[j_cluster * this->n_data_ + i_data];
-          jac_element = -prior_i * prior_j;
+    arma::subview<double>& jacobian_prior) const {
+  auto jacobian = jacobian_prior.begin();
+  for (std::size_t j_cluster = 0; j_cluster < this->n_cluster_; ++j_cluster) {
+    for (std::size_t i_cluster = 1; i_cluster < this->n_cluster_; ++i_cluster) {
+      auto feature = this->features_.cbegin();
+      for (std::size_t i_feature = 0; i_feature < this->n_feature_;
+           ++i_feature) {
+        for (std::size_t i_data = 0; i_data < this->n_data_; ++i_data) {
+          double prior_i = (*this->prior_)[i_cluster * this->n_data_ + i_data];
+          double prior_j = (*this->prior_)[j_cluster * this->n_data_ + i_data];
+          double jac_element = -prior_i * prior_j;
           if (i_cluster == j_cluster) {
             jac_element += prior_i;
           }
-          *jacobian += jac_element * *feature++;
+          *jacobian += jac_element * *feature;
+
+          std::advance(feature, 1);
         }
         *jacobian /= static_cast<double>(this->n_data_);
-        ++jacobian;
+        std::advance(jacobian, 1);
       }
     }
-    *jacobian_ptr += this->info_size_;
-    jacobian = *jacobian_ptr;
   }
-  // shift, ready for the next block matrix
-  *jacobian_ptr += (this->n_cluster_ - 1) * this->n_feature_;
 }

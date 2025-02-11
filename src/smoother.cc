@@ -17,18 +17,21 @@
 
 #include "smoother.h"
 
-polca_parallel::Smoother::Smoother(int* responses, double* probs, double* prior,
-                                   double* posterior, int n_data,
-                                   int n_category, int* n_outcomes,
-                                   int sum_outcomes, int n_cluster)
-    : responses_(responses),
-      probs_(probs, probs + sum_outcomes * n_cluster),
-      prior_(prior, prior + n_cluster * n_data),
-      posterior_(posterior, posterior + n_cluster * n_data),
+#include <iterator>
+
+#include "RcppArmadillo.h"
+
+polca_parallel::Smoother::Smoother(std::span<const double> probs,
+                                   std::span<const double> prior,
+                                   std::span<const double> posterior,
+                                   std::size_t n_data,
+                                   std::span<const std::size_t> n_outcomes,
+                                   std::size_t n_cluster)
+    : probs_(probs.begin(), probs.end()),
+      prior_(prior.begin(), prior.end()),
+      posterior_(posterior.begin(), posterior.end()),
       n_data_(n_data),
-      n_category_(n_category),
       n_outcomes_(n_outcomes),
-      sum_outcomes_(sum_outcomes),
       n_cluster_(n_cluster) {
   // std::vector makes a copy of the array
 }
@@ -36,17 +39,16 @@ polca_parallel::Smoother::Smoother(int* responses, double* probs, double* prior,
 void polca_parallel::Smoother::Smooth() {
   // use posterior to get the estimate of number of data in each cluster
   arma::Mat<double> posterior(this->posterior_.data(), this->n_data_,
-                              this->n_cluster_, false);
+                              this->n_cluster_, false, true);
   arma::Row<double> n_data = arma::sum(posterior, 0);
 
   // smooth outcome probabilities
-  double* probs = this->probs_.data();
-  for (int i_cluster = 0; i_cluster < this->n_cluster_; ++i_cluster) {
-    for (int* n_outcome = this->n_outcomes_;
-         n_outcome < this->n_outcomes_ + this->n_category_; ++n_outcome) {
-      this->Smooth(probs, *n_outcome, n_data[i_cluster], 1.0,
-                   static_cast<double>(*n_outcome));
-      probs += *n_outcome;
+  auto probs = this->probs_.begin();
+  for (double n_data_i : n_data) {
+    for (std::size_t n_outcome_j : this->n_outcomes_) {
+      this->Smooth(n_data_i, 1.0, static_cast<double>(n_outcome_j),
+                   std::span<double>(probs, n_outcome_j));
+      std::advance(probs, n_outcome_j);
     }
   }
 
@@ -54,16 +56,22 @@ void polca_parallel::Smoother::Smooth() {
   // for posterior update, use E step in EmAlgorithm
 }
 
-double* polca_parallel::Smoother::get_probs() { return this->probs_.data(); }
-
-double* polca_parallel::Smoother::get_prior() { return this->prior_.data(); }
-
-double* polca_parallel::Smoother::get_posterior() {
-  return this->posterior_.data();
+std::span<const double> polca_parallel::Smoother::get_probs() {
+  return std::span<const double>(this->probs_.begin(), this->probs_.size());
 }
 
-void polca_parallel::Smoother::Smooth(double* probs, int length, double n_data,
-                                      double num_add, double deno_add) {
-  arma::Col<double> probs_arma(probs, length, false, true);
+std::span<const double> polca_parallel::Smoother::get_prior() {
+  return std::span<const double>(this->prior_.begin(), this->prior_.size());
+}
+
+std::span<const double> polca_parallel::Smoother::get_posterior() {
+  return std::span<const double>(this->posterior_.begin(),
+                                 this->posterior_.size());
+}
+
+void polca_parallel::Smoother::Smooth(double n_data, double num_add,
+                                      double deno_add,
+                                      std::span<double> probs) {
+  arma::Col<double> probs_arma(probs.data(), probs.size(), false, true);
   probs_arma = (n_data * probs_arma + num_add) / (n_data + deno_add);
 }

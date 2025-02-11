@@ -15,20 +15,19 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef EM_ALGORITHM_ARRAY_H_
-#define EM_ALGORITHM_ARRAY_H_
+#ifndef POLCAPARALLEL_SRC_EM_ALGORITHM_ARRAY_H_
+#define POLCAPARALLEL_SRC_EM_ALGORITHM_ARRAY_H_
 
-#include <algorithm>
-#include <cstring>
+#include <cstddef>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <random>
-#include <thread>
+#include <span>
 #include <vector>
 
 #include "em_algorithm.h"
-#include "em_algorithm_nan.h"
-#include "em_algorithm_regress.h"
+#include "util.h"
 
 namespace polca_parallel {
 
@@ -69,56 +68,52 @@ class EmAlgorithmArray {
   /**
    * Features to provide EmAlgorithm with. See EmAlgorithm for further details.
    */
-  double* features_;
+  std::span<const double> features_;
   /**
    * Responses to provide EmAlgorithm with. See EmAlgorithm for further details.
    * format.
    */
-  int* responses_;
+  std::span<const int> responses_;
   /** Number of data points */
-  int n_data_;
+  const std::size_t n_data_;
   /** Number of features */
-  int n_feature_;
-  /** Number of categories */
-  int n_category_;
+  const std::size_t n_feature_;
   /** Vector of the number of outcomes for each category */
-  int* n_outcomes_;
-  /** Sum of n_outcomes_ */
-  int sum_outcomes_;
+  NOutcomes n_outcomes_;
   /** Number of clusters (classes in literature) to fit */
-  int n_cluster_;
+  const std::size_t n_cluster_;
   /** Maximum number of iterations for EM algorithm */
-  int max_iter_;
+  const unsigned int max_iter_;
   /** To provide to EmAlgorithm */
-  double tolerance_;
+  const double tolerance_;
   /**
    * To store the posterior result from the best repetition. Accessing and
    * writing should be done with locking and unlocking results_lock_ when using
    * multiple threads. It shall be the same format as the member variable with
    * the same name in EmAlgorithm.
    */
-  double* posterior_;
+  std::span<double> posterior_;
   /**
    * To store the prior result from the best repetition. Accessing and writing
    * should be done with locking and unlocking results_lock_ when using multiple
    * threads. It shall be the same format as the member variable with the same
    * name in EmAlgorithm.
    */
-  double* prior_;
+  std::span<double> prior_;
   /**
    * To store the estimated probabilities from the best repetition. Accessing
    * and writing should be done with locking and unlocking results_lock_ when
    * using multiple threads. It shall be the same format as the member variable
    * with the same name in EmAlgorithm.
    */
-  double* estimated_prob_;
+  std::span<double> estimated_prob_;
   /**
    * To store the regression coefficients from the best repetition. Accessing
    * and writing should be done with locking and unlocking results_lock_ when
    * using multiple threads. It shall be the same format as the member variable
    * with the same name in EmAlgorithm.
    */
-  double* regress_coeff_;
+  std::span<double> regress_coeff_;
 
   /**
    * Optional, to store initial prob to obtain max likelihood or from the best
@@ -126,10 +121,10 @@ class EmAlgorithmArray {
    * results_lock_ when using multiple threads. It shall be the same format as
    * the member variable with the same name in EmAlgorithm.
    */
-  double* best_initial_prob_ = nullptr;
+  std::optional<std::span<double>> best_initial_prob_;
 
   /** Number of initial values to try */
-  int n_rep_;
+  const std::size_t n_rep_;
 
   /** The best log-likelihood found so far */
   double optimal_ln_l_ = -INFINITY;
@@ -138,41 +133,41 @@ class EmAlgorithmArray {
    * should be done with locking and unlocking results_lock_ when using multiple
    * threads.
    */
-  int n_iter_;
+  std::size_t n_iter_;
   /** True if the EM algorithm has to ever restart */
   bool has_restarted_ = false;
   /**
    * An array of initial probabilities, each repetition uses
-   * sum_outcomes*n_cluster probabilities
+   * n_outcomes.sum()*n_cluster probabilities
    */
-  double* initial_prob_;
+  std::span<const double> initial_prob_;
   /**
    * The latest initial value is being worked on. Accessing and writing should
    * be done with locking and unlocking n_rep_done_lock_ when using multiple
    * threads.
    */
-  int n_rep_done_ = 0;
+  std::size_t n_rep_done_ = 0;
   /**
    * Optional, maximum log-likelihood for each repetition. Set using
    * set_ln_l_array()
    */
-  double* ln_l_array_ = nullptr;
+  std::optional<std::span<double>> ln_l_array_;
   /** Index of which initial value has the best log-likelihood */
-  int best_rep_index_;
+  std::size_t best_rep_index_;
   /** Number of threads */
-  int n_thread_;
+  const std::size_t n_thread_;
 
   /** For locking n_rep_done_ */
-  std::unique_ptr<std::mutex> n_rep_done_lock_;
+  std::mutex n_rep_done_lock_;
   /** For locking optimal_ln_l_, best_rep_index_, n_iter_ and has_restarted_ */
-  std::unique_ptr<std::mutex> results_lock_;
+  std::mutex results_lock_;
 
  protected:
   /**
    * An array of seeds, for each repetition, used to seed each repetition, only
    * used if a run fails and needs to generate new initial values
    */
-  std::unique_ptr<unsigned[]> seed_array_;
+  std::unique_ptr<std::vector<unsigned>> seed_array_;
 
  public:
   /**
@@ -201,9 +196,8 @@ class EmAlgorithmArray {
    * </ul>
    * @param n_data Number of data points
    * @param n_feature Number of features
-   * @param n_category Number of categories
-   * @param n_outcomes Array of the number of outcomes, for each category
-   * @param sum_outcomes Sum of all integers in n_outcomes
+   * @param n_outcomes Array of the number of outcomes for each category and its
+   * sum
    * @param n_cluster Number of clusters to fit
    * @param n_rep Number of repetitions to do, this defines dim 3 of
    * initial_prob
@@ -236,12 +230,17 @@ class EmAlgorithmArray {
    * form, to be multiplied to the features and linked to the prior
    * using softmax
    */
-  EmAlgorithmArray(double* features, int* responses, double* initial_prob,
-                   int n_data, int n_feature, int n_category, int* n_outcomes,
-                   int sum_outcomes, int n_cluster, int n_rep, int n_thread,
-                   int max_iter, double tolerance, double* posterior,
-                   double* prior, double* estimated_prob,
-                   double* regress_coeff);
+  EmAlgorithmArray(std::span<const double> features,
+                   std::span<const int> responses,
+                   std::span<const double> initial_prob, std::size_t n_data,
+                   std::size_t n_feature, NOutcomes n_outcomes,
+                   std::size_t n_cluster, std::size_t n_rep,
+                   std::size_t n_thread, unsigned int max_iter,
+                   double tolerance, std::span<double> posterior,
+                   std::span<double> prior, std::span<double> estimated_prob,
+                   std::span<double> regress_coeff);
+
+  virtual ~EmAlgorithmArray() = default;
 
   /**
    * Fit (in parallel) using the EM algorithm
@@ -263,7 +262,7 @@ class EmAlgorithmArray {
   void Fit();
 
   /** Set the member variable seed_array_ with a seed for each repetition */
-  virtual void SetSeed(std::seed_seq* seed);
+  virtual void SetSeed(std::seed_seq& seed);
 
   /**
    * Set where to store initial probabilities (optional)
@@ -271,24 +270,24 @@ class EmAlgorithmArray {
    * @param best_initial_prob best_initial_prob to provide to EmAlgorithm
    * objects
    */
-  void set_best_initial_prob(double* best_initial_prob);
+  void set_best_initial_prob(std::span<double> best_initial_prob);
 
   /** Set where to store the log-likelihood for each iteration */
-  void set_ln_l_array(double* ln_l_array);
+  void set_ln_l_array(std::span<double> ln_l_array);
 
   /**
    * Get the index of the repetition with the highest log-likelihood
    *
    * Only available after calling Fit()
    */
-  int get_best_rep_index();
+  [[nodiscard]] std::size_t get_best_rep_index() const;
 
   /**
    * Get the best log-likelihood from all repetitions
    *
    * Only available after calling Fit()
    */
-  double get_optimal_ln_l();
+  [[nodiscard]] double get_optimal_ln_l() const;
 
   /**
    * Get the number of EM iterations done for the repetition with the highest
@@ -296,7 +295,7 @@ class EmAlgorithmArray {
    *
    * Only available after calling Fit()
    */
-  int get_n_iter();
+  [[nodiscard]] unsigned int get_n_iter() const;
 
   /**
    * Return true if at least one repetition had to restart, eg due to a singular
@@ -304,16 +303,17 @@ class EmAlgorithmArray {
    *
    * Only available after calling Fit()
    */
-  bool get_has_restarted();
+  [[nodiscard]] bool get_has_restarted() const;
 
  protected:
   /** Set the rng of a EmAlgorithm object given the rep_index it is working on*/
-  virtual void SetFitterRng(polca_parallel::EmAlgorithm* fitter, int rep_index);
+  virtual void SetFitterRng(std::size_t rep_index,
+                            polca_parallel::EmAlgorithm& fitter);
 
   /**
    * Retrieve ownership of an rng back from a fitter
    */
-  virtual void MoveRngBackFromFitter(polca_parallel::EmAlgorithm* fitter);
+  virtual void MoveRngBackFromFitter(polca_parallel::EmAlgorithm& fitter);
 
  private:
   /**
@@ -340,4 +340,4 @@ class EmAlgorithmArray {
 
 }  // namespace polca_parallel
 
-#endif  // EM_ALGORITHM_ARRAY_H_
+#endif  // POLCAPARALLEL_SRC_EM_ALGORITHM_ARRAY_H_

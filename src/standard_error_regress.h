@@ -15,12 +15,16 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef STANDARD_ERROR_REGRESS_H
-#define STANDARD_ERROR_REGRESS_H
+#ifndef POLCAPARALLEL_SRC_STANDARD_ERROR_REGRESS_H_
+#define POLCAPARALLEL_SRC_STANDARD_ERROR_REGRESS_H_
 
+#include <cstddef>
 #include <memory>
+#include <span>
 
+#include "RcppArmadillo.h"
 #include "standard_error.h"
+#include "util.h"
 
 namespace polca_parallel {
 
@@ -31,6 +35,16 @@ namespace polca_parallel {
  * regression models
  */
 class StandardErrorRegress : public polca_parallel::StandardError {
+ protected:
+  /**
+   * Design matrix of features, matrix with dimensions
+   * <ul>
+   *   <li>dim 0: for each data point</li>
+   *   <li>dim 1: for each feature</li>
+   * </ul>
+   */
+  arma::Mat<double> features_;
+
  public:
   /**
    * Construct a new StandardErrorRegress object
@@ -73,9 +87,8 @@ class StandardErrorRegress : public polca_parallel::StandardError {
    * </ul>
    * @param n_data Number of data points
    * @param n_feature Number of features
-   * @param n_category Number of categories
-   * @param n_outcomes Array of number of outcomes, for each category
-   * @param sum_outcomes Sum of all integers in n_outcomes
+   * @param n_outcomes Array of number of outcomes, for each category, and its
+   * sum
    * @param n_cluster Number of clusters fitted
    * @param prior_error Vector to contain the standard error for the prior
    * probabilities for each cluster, modified after calling Calc()
@@ -90,18 +103,25 @@ class StandardErrorRegress : public polca_parallel::StandardError {
    * @param regress_coeff_error Matrix to contain the covariance matrix of the
    * regression coefficient, modified after calling Calc()
    */
-  StandardErrorRegress(double* features, int* responses, double* probs,
-                       double* prior, double* posterior, int n_data,
-                       int n_feature, int n_category, int* n_outcomes,
-                       int sum_outcomes, int n_cluster, double* prior_error,
-                       double* prob_error, double* regress_coeff_error);
+  StandardErrorRegress(std::span<const double> features,
+                       std::span<const int> responses,
+                       std::span<const double> probs,
+                       std::span<const double> prior,
+                       std::span<const double> posterior, std::size_t n_data,
+                       std::size_t n_feature, NOutcomes n_outcomes,
+                       std::size_t n_cluster, std::span<double> prior_error,
+                       std::span<double> prob_error,
+                       std::span<double> regress_coeff_error);
+
+  ~StandardErrorRegress() override = default;
 
  protected:
-  std::unique_ptr<polca_parallel::ErrorSolver> InitErrorSolver() override;
-  void CalcScorePrior(double** score_start) override;
-  void CalcJacobianPrior(double** jacobian_ptr) override;
+  [[nodiscard]] std::unique_ptr<polca_parallel::ErrorSolver> InitErrorSolver()
+      override;
+  void CalcScorePrior(arma::subview<double>& score_prior) const override;
+  void CalcJacobianPrior(arma::subview<double>& jacobian_prior) const override;
 };
 
 }  // namespace polca_parallel
 
-#endif  // STANDARD_ERROR_REGRESS_H
+#endif  // POLCAPARALLEL_SRC_STANDARD_ERROR_REGRESS_H_

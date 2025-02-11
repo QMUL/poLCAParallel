@@ -17,32 +17,42 @@
 
 #include "regularised_error.h"
 
+#include <memory>
+
+#include "smoother.h"
+
 polca_parallel::RegularisedError::RegularisedError(
-    double* features, int* responses, double* probs, double* prior,
-    double* posterior, int n_data, int n_feature, int n_category,
-    int* n_outcomes, int sum_outcomes, int n_cluster, double* prior_error,
-    double* prob_error, double* regress_coeff_error)
+    std::span<const double> features, std::span<const int> responses,
+    std::span<const double> probs, std::span<const double> prior,
+    std::span<const double> posterior, std::size_t n_data,
+    std::size_t n_feature, polca_parallel::NOutcomes n_outcomes,
+    std::size_t n_cluster, std::span<double> prior_error,
+    std::span<double> prob_error, std::span<double> regress_coeff_error)
     : polca_parallel::StandardError(
           features, responses, probs, prior, posterior, n_data, n_feature,
-          n_category, n_outcomes, sum_outcomes, n_cluster, prior_error,
-          prob_error, regress_coeff_error) {
+          n_outcomes, n_cluster, prior_error, prob_error, regress_coeff_error) {
   this->smoother_ = std::make_unique<polca_parallel::Smoother>(
-      this->responses_, this->probs_, this->prior_, this->posterior_,
-      this->n_data_, this->n_category_, this->n_outcomes_, this->sum_outcomes_,
-      this->n_cluster_);
+      this->probs_,
+      std::span<const double>(this->prior_->cbegin(), this->prior_->size()),
+      std::span<const double>(this->posterior_->cbegin(),
+                              this->posterior_->size()),
+      this->n_data_, this->n_outcomes_, this->n_cluster_);
 }
 
 polca_parallel::RegularisedRegressError::RegularisedRegressError(
-    double* features, int* responses, double* probs, double* prior,
-    double* posterior, int n_data, int n_feature, int n_category,
-    int* n_outcomes, int sum_outcomes, int n_cluster, double* prior_error,
-    double* prob_error, double* regress_coeff_error)
+    std::span<const double> features, std::span<const int> responses,
+    std::span<const double> probs, std::span<const double> prior,
+    std::span<const double> posterior, std::size_t n_data,
+    std::size_t n_feature, polca_parallel::NOutcomes n_outcomes,
+    std::size_t n_cluster, std::span<double> prior_error,
+    std::span<double> prob_error, std::span<double> regress_coeff_error)
     : polca_parallel::StandardErrorRegress(
           features, responses, probs, prior, posterior, n_data, n_feature,
-          n_category, n_outcomes, sum_outcomes, n_cluster, prior_error,
-          prob_error, regress_coeff_error) {
+          n_outcomes, n_cluster, prior_error, prob_error, regress_coeff_error) {
   this->smoother_ = std::make_unique<polca_parallel::Smoother>(
-      this->responses_, this->probs_, this->prior_, this->posterior_,
-      this->n_data_, this->n_category_, this->n_outcomes_, this->sum_outcomes_,
-      this->n_cluster_);
+      this->probs_,
+      std::span<const double>(this->prior_->cbegin(), this->prior_->size()),
+      std::span<const double>(this->posterior_->cbegin(),
+                              this->posterior_->size()),
+      this->n_data_, this->n_outcomes_, this->n_cluster_);
 }

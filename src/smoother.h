@@ -15,13 +15,12 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef SMOOTHER_H
-#define SMOOTHER_H
+#ifndef POLCAPARALLEL_SRC_SMOOTHER_H
+#define POLCAPARALLEL_SRC_SMOOTHER_H
 
+#include <cstddef>
+#include <span>
 #include <vector>
-
-#include "RcppArmadillo.h"
-#include "em_algorithm.h"
 
 namespace polca_parallel {
 
@@ -49,7 +48,6 @@ namespace polca_parallel {
  */
 class Smoother {
  private:
-  int* responses_;
   /**
    * Vector of smoothed probabilities for the outcome probabilities. Flatten
    * list in the order
@@ -79,15 +77,11 @@ class Smoother {
    */
   std::vector<double> posterior_;
   /** Number of data points */
-  int n_data_;
-  /** Number of categories */
-  int n_category_;
+  const std::size_t n_data_;
   /** Vector of the number of outcomes for each category */
-  int* n_outcomes_;
-  /** Sum of n_outcomes */
-  int sum_outcomes_;
+  std::span<const std::size_t> n_outcomes_;
   /** Number of clusters to fit */
-  int n_cluster_;
+  const std::size_t n_cluster_;
 
  public:
   /**
@@ -96,13 +90,6 @@ class Smoother {
    * Creates a copy of probs, prior and posterior. Call Smooth() to smooth
    * these probabilities
    *
-   * @param responses Design matrix of responses, matrix containing
-   * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
-   * has dimensions
-   * <ul>
-   *   <li>dim 0: for each data point</li>
-   *   <li>dim 1: for each category</li>
-   * </ul>
    * @param probs Vector of probabilities for each outcome, for each category,
    * for each cluster flatten list in the order
    * <ul>
@@ -122,15 +109,13 @@ class Smoother {
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
    * </ul>
-   * @param n_data Number of data points
-   * @param n_category Number of categories
    * @param n_outcomes Array of number of outcomes, for each category
    * @param sum_outcomes Sum of all integers in n_outcomes
    * @param n_cluster Number of clusters
    */
-  Smoother(int* responses, double* probs, double* prior, double* posterior,
-           int n_data, int n_category, int* n_outcomes, int sum_outcomes,
-           int n_cluster);
+  Smoother(std::span<const double> probs, std::span<const double> prior,
+           std::span<const double> posterior, std::size_t n_data,
+           std::span<const std::size_t> n_outcomes, std::size_t n_cluster);
 
   /**
    * Smooth the probabilities probs_, prior_ and posterior_
@@ -141,13 +126,13 @@ class Smoother {
   void Smooth();
 
   /** Get the pointer to the array of smoothed probs */
-  double* get_probs();
+  [[nodiscard]] std::span<const double> get_probs();
 
   /** Get the pointer to the array of prior probs */
-  double* get_prior();
+  [[nodiscard]] std::span<const double> get_prior();
 
   /** Get the pointer to the array of posterior probs */
-  double* get_posterior();
+  [[nodiscard]] std::span<const double> get_posterior();
 
  private:
   /**
@@ -155,16 +140,15 @@ class Smoother {
    *
    * (n_data * probs + num_add) / (n_data + demo_add)
    *
-   * @param probs array of probabilities to modify
-   * @param length length of the array probs
    * @param n_data number of data points used to estimate the probabilities
    * @param num_add see equation
    * @param demo_add see equation
+   * @param probs array of probabilities to modify
    */
-  void Smooth(double* probs, int length, double n_data, double num_add,
-              double demo_add);
+  void Smooth(double n_data, double num_add, double demo_add,
+              std::span<double> probs);
 };
 
 }  // namespace polca_parallel
 
-#endif  // SMOOTHER_H
+#endif  // POLCAPARALLEL_SRC_SMOOTHER_H

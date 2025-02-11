@@ -15,29 +15,19 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef EM_ALGORITHM_H_
-#define EM_ALGORITHM_H_
+#ifndef POLCAPARALLEL_SRC_EM_ALGORITHM_H_
+#define POLCAPARALLEL_SRC_EM_ALGORITHM_H_
 
-#include <math.h>
-
-#include <chrono>
-#include <cstring>
-#include <limits>
+#include <cstddef>
 #include <memory>
+#include <optional>
 #include <random>
-#include <utility>
-#include <vector>
+#include <span>
 
 #include "RcppArmadillo.h"
+#include "util.h"
 
 namespace polca_parallel {
-
-/**
- * When multiplying probabilities together in PosteriorUnnormalize(), use the
- * sum of logs instead when the resulting probability is less than this
- * threshold
- **/
-extern const int kUnderflowThreshold;
 
 /**
  * For fitting poLCA using the EM algorithm for a given initial value
@@ -68,14 +58,6 @@ extern const int kUnderflowThreshold;
 class EmAlgorithm {
  protected:
   /**
-   * Design matrix of features, matrix with dimensions
-   * <ul>
-   *   <li>dim 0: for each data point</li>
-   *   <li>dim 1: for each feature</li>
-   * </ul>
-   */
-  double* features_;
-  /**
    * Design matrix TRANSPOSED of responses, matrix containing outcomes/responses
    * for each category as integers 1, 2, 3, .... The matrix has dimensions
    * <ul>
@@ -83,7 +65,7 @@ class EmAlgorithm {
    *   <li>dim 1: for each data point</li>
    * </ul>
    */
-  int* responses_;
+  std::span<const int> responses_;
   /**
    * Vector of initial probabilities for each category and responses, flatten
    * list in the following order
@@ -93,23 +75,17 @@ class EmAlgorithm {
    *   <li>dim 2: for each cluster</li>
    * </ul>
    */
-  double* initial_prob_;
+  std::span<const double> initial_prob_;
   /** Number of data points */
-  int n_data_;
-  /** Number of features */
-  int n_feature_;
-  /** Number of categories */
-  int n_category_;
+  const std::size_t n_data_;
   /** Vector of the number of outcomes for each category */
-  int* n_outcomes_;
-  /** Sum of n_outcomes */
-  int sum_outcomes_;
+  NOutcomes n_outcomes_;
   /** Number of clusters to fit */
-  int n_cluster_;
+  const std::size_t n_cluster_;
   /** Maximum number of iterations for EM algorithm */
-  int max_iter_;
+  const unsigned int max_iter_;
   /** Tolerance for difference in log-likelihood, used for stopping condition */
-  double tolerance_;
+  const double tolerance_;
   /**
    * Design matrix of posterior probabilities (also called responsibility). It's
    * the probability a data point is in cluster m given responses. The matrix
@@ -119,7 +95,7 @@ class EmAlgorithm {
    *   <li>dim 1: for each cluster</li>
    * </ul>
    */
-  double* posterior_;
+  arma::Mat<double> posterior_;
   /**
    * Design matrix of prior probabilities. It's the probability a data point is
    * in cluster m NOT given responses after calculations. The matrix has the
@@ -132,23 +108,18 @@ class EmAlgorithm {
    * method GetPrior() to get the prior for a data point and cluster rather than
    * accessing the member variable direction
    */
-  double* prior_;
+  arma::Mat<double> prior_;
   /**
-   * Vector of estimated response probabilities, conditioned on cluster, for
+   * Matrix of estimated response probabilities, conditioned on cluster, for
    * each category. A flattened list in the following order
    * <ul>
-   *   <li>dim 0: for each outcome</li>
-   *   <li>dim 1: for each category</li>
-   *   <li>dim 2: for each cluster</li>
+   *   <li>
+   *     dim 0: for each outcome | category (inner), for each category (outer)
+   *   </li>
+   *   <li>dim 1: for each cluster</li>
    * </ul>
    */
-  double* estimated_prob_;
-  /**
-   * Vector length n_features_*(n_cluster-1), linear regression coefficient
-   * in matrix form, to be multiplied to the features and linked to the
-   * prior using softmax
-   */
-  double* regress_coeff_;
+  arma::Mat<double> estimated_prob_;
   /**
    * Optional, vector of INITIAL response probabilities used to get the maximum
    * log-likelihood, this member variable is optional, set to NULL if not used.
@@ -160,7 +131,7 @@ class EmAlgorithm {
    *   <li>dim 2: for each cluster</li>
    * </ul>
    */
-  double* best_initial_prob_ = nullptr;
+  std::optional<std::span<double>> best_initial_prob_;
 
   /** Log likelihood, updated at each iteration of EM */
   double ln_l_ = -INFINITY;
@@ -168,9 +139,9 @@ class EmAlgorithm {
    * Vector, for each data point, the log-likelihood for each data point, the
    * total log-likelihood is the sum
    */
-  std::vector<double> ln_l_array_;
+  arma::Col<double> ln_l_array_;
   /** Number of iterations done right now */
-  int n_iter_ = 0;
+  unsigned int n_iter_ = 0;
   /**
    * Indicate if it needed to use new initial values during a fit, which can
    * happen if a matrix is singular for example
@@ -200,8 +171,7 @@ class EmAlgorithm {
    *   <li>dim 1: for each data point</li>
    * </ul>
    * @param initial_prob Vector of initial probabilities for each category and
-   * outcome. This can be nullptr and set later using the method NewRun().
-   * Flatten list in the following order
+   * outcome, flatten list in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -209,9 +179,8 @@ class EmAlgorithm {
    * </ul>
    * @param n_data Number of data points
    * @param n_feature Number of features
-   * @param n_category Number of categories
-   * @param n_outcomes Vector of number of outcomes for each category
-   * @param sum_outcomes Sum of n_outcomes
+   * @param n_outcomes Vector of number of outcomes for each category and its
+   * sum
    * @param n_cluster Number of clusters to fit
    * @param max_iter Maximum number of iterations for EM algorithm
    * @param tolerance Tolerance for difference in log-likelihood, used for
@@ -243,11 +212,15 @@ class EmAlgorithm {
    * </ul>
    * @param regress_coeff Not used and ignored
    */
-  EmAlgorithm(double* features, int* responses, double* initial_prob,
-              int n_data, int n_feature, int n_category, int* n_outcomes,
-              int sum_outcomes, int n_cluster, int max_iter, double tolerance,
-              double* posterior, double* prior, double* estimated_prob,
-              double* regress_coeff);
+  EmAlgorithm(std::span<const double> features, std::span<const int> responses,
+              std::span<const double> initial_prob, std::size_t n_data,
+              std::size_t n_feature, NOutcomes n_outcomes,
+              std::size_t n_cluster, unsigned int max_iter, double tolerance,
+              std::span<double> posterior, std::span<double> prior,
+              std::span<double> estimated_prob,
+              std::span<double> regress_coeff);
+
+  virtual ~EmAlgorithm() = default;
 
   /**
    * Fit data to model using EM algorithm
@@ -278,7 +251,6 @@ class EmAlgorithm {
    *   <li>dim 2: for each cluster</li>
    * </ul>
    */
-  virtual void NewRun(double* initial_prob);
 
   /**
    * Set where to store initial probabilities (optional)
@@ -291,19 +263,19 @@ class EmAlgorithm {
    *   <li>dim 2: for each cluster</li>
    * </ul>
    */
-  void set_best_initial_prob(double* best_initial_prob);
+  void set_best_initial_prob(std::span<double> best_initial_prob);
 
   /** Get the log-likelihood */
-  double get_ln_l();
+  [[nodiscard]] double get_ln_l() const;
 
   /** Get the number of iterations of EM done */
-  int get_n_iter();
+  [[nodiscard]] unsigned int get_n_iter() const;
 
   /**
    * Indicate if it needed to use new initial values during a fit, it can happen
    * if a matrix is singular for example
    */
-  bool get_has_restarted();
+  [[nodiscard]] bool get_has_restarted() const;
 
   /** Set rng using a seed, for generating new random initial values */
   void set_seed(unsigned seed);
@@ -314,7 +286,7 @@ class EmAlgorithm {
    * Use this method if you want to use your own rng instead of the default
    * rng
    */
-  void set_rng(std::unique_ptr<std::mt19937_64>* rng);
+  void set_rng(std::unique_ptr<std::mt19937_64> rng);
 
   /**
    * Transfer ownership of rng from this object
@@ -322,7 +294,7 @@ class EmAlgorithm {
    * Use this method if you want to ensure the rng you pass in set_rng() lives
    * when this object goes out of scope
    * */
-  std::unique_ptr<std::mt19937_64> move_rng();
+  [[nodiscard]] std::unique_ptr<std::mt19937_64> move_rng();
 
  protected:
   /**
@@ -331,7 +303,7 @@ class EmAlgorithm {
    * Reset the parameters estimated_prob_ with random starting values
    * @param uniform required to generate random probabilities
    */
-  virtual void Reset(std::uniform_real_distribution<double>* uniform);
+  virtual void Reset(std::uniform_real_distribution<double>& uniform);
 
   /**
    * Initialise prior probabilities
@@ -351,7 +323,8 @@ class EmAlgorithm {
    * @param cluster_index
    * @return double prior
    */
-  virtual double GetPrior(int data_index, int cluster_index);
+  [[nodiscard]] virtual double GetPrior(const std::size_t data_index,
+                                        const std::size_t cluster_index) const;
 
   /**
    * Do E step
@@ -371,16 +344,16 @@ class EmAlgorithm {
    *
    * @param data_index data point index 0, 1, 2, ..., n_data - 1
    * @param cluster_index cluster index 0, 1, 2, ..., n_cluster - 1
-   * @param estimated_prob pointer to estimated probabilities for the
-   * corresponding cluster. This is modified to point to the probabilities for
-   * the next cluster. It points to a flattened list in the following order
+   * @param estimated_prob A column view of estimated_prob_. A flattened
+   * list in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
    * </ul>
    */
-  void PosteriorUnnormalize(int data_index, int cluster_index,
-                            double** estimated_prob);
+  [[nodiscard]] virtual double PosteriorUnnormalize(
+      std::span<const int> responses_i, double prior,
+      const arma::Col<double>& estimated_prob) const;
 
   /**
    * Check if the likelihood is invalid
@@ -390,7 +363,7 @@ class EmAlgorithm {
    * @return true if the likelihood is invalid
    * @return false if the likelihood is okay
    */
-  virtual bool IsInvalidLikelihood(double ln_l_difference);
+  [[nodiscard]] virtual bool IsInvalidLikelihood(double ln_l_difference) const;
 
   /**
    * Do M step
@@ -426,7 +399,7 @@ class EmAlgorithm {
    *
    * @param cluster_index which cluster to consider
    */
-  virtual void WeightedSumProb(int cluster_index);
+  virtual void WeightedSumProb(const std::size_t cluster_index);
 
   /**
    * Normalise the weighted sum following WeightedSumProb()
@@ -439,7 +412,7 @@ class EmAlgorithm {
    *
    * @param cluster_index which cluster to consider
    */
-  virtual void NormalWeightedSumProb(int cluster_index);
+  virtual void NormalWeightedSumProb(const std::size_t cluster_index);
 
   /**
    * Normalise the weighted sum following WeightedSumProb() given the normaliser
@@ -452,7 +425,8 @@ class EmAlgorithm {
    * @param normaliser the scale to divide the weighted sum by, should be the
    * sum of posteriors
    */
-  void NormalWeightedSumProb(int cluster_index, double normaliser);
+  void NormalWeightedSumProb(const std::size_t cluster_index,
+                             double normaliser);
 };
 
 /**
@@ -474,12 +448,12 @@ class EmAlgorithm {
  * probabilities is done instead if an underflow is detected. It should be
  * noted the sum of logs is slower.
  *
+ * @tparam is_check_zero to check if the responses are zero or not, for
+ * performance reason, use false when the responses do not contain zero values
  * @param responses_i the responses for a given data point, length n_catgeory
- * @param n_catgeory number of categories
  * @param n_outcomes number of outcomes for each category
- * @param estimated_prob pointer to estimated probabilities for the
- * corresponding cluster. This is modified to point to the probabilities for
- * the next cluster. It points to a flattened list in the following order
+ * @param estimated_prob A column view of estimated_prob_. A flattened
+ * list in the following order
  * <ul>
  *   <li>dim 0: for each outcome</li>
  *   <li>dim 1: for each category</li>
@@ -487,33 +461,31 @@ class EmAlgorithm {
  * @param prior the prior for this data point and cluster
  * @return the unnormalised posterior for this data point and cluster
  */
-double PosteriorUnnormalize(int* responses_i, int n_category, int* n_outcomes,
-                            double** estimated_prob, double prior);
+template <bool is_check_zero = false>
+[[nodiscard]] double PosteriorUnnormalize(
+    std::span<const int> responses_i, std::span<const std::size_t> n_outcomes,
+    const arma::Col<double>& estimated_prob, double prior);
 
 /**
  * Generate random response probabilities
  *
- * @param rng random number generator
- * @param uniform uniform (0, 1)
  * @param n_outcomes vector length n_category, number of outcomes for each
  * category
- * @param sum_outcomes sum of n_outcomes
- * @param n_category number of categories
  * @param n_cluster number of clusters
- * @param prob output, vector of random response probabilities, conditioned on
- * cluster, for each outcome, category and cluster, flattened list in the
- * following order
+ * @param uniform uniform (0, 1)
+ * @param rng random number generator
+ * @param prob output, matrix of random response probabilities, conditioned on
+ * cluster, for each outcome, category and cluster
  * <ul>
- *   <li>dim 0: for each outcome</li>
- *   <li>dim 1: for each category</li>
- *   <li>dim 2: for each cluster</li>
+ *   <li>dim 0: for each outcome (inner), for each category (outer)</li>
+ *   <li>dim 1: for each cluster</li>
  * </ul>
  */
-void GenerateNewProb(std::mt19937_64* rng,
-                     std::uniform_real_distribution<double>* uniform,
-                     int* n_outcomes, int sum_outcomes, int n_category,
-                     int n_cluster, double* prob);
+void GenerateNewProb(std::span<const std::size_t> n_outcomes,
+                     const std::size_t n_cluster,
+                     std::uniform_real_distribution<double>& uniform,
+                     std::mt19937_64& rng, arma::Mat<double>& prob);
 
 }  // namespace polca_parallel
 
-#endif  // EM_ALGORITHM_H_
+#endif  // POLCAPARALLEL_SRC_EM_ALGORITHM_H_

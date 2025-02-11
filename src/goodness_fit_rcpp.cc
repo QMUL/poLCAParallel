@@ -17,10 +17,15 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include <array>
+#include <cstddef>
+#include <iterator>
 #include <map>
+#include <span>
+#include <vector>
 
 #include "RcppArmadillo.h"
 #include "goodness_fit.h"
+#include "util.h"
 
 /**
  * Function to be exported to R, goodness of fit statistics
@@ -39,7 +44,6 @@
  * </ul>
  * @param n_data number of data points
  * @param n_obs number of fully observed data points
- * @param n_category number of categories
  * @param n_outcomes vector, number of possible responses for each category
  * @param n_cluster number of clusters, or classes, to fit
  * @return a list containing:
@@ -53,44 +57,49 @@
 // [[Rcpp::export]]
 Rcpp::List GoodnessFitRcpp(Rcpp::IntegerMatrix responses,
                            Rcpp::NumericVector prior,
-                           Rcpp::NumericVector outcome_prob, int n_data,
-                           int n_obs, int n_category,
-                           Rcpp::IntegerVector n_outcomes, int n_cluster) {
+                           Rcpp::NumericVector outcome_prob, std::size_t n_data,
+                           std::size_t n_obs,
+                           Rcpp::IntegerVector n_outcomes_int,
+                           std ::size_t n_cluster) {
+  std::vector<std::size_t> n_outcomes_size_t(n_outcomes_int.cbegin(),
+                                             n_outcomes_int.cend());
+  polca_parallel::NOutcomes n_outcomes(n_outcomes_size_t.data(),
+                                       n_outcomes_size_t.size());
+  std::size_t n_category = n_outcomes.size();
+
   // get observed and expected frequencies for each unique response
   // having problems doing static allocation and passing the pointer
-  std::unique_ptr<std::map<std::vector<int>, polca_parallel::Frequency>>
-      unique_freq = std::make_unique<
-          std::map<std::vector<int>, polca_parallel::Frequency>>();
-  GetUniqueObserved(responses.begin(), n_data, n_category, unique_freq.get());
-  GetExpected(prior.begin(), outcome_prob.begin(), n_data, n_obs, n_category,
-              n_outcomes.begin(), n_cluster, unique_freq.get());
+  std::map<std::vector<int>, polca_parallel::Frequency> unique_freq;
+  GetUniqueObserved(std::span<const int>(responses.cbegin(), responses.size()),
+                    n_data, n_category, unique_freq);
+  GetExpected(
+      std::span<const double>(prior.cbegin(), prior.size()),
+      std::span<const double>(outcome_prob.cbegin(), outcome_prob.size()),
+      n_obs, n_outcomes, n_cluster, unique_freq);
   // get log likelihood ratio and chi squared statistics
-  std::array<double, 2> stats = GetStatistics(unique_freq.get(), n_data);
+  std::array<double, 2> stats = GetStatistics(unique_freq, n_data);
 
   // transfer results from std::map unique_freq to a NumericMatrix
   // unique_freq_table
   // last two columns for observed and expected frequency
-  int n_unique = unique_freq->size();
+  std::size_t n_unique = unique_freq.size();
   Rcpp::NumericMatrix unique_freq_table(n_unique, n_category + 2);
-  double* unique_freq_ptr = unique_freq_table.begin();
-  std::vector<int> response_i;
+  auto unique_freq_ptr = unique_freq_table.begin();
 
-  int data_index = 0;
-  polca_parallel::Frequency frequency;
-  double expected, observed;
-  for (auto iter = unique_freq->begin(); iter != unique_freq->end(); ++iter) {
-    response_i = iter->first;
-    frequency = iter->second;
-    expected = frequency.expected;
-    observed = static_cast<double>(frequency.observed);
+  std::size_t data_index = 0;
+  for (auto iter = unique_freq.cbegin(); iter != unique_freq.cend(); ++iter) {
+    const std::vector<int>& response_i = iter->first;
+    polca_parallel::Frequency frequency = iter->second;
 
     // copy over response
-    for (int j = 0; j < n_category; ++j) {
-      unique_freq_ptr[j * n_unique + data_index] = response_i[j];
+    for (std::size_t j = 0; j < n_category; ++j) {
+      *std::next(unique_freq_ptr, j * n_unique + data_index) = response_i[j];
     }
     // copy over observed and expected frequency
-    unique_freq_ptr[n_category * n_unique + data_index] = observed;
-    unique_freq_ptr[(n_category + 1) * n_unique + data_index] = expected;
+    *std::next(unique_freq_ptr, n_category * n_unique + data_index) =
+        static_cast<double>(frequency.observed);
+    *std::next(unique_freq_ptr, (n_category + 1) * n_unique + data_index) =
+        frequency.expected;
     ++data_index;
   }
 

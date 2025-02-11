@@ -15,13 +15,17 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include <memory>
+#include <cstddef>
+#include <random>
+#include <span>
+#include <vector>
 
 #include "RcppArmadillo.h"
 #include "em_algorithm.h"
 #include "em_algorithm_array.h"
 #include "em_algorithm_nan.h"
 #include "poLCA.c"
+#include "util.h"
 
 /**
  * Function to be exported to R, fit using the EM algorithm
@@ -48,7 +52,6 @@
  * </ul>
  * @param n_data number of data points
  * @param n_feature number of features
- * @param n_category number of categories
  * @param n_outcomes: vector, number of possible outcomes for each category
  * @param n_cluster: number of clusters, or classes, to fit
  * @param n_rep: number of repetitions
@@ -76,36 +79,42 @@
 // [[Rcpp::export]]
 Rcpp::List EmAlgorithmRcpp(Rcpp::NumericMatrix features,
                            Rcpp::IntegerMatrix responses,
-                           Rcpp::NumericVector initial_prob, int n_data,
-                           int n_feature, int n_category,
-                           Rcpp::IntegerVector n_outcomes, int n_cluster,
-                           int n_rep, bool na_rm, int n_thread, int max_iter,
+                           Rcpp::NumericVector initial_prob, std::size_t n_data,
+                           std::size_t n_feature,
+                           Rcpp::IntegerVector n_outcomes_int,
+                           std::size_t n_cluster, std::size_t n_rep, bool na_rm,
+                           std::size_t n_thread, unsigned int max_iter,
                            double tolerance, Rcpp::IntegerVector seed) {
-  int sum_outcomes = 0;  // calculate sum of number of outcomes
-  int* n_outcomes_array = n_outcomes.begin();
-  for (int i = 0; i < n_category; ++i) {
-    sum_outcomes += n_outcomes_array[i];
-  }
+  std::vector<std::size_t> n_outcomes_size_t(n_outcomes_int.cbegin(),
+                                             n_outcomes_int.cend());
+  polca_parallel::NOutcomes n_outcomes(n_outcomes_size_t.data(),
+                                       n_outcomes_size_t.size());
 
   // allocate matrices to pass pointers to C++ code
   Rcpp::NumericMatrix posterior(n_data, n_cluster);
   Rcpp::NumericMatrix prior(n_data, n_cluster);
-  Rcpp::NumericVector estimated_prob(sum_outcomes * n_cluster);
+  Rcpp::NumericVector estimated_prob(n_outcomes.sum() * n_cluster);
   Rcpp::NumericVector regress_coeff(n_feature * (n_cluster - 1));
   Rcpp::NumericVector ln_l_array(n_rep);
-  Rcpp::NumericVector best_initial_prob(sum_outcomes * n_cluster);
+  Rcpp::NumericVector best_initial_prob(n_outcomes.sum() * n_cluster);
 
   // fit using EM algorithm
   polca_parallel::EmAlgorithmArray fitter(
-      features.begin(), responses.begin(), initial_prob.begin(), n_data,
-      n_feature, n_category, n_outcomes.begin(), sum_outcomes, n_cluster, n_rep,
-      n_thread, max_iter, tolerance, posterior.begin(), prior.begin(),
-      estimated_prob.begin(), regress_coeff.begin());
+      std::span<const double>(features.cbegin(), features.size()),
+      std::span<const int>(responses.cbegin(), responses.size()),
+      std::span<const double>(initial_prob.cbegin(), initial_prob.size()),
+      n_data, n_feature, n_outcomes, n_cluster, n_rep, n_thread, max_iter,
+      tolerance, std::span<double>(posterior.begin(), posterior.size()),
+      std::span<double>(prior.begin(), prior.size()),
+      std::span<double>(estimated_prob.begin(), estimated_prob.size()),
+      std::span<double>(regress_coeff.begin(), regress_coeff.size()));
 
-  std::seed_seq seed_seq(seed.begin(), seed.end());
-  fitter.SetSeed(&seed_seq);
-  fitter.set_best_initial_prob(best_initial_prob.begin());
-  fitter.set_ln_l_array(ln_l_array.begin());
+  std::seed_seq seed_seq(seed.cbegin(), seed.cend());
+  fitter.SetSeed(seed_seq);
+  fitter.set_best_initial_prob(
+      std::span<double>(best_initial_prob.begin(), best_initial_prob.size()));
+  fitter.set_ln_l_array(
+      std::span<double>(ln_l_array.begin(), ln_l_array.size()));
 
   bool is_regress = n_feature > 1;
   if (is_regress) {
@@ -122,8 +131,8 @@ Rcpp::List EmAlgorithmRcpp(Rcpp::NumericMatrix features,
     }
   }
 
-  int best_rep_index = fitter.get_best_rep_index();
-  int n_iter = fitter.get_n_iter();
+  std::size_t best_rep_index = fitter.get_best_rep_index();
+  unsigned int n_iter = fitter.get_n_iter();
   bool has_restarted = fitter.get_has_restarted();
 
   Rcpp::List to_return;
