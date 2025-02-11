@@ -22,18 +22,19 @@
 
 polca_parallel::StandardError::StandardError(
     std::span<const double> features, std::span<const int> responses,
-    std::span<const double> probs, std::span<double> prior,
-    std::span<double> posterior, std::size_t n_data, std::size_t n_feature,
-    polca_parallel::NOutcomes n_outcomes, std::size_t n_cluster,
-    std::span<double> prior_error, std::span<double> prob_error,
-    std::span<double> regress_coeff_error)
+    std::span<const double> probs, std::span<const double> prior,
+    std::span<const double> posterior, std::size_t n_data,
+    std::size_t n_feature, polca_parallel::NOutcomes n_outcomes,
+    std::size_t n_cluster, std::span<double> prior_error,
+    std::span<double> prob_error, std::span<double> regress_coeff_error)
     : responses_(const_cast<int*>(responses.data()), n_data, n_outcomes.size(),
                  false, true),
       probs_(probs),
-      prior_(std::make_unique<const arma::Mat<double>>(prior.data(), n_data,
-                                                       n_cluster, false, true)),
+      prior_(std::make_unique<const arma::Mat<double>>(
+          const_cast<double*>(prior.data()), n_data, n_cluster, false, true)),
       posterior_(std::make_unique<const arma::Mat<double>>(
-          posterior.data(), n_data, n_cluster, false, true)),
+          const_cast<double*>(posterior.data()), n_data, n_cluster, false,
+          true)),
       n_data_(n_data),
       n_feature_(n_feature),
       n_outcomes_(n_outcomes),

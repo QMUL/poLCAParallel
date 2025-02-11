@@ -175,8 +175,9 @@ class StandardError {
    */
   StandardError(std::span<const double> features,
                 std::span<const int> responses, std::span<const double> probs,
-                std::span<double> prior, std::span<double> posterior,
-                std::size_t n_data, std::size_t n_feature, NOutcomes n_outcomes,
+                std::span<const double> prior,
+                std::span<const double> posterior, std::size_t n_data,
+                std::size_t n_feature, NOutcomes n_outcomes,
                 std::size_t n_cluster, std::span<double> prior_error,
                 std::span<double> prob_error,
                 std::span<double> regress_coeff_error);
