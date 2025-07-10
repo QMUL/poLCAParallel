@@ -22,7 +22,7 @@
 #include <random>
 #include <span>
 
-#include "RcppArmadillo.h"
+#include "arma.h"
 #include "em_algorithm.h"
 #include "util.h"
 

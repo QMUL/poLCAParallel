@@ -22,7 +22,7 @@
 #include <iterator>
 #include <stdexcept>
 
-#include "RcppArmadillo.h"
+#include "arma.h"
 #include "em_algorithm.h"
 
 void polca_parallel::GetUniqueObserved(

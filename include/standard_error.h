@@ -22,7 +22,7 @@
 #include <memory>
 #include <span>
 
-#include "RcppArmadillo.h"
+#include "arma.h"
 #include "error_solver.h"
 #include "smoother.h"
 #include "util.h"

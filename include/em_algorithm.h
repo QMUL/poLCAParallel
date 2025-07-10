@@ -24,7 +24,7 @@
 #include <random>
 #include <span>
 
-#include "RcppArmadillo.h"
+#include "arma.h"
 #include "util.h"
 
 namespace polca_parallel {

@@ -21,7 +21,7 @@
 #include <cstddef>
 #include <span>
 
-#include "RcppArmadillo.h"
+#include "arma.h"
 
 namespace polca_parallel {
 

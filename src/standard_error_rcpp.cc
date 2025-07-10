@@ -15,12 +15,13 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+#include <RcppArmadillo.h>
+
 #include <cstddef>
 #include <memory>
 #include <span>
 #include <vector>
 
-#include "RcppArmadillo.h"
 #include "regularised_error.h"
 #include "standard_error.h"
 #include "standard_error_regress.h"

@@ -22,7 +22,7 @@
 #include <span>
 #include <vector>
 
-#include "RcppArmadillo.h"
+#include "arma.h"
 #include "em_algorithm.h"
 #include "em_algorithm_regress.h"
 #include "util.h"
