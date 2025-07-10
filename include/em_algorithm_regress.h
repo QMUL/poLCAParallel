@@ -15,8 +15,8 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef POLCAPARALLEL_SRC_EM_ALGORITHM_REGRESS_H_
-#define POLCAPARALLEL_SRC_EM_ALGORITHM_REGRESS_H_
+#ifndef POLCAPARALLEL_INCLUDE_EM_ALGORITHM_REGRESS_H_
+#define POLCAPARALLEL_INCLUDE_EM_ALGORITHM_REGRESS_H_
 
 #include <cstddef>
 #include <random>
@@ -264,4 +264,4 @@ class EmAlgorithmRegress : public polca_parallel::EmAlgorithm {
 
 }  // namespace polca_parallel
 
-#endif  // POLCAPARALLEL_SRC_EM_ALGORITHM_REGRESS_H_
+#endif  // POLCAPARALLEL_INCLUDE_EM_ALGORITHM_REGRESS_H_

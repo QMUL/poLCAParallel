@@ -15,8 +15,8 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef POLCAPARALLEL_SRC_EM_ALGORITHM_NAN_H_
-#define POLCAPARALLEL_SRC_EM_ALGORITHM_NAN_H_
+#ifndef POLCAPARALLEL_INCLUDE_EM_ALGORITHM_NAN_H_
+#define POLCAPARALLEL_INCLUDE_EM_ALGORITHM_NAN_H_
 
 #include <cstddef>
 #include <span>
@@ -208,4 +208,4 @@ void NanNormalWeightedSumProb(const std::size_t cluster_index,
 
 }  // namespace polca_parallel
 
-#endif  // POLCAPARALLEL_SRC_EM_ALGORITHM_NAN_H_
+#endif  // POLCAPARALLEL_INCLUDE_EM_ALGORITHM_NAN_H_

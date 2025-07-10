@@ -16,8 +16,8 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef POLCAPARALLEL_SRC_GOODNESS_FIT_H_
-#define POLCAPARALLEL_SRC_GOODNESS_FIT_H_
+#ifndef POLCAPARALLEL_INCLUDE_GOODNESS_FIT_H_
+#define POLCAPARALLEL_INCLUDE_GOODNESS_FIT_H_
 
 #include <array>
 #include <cstddef>
@@ -114,4 +114,4 @@ std::array<double, 2> GetStatistics(
 
 }  // namespace polca_parallel
 
-#endif  // POLCAPARALLEL_SRC_GOODNESS_FIT_H_
+#endif  // POLCAPARALLEL_INCLUDE_GOODNESS_FIT_H_
