@@ -19,6 +19,7 @@
 #define POLCAPARALLEL_INCLUDE_UTIL_H_
 
 #include <cstddef>
+#include <random>
 #include <span>
 
 namespace polca_parallel {
@@ -32,6 +33,37 @@ class NOutcomes : public std::span<const std::size_t> {
 
   [[nodiscard]] std::size_t sum() const;
 };
+
+/**
+ * Generate random responses
+ *
+ * Generate random responses given the prior and outcome probabilities. Provide
+ * a rng and the resulting random responses are saved to the given response
+ * span
+ *
+ * @param prior Vector of prior probabilities
+ * <ul>
+ *   <li>dim 0: for each cluster</li>
+ * </ul>
+ * @param prob Vector of response probabilities for each category, flatten list
+ * of matrices.
+ * <ul>
+ *   <li>dim 0: for each outcome</li>
+ *   <li>dim 1: for each category</li>
+ *   <li>dim 2: for each cluster</li>
+ * </ul>
+ * @param n_data Number of data points
+ * @param n_outcomes Number of outcomes for each category
+ * @param rng Random number generator
+ * @param response To store results, design matrix transpose of responses
+ * <ul>
+ *   <li>dim 0: for each category</li>
+ *   <li>dim 1: for each data point</li>
+ * </ul>
+ */
+void Random(std::span<const double> prior, std::span<const double> prob,
+            std::size_t n_data, NOutcomes n_outcomes, std::mt19937_64& rng,
+            std::span<int> response);
 
 }  // namespace polca_parallel
 

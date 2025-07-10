@@ -196,23 +196,6 @@ void polca_parallel::Blrt::Bootstrap(std::span<const double> prior,
                                      std::span<const double> prob,
                                      std::mt19937_64& rng,
                                      std::span<int> response) const {
-  std::discrete_distribution<std::size_t> prior_dist(prior.begin(),
-                                                     prior.end());
-
-  auto response_iter = response.begin();
-  for (std::size_t i_data = 0; i_data < this->n_data_; ++i_data) {
-    std::size_t i_cluster = prior_dist(rng);  // select a random cluster
-    // point to the corresponding probabilites for this random cluster
-    auto prob_i = prob.begin();
-    std::advance(prob_i, i_cluster * this->n_outcomes_.sum());
-
-    for (std::size_t n_outcome : this->n_outcomes_) {
-      std::discrete_distribution<int> outcome_dist(
-          prob_i, std::next(prob_i, n_outcome));
-      *response_iter = outcome_dist(rng) + 1;  // response is one-based index
-      // increment for the next category
-      std::advance(prob_i, n_outcome);
-      std::advance(response_iter, 1);
-    }
-  }
+  polca_parallel::Random(prior, prob, this->n_data_, this->n_outcomes_, rng,
+                         response);
 }
