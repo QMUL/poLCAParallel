@@ -22,6 +22,8 @@
 #include <random>
 #include <span>
 
+#include "arma.h"
+
 namespace polca_parallel {
 
 class NOutcomes : public std::span<const std::size_t> {
@@ -64,6 +66,40 @@ class NOutcomes : public std::span<const std::size_t> {
 void Random(std::span<const double> prior, std::span<const double> prob,
             std::size_t n_data, NOutcomes n_outcomes, std::mt19937_64& rng,
             std::span<int> response);
+
+/**
+ * Generate random responses
+ *
+ * Generate random responses using random priors and outcome probabilities.
+ * Provide a rng and the resulting random responses are returned
+ *
+ * @param n_data Number of data points
+ * @param n_outcomes Number of outcomes for each category
+ * @param rng Random number generator
+ * @return std::vector<int> The generated responses
+ */
+std::vector<int> RandomMarginal(std::size_t n_data, NOutcomes n_outcomes,
+                                std::mt19937_64& rng);
+
+/**
+ * Generate random response probabilities
+ *
+ * @param n_outcomes vector length n_category, number of outcomes for each
+ * category
+ * @param n_cluster number of clusters
+ * @param uniform uniform (0, 1)
+ * @param rng random number generator
+ * @param prob output, matrix of random response probabilities, conditioned on
+ * cluster, for each outcome, category and cluster
+ * <ul>
+ *   <li>dim 0: for each outcome (inner), for each category (outer)</li>
+ *   <li>dim 1: for each cluster</li>
+ * </ul>
+ */
+void RandomProb(std::span<const std::size_t> n_outcomes,
+                const std::size_t n_cluster,
+                std::uniform_real_distribution<double>& uniform,
+                std::mt19937_64& rng, arma::Mat<double>& prob);
 
 }  // namespace polca_parallel
 

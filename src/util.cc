@@ -19,6 +19,8 @@
 
 #include <numeric>
 
+#include "arma.h"
+
 polca_parallel::NOutcomes::NOutcomes(const std::size_t* data, std::size_t size)
     : std::span<const std::size_t>(data, size),
       sum_(std::accumulate(data, data + size, 0)) {}
@@ -46,6 +48,40 @@ void polca_parallel::Random(std::span<const double> prior,
       // increment for the next category
       std::advance(prob_i, n_outcome);
       std::advance(response_iter, 1);
+    }
+  }
+}
+
+std::vector<int> polca_parallel::RandomMarginal(
+    std::size_t n_data, polca_parallel::NOutcomes n_outcomes,
+    std::mt19937_64& rng) {
+  std::vector<int> responses(n_data * n_outcomes.size());
+
+  auto response_iter = responses.begin();
+  for (std::size_t i_data = 0; i_data < n_data; ++i_data) {
+    for (auto n_outcome_i : n_outcomes) {
+      std::uniform_int_distribution<int> dist(1, n_outcome_i);
+      *response_iter = dist(rng);
+      std::advance(response_iter, 1);
+    }
+  }
+  return responses;
+}
+
+void polca_parallel::RandomProb(std::span<const size_t> n_outcomes,
+                                const std::size_t n_cluster,
+                                std::uniform_real_distribution<double>& uniform,
+                                std::mt19937_64& rng, arma::Mat<double>& prob) {
+  for (auto& prob_i : prob) {
+    prob_i = uniform(rng);
+  }
+  // normalise to probabilities
+  for (std::size_t m = 0; m < n_cluster; ++m) {
+    auto prob_col = prob.unsafe_col(m).begin();
+    for (std::size_t n_outcome_i : n_outcomes) {
+      arma::Col<double> prob_vector(prob_col, n_outcome_i, false, true);
+      prob_vector /= arma::sum(prob_vector);
+      std::advance(prob_col, n_outcome_i);
     }
   }
 }

@@ -23,6 +23,7 @@
 #include <memory>
 #include <thread>
 
+#include "arma.h"
 #include "em_algorithm_array_serial.h"
 
 polca_parallel::Blrt::Blrt(std::span<const double> prior_null,
@@ -133,13 +134,11 @@ void polca_parallel::Blrt::RunThread() {
                 i_rep * this->n_outcomes_.sum() * this->prior_alt_.size(),
             this->n_outcomes_.sum(), this->prior_alt_.size(), false, true);
 
-        polca_parallel::GenerateNewProb(this->n_outcomes_,
-                                        this->prior_null_.size(), uniform, *rng,
-                                        init_prob_null_i);
+        polca_parallel::RandomProb(this->n_outcomes_, this->prior_null_.size(),
+                                   uniform, *rng, init_prob_null_i);
 
-        polca_parallel::GenerateNewProb(this->n_outcomes_,
-                                        this->prior_alt_.size(), uniform, *rng,
-                                        init_prob_alt_i);
+        polca_parallel::RandomProb(this->n_outcomes_, this->prior_alt_.size(),
+                                   uniform, *rng, init_prob_alt_i);
       }
 
       // bootstrap data using null model

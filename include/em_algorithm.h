@@ -466,26 +466,6 @@ template <bool is_check_zero = false>
     std::span<const int> responses_i, std::span<const std::size_t> n_outcomes,
     const arma::Col<double>& estimated_prob, double prior);
 
-/**
- * Generate random response probabilities
- *
- * @param n_outcomes vector length n_category, number of outcomes for each
- * category
- * @param n_cluster number of clusters
- * @param uniform uniform (0, 1)
- * @param rng random number generator
- * @param prob output, matrix of random response probabilities, conditioned on
- * cluster, for each outcome, category and cluster
- * <ul>
- *   <li>dim 0: for each outcome (inner), for each category (outer)</li>
- *   <li>dim 1: for each cluster</li>
- * </ul>
- */
-void GenerateNewProb(std::span<const std::size_t> n_outcomes,
-                     const std::size_t n_cluster,
-                     std::uniform_real_distribution<double>& uniform,
-                     std::mt19937_64& rng, arma::Mat<double>& prob);
-
 }  // namespace polca_parallel
 
 #endif  // POLCAPARALLEL_INCLUDE_EM_ALGORITHM_H_

@@ -155,8 +155,8 @@ void polca_parallel::EmAlgorithm::Reset(
     std::uniform_real_distribution<double>& uniform) {
   // generate random number for estimated_prob_
   this->has_restarted_ = true;
-  polca_parallel::GenerateNewProb(this->n_outcomes_, this->n_cluster_, uniform,
-                                  *this->rng_, this->estimated_prob_);
+  polca_parallel::RandomProb(this->n_outcomes_, this->n_cluster_, uniform,
+                             *this->rng_, this->estimated_prob_);
 }
 
 void polca_parallel::EmAlgorithm::InitPrior() {
@@ -322,22 +322,4 @@ double polca_parallel::PosteriorUnnormalize(
     std::advance(estimated_prob_it, n_outcome);
   }
   return likelihood * prior;
-}
-
-void polca_parallel::GenerateNewProb(
-    std::span<const size_t> n_outcomes, const std::size_t n_cluster,
-    std::uniform_real_distribution<double>& uniform, std::mt19937_64& rng,
-    arma::Mat<double>& prob) {
-  for (auto& prob_i : prob) {
-    prob_i = uniform(rng);
-  }
-  // normalise to probabilities
-  for (std::size_t m = 0; m < n_cluster; ++m) {
-    auto prob_col = prob.unsafe_col(m).begin();
-    for (std::size_t n_outcome_i : n_outcomes) {
-      arma::Col<double> prob_vector(prob_col, n_outcome_i, false, true);
-      prob_vector /= arma::sum(prob_vector);
-      std::advance(prob_col, n_outcome_i);
-    }
-  }
 }
