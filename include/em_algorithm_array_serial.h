@@ -58,6 +58,18 @@ class EmAlgorithmArraySerial : public polca_parallel::EmAlgorithmArray {
       std::span<double> posterior, std::span<double> prior,
       std::span<double> estimated_prob, std::span<double> regress_coeff);
 
+  /**
+   * @copydoc EmAlgorithmArraySerial::EmAlgorithmArray
+   * @param n_thread omitted EmAlgorithmArraySerial
+   */
+  EmAlgorithmArraySerial(std::span<const int> responses,
+                         std::span<const double> initial_prob,
+                         std::size_t n_data, NOutcomes n_outcomes,
+                         std::size_t n_cluster, std::size_t n_rep,
+                         unsigned int max_iter, double tolerance,
+                         std::span<double> posterior, std::span<double> prior,
+                         std::span<double> estimated_prob);
+
   ~EmAlgorithmArraySerial() override = default;
 
   /**

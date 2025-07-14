@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <thread>
+#include <type_traits>
 
 #include "em_algorithm_nan.h"
 #include "em_algorithm_regress.h"
@@ -64,6 +65,17 @@ polca_parallel::EmAlgorithmArray::EmAlgorithmArray(
       n_rep_(n_rep),
       initial_prob_(initial_prob),
       n_thread_(std::min(n_thread, n_rep)) {}
+
+polca_parallel::EmAlgorithmArray::EmAlgorithmArray(
+    std::span<const int> responses, std::span<const double> initial_prob,
+    std::size_t n_data, NOutcomes n_outcomes, std::size_t n_cluster,
+    std::size_t n_rep, std::size_t n_thread, unsigned int max_iter,
+    double tolerance, std::span<double> posterior, std::span<double> prior,
+    std::span<double> estimated_prob)
+    : EmAlgorithmArray(std::span<const double>(), responses, initial_prob,
+                       n_data, 1, n_outcomes, n_cluster, n_rep, n_thread,
+                       max_iter, tolerance, posterior, prior, estimated_prob,
+                       std::span<double>()) {}
 
 template <typename EmAlgorithmType>
 void polca_parallel::EmAlgorithmArray::Fit() {
@@ -192,8 +204,15 @@ void polca_parallel::EmAlgorithmArray::FitThread() {
         std::copy(prior.cbegin(), prior.cend(), this->prior_.begin());
         std::copy(estimated_prob.cbegin(), estimated_prob.cend(),
                   this->estimated_prob_.begin());
-        std::copy(regress_coeff.cbegin(), regress_coeff.cend(),
-                  this->regress_coeff_.begin());
+        // copy over regress_coeff if this is a regression problem
+        if constexpr (std::is_same_v<EmAlgorithmType,
+                                     polca_parallel::EmAlgorithmRegress> ||
+                      std::is_same_v<EmAlgorithmType,
+                                     polca_parallel::EmAlgorithmNanRegress>) {
+          std::copy(regress_coeff.cbegin(), regress_coeff.cend(),
+                    this->regress_coeff_.begin());
+        }
+
         if (this->best_initial_prob_) {
           std::copy(best_initial_prob.cbegin(), best_initial_prob.cend(),
                     this->best_initial_prob_.value().begin());

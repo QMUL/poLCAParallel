@@ -220,6 +220,71 @@ class EmAlgorithm {
               std::span<double> estimated_prob,
               std::span<double> regress_coeff);
 
+  /**
+   * Construct a new EM algorithm object
+   *
+   * Please see the description of the member variables for further information.
+   * The following content pointed to shall be modified:
+   * <ul>
+   *   <li>posterior</li>
+   *   <li>prior</li>
+   *   <li>estimated_prob</li>
+   * </ul>
+   *
+   * @param responses Design matrix TRANSPOSED of responses, matrix containing
+   * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
+   * has dimensions
+   * <ul>
+   *   <li>dim 0: for each category</li>
+   *   <li>dim 1: for each data point</li>
+   * </ul>
+   * @param initial_prob Vector of initial probabilities for each category and
+   * outcome, flatten list in the following order
+   * <ul>
+   *   <li>dim 0: for each outcome</li>
+   *   <li>dim 1: for each category</li>
+   *   <li>dim 2: for each cluster</li>
+   * </ul>
+   * @param n_data Number of data points
+   * @param n_outcomes Vector of number of outcomes for each category and its
+   * sum
+   * @param n_cluster Number of clusters to fit
+   * @param max_iter Maximum number of iterations for EM algorithm
+   * @param tolerance Tolerance for difference in log-likelihood, used for
+   * stopping condition
+   * @param posterior Modified to contain the resulting posterior probabilities
+   * after calling Fit(). Design matrix of posterior probabilities (also called
+   * responsibility). It's the probability a data point is in cluster m given
+   * responses. The matrix has the following dimensions
+   * <ul>
+   *   <li>dim 0: for each data</li>
+   *   <li>dim 1: for each cluster</li>
+   * </ul>
+   * @param prior Modified to contain the resulting prior probabilities after
+   * calling Fit(). Design matrix of prior probabilities. It's the probability a
+   * data point is in cluster m NOT given responses after calculations. The
+   * matrix has the following dimensions dimensions
+   * <ul>
+   *   <li>dim 0: for each data</li>
+   *   <li>dim 1: for each cluster</li>
+   * </ul>
+   * @param estimated_prob Modified to contain the resulting outcome
+   * probabilities after calling Fit(). Vector of estimated response
+   * probabilities, conditioned on cluster, for each category. A flatten list in
+   * the following order
+   * <ul>
+   *   <li>dim 0: for each outcome</li>
+   *   <li>dim 1: for each category</li>
+   *   <li>dim 2: for each cluster</li>
+   * </ul>
+   */
+  EmAlgorithm(std::span<const int> responses,
+              std::span<const double> initial_prob, std::size_t n_data,
+              NOutcomes n_outcomes, std::size_t n_cluster,
+              unsigned int max_iter, double tolerance,
+              std::span<double> posterior, std::span<double> prior,
+              std::span<double> estimated_prob);
+
   virtual ~EmAlgorithm() = default;
 
   /**

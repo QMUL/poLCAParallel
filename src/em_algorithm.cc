@@ -46,6 +46,16 @@ polca_parallel::EmAlgorithm::EmAlgorithm(
       rng_(std::make_unique<std::mt19937_64>(
           std::chrono::system_clock::now().time_since_epoch().count())) {}
 
+polca_parallel::EmAlgorithm::EmAlgorithm(
+    std::span<const int> responses, std::span<const double> initial_prob,
+    std::size_t n_data, polca_parallel::NOutcomes n_outcomes,
+    std::size_t n_cluster, unsigned int max_iter, double tolerance,
+    std::span<double> posterior, std::span<double> prior,
+    std::span<double> estimated_prob)
+    : EmAlgorithm(std::span<const double>(), responses, initial_prob, n_data, 1,
+                  n_outcomes, n_cluster, max_iter, tolerance, posterior, prior,
+                  estimated_prob, std::span<double>()) {}
+
 void polca_parallel::EmAlgorithm::Fit() {
   bool is_first_run = true;
   bool is_success = false;
