@@ -366,9 +366,8 @@ class EmAlgorithm {
    * Reset parameters for a re-run
    *
    * Reset the parameters estimated_prob_ with random starting values
-   * @param uniform required to generate random probabilities
    */
-  virtual void Reset(std::uniform_real_distribution<double>& uniform);
+  virtual void Reset();
 
   /**
    * Initialise prior probabilities

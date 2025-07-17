@@ -120,8 +120,6 @@ void polca_parallel::Blrt::RunThread() {
       std::unique_ptr<std::mt19937_64> rng =
           std::make_unique<std::mt19937_64>(this->seed_array_.at(i_bootstrap));
 
-      std::uniform_real_distribution<double> uniform(0.0, 1.0);
-
       // generate new initial values
       for (std::size_t i_rep = 1; i_rep < this->n_rep_; ++i_rep) {
         arma::Mat<double> init_prob_null_i(
@@ -135,10 +133,10 @@ void polca_parallel::Blrt::RunThread() {
             this->n_outcomes_.sum(), this->prior_alt_.size(), false, true);
 
         polca_parallel::RandomProb(this->n_outcomes_, this->prior_null_.size(),
-                                   uniform, *rng, init_prob_null_i);
+                                   *rng, init_prob_null_i);
 
         polca_parallel::RandomProb(this->n_outcomes_, this->prior_alt_.size(),
-                                   uniform, *rng, init_prob_alt_i);
+                                   *rng, init_prob_alt_i);
       }
 
       // bootstrap data using null model

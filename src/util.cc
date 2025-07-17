@@ -70,10 +70,10 @@ std::vector<int> polca_parallel::RandomMarginal(
 
 void polca_parallel::RandomProb(std::span<const size_t> n_outcomes,
                                 const std::size_t n_cluster,
-                                std::uniform_real_distribution<double>& uniform,
                                 std::mt19937_64& rng, arma::Mat<double>& prob) {
+  std::uniform_real_distribution<double> random_distribution(0.0, 1.0);
   for (auto& prob_i : prob) {
-    prob_i = uniform(rng);
+    prob_i = random_distribution(rng);
   }
   // normalise to probabilities
   for (std::size_t m = 0; m < n_cluster; ++m) {

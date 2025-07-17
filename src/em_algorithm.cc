@@ -60,8 +60,6 @@ void polca_parallel::EmAlgorithm::Fit() {
   bool is_first_run = true;
   bool is_success = false;
 
-  std::uniform_real_distribution<double> uniform(0.0, 1.0);
-
   while (!is_success) {
     if (is_first_run) {
       // copy initial prob to estimated prob
@@ -70,7 +68,7 @@ void polca_parallel::EmAlgorithm::Fit() {
     } else {
       // reach this condition if the first run has a problem
       // reset all required parameters
-      this->Reset(uniform);
+      this->Reset();
     }
 
     // make a copy initial probabilities if requested
@@ -161,12 +159,11 @@ std::unique_ptr<std::mt19937_64> polca_parallel::EmAlgorithm::move_rng() {
   return std::move(this->rng_);
 }
 
-void polca_parallel::EmAlgorithm::Reset(
-    std::uniform_real_distribution<double>& uniform) {
+void polca_parallel::EmAlgorithm::Reset() {
   // generate random number for estimated_prob_
   this->has_restarted_ = true;
-  polca_parallel::RandomProb(this->n_outcomes_, this->n_cluster_, uniform,
-                             *this->rng_, this->estimated_prob_);
+  polca_parallel::RandomProb(this->n_outcomes_, this->n_cluster_, *this->rng_,
+                             this->estimated_prob_);
 }
 
 void polca_parallel::EmAlgorithm::InitPrior() {

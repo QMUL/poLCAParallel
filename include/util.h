@@ -87,7 +87,6 @@ std::vector<int> RandomMarginal(std::size_t n_data, NOutcomes n_outcomes,
  * @param n_outcomes vector length n_category, number of outcomes for each
  * category
  * @param n_cluster number of clusters
- * @param uniform uniform (0, 1)
  * @param rng random number generator
  * @param prob output, matrix of random response probabilities, conditioned on
  * cluster, for each outcome, category and cluster
@@ -97,9 +96,8 @@ std::vector<int> RandomMarginal(std::size_t n_data, NOutcomes n_outcomes,
  * </ul>
  */
 void RandomProb(std::span<const std::size_t> n_outcomes,
-                const std::size_t n_cluster,
-                std::uniform_real_distribution<double>& uniform,
-                std::mt19937_64& rng, arma::Mat<double>& prob);
+                const std::size_t n_cluster, std::mt19937_64& rng,
+                arma::Mat<double>& prob);
 
 }  // namespace polca_parallel
 

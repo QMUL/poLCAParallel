@@ -167,9 +167,8 @@ class EmAlgorithmRegress : public polca_parallel::EmAlgorithm {
    *
    * Reset the parameters estimated_prob_ with random starting values and
    * regress_coeff_ all to zero
-   * @param uniform required to generate random probabilities
    */
-  void Reset(std::uniform_real_distribution<double>& uniform) override;
+  void Reset() override;
 
   void InitPrior() override;
 
