@@ -99,6 +99,34 @@ void RandomProb(std::span<const std::size_t> n_outcomes,
                 const std::size_t n_cluster, std::mt19937_64& rng,
                 arma::Mat<double>& prob);
 
+/**
+ * Generate random response probabilities to initalise the EmAlgorithmArray
+ *
+ * @param n_outcomes vector length n_category, number of outcomes for each
+ * category
+ * @param n_cluster number of clusters
+ * @param n_rep Number of repetition for EmAlgorithmArray
+ * @param rng random number generator
+ * @return std::vector<double> An array suitable to pass as initial_prob to
+ * EmAlgorithmArray
+ */
+std::vector<double> RandomInitialProb(polca_parallel::NOutcomes n_outcomes,
+                                      const std::size_t n_cluster,
+                                      std::size_t n_rep, std::mt19937_64& rng);
+
+/**
+ * Set missing data at random to the responses
+ *
+ * Set missing data at random to the responses by setting them to zero
+ *
+ * @param missing_prob the probability a data point is set to zero or missing
+ * @param rng random number generator
+ * @param responses
+ *
+ */
+void SetMissingAtRandom(double missing_prob, std::mt19937_64& rng,
+                        std::span<int> responses);
+
 }  // namespace polca_parallel
 
 #endif  // POLCAPARALLEL_INCLUDE_UTIL_H_

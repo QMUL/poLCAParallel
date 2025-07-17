@@ -85,3 +85,28 @@ void polca_parallel::RandomProb(std::span<const size_t> n_outcomes,
     }
   }
 }
+
+std::vector<double> polca_parallel::RandomInitialProb(
+    polca_parallel::NOutcomes n_outcomes, const std::size_t n_cluster,
+    std::size_t n_rep, std::mt19937_64& rng) {
+  std::vector<double> initial_prob(n_rep * n_cluster * n_outcomes.sum());
+  auto initial_prob_iter = initial_prob.data();
+  for (std::size_t i_rep = 0; i_rep < n_rep; ++i_rep) {
+    arma::Mat<double> prob_i(initial_prob_iter, n_outcomes.sum(), n_cluster,
+                             false, true);
+    polca_parallel::RandomProb(n_outcomes, n_cluster, rng, prob_i);
+    std::advance(initial_prob_iter, n_outcomes.sum() * n_cluster);
+  }
+  return initial_prob;
+}
+
+void polca_parallel::SetMissingAtRandom(double missing_prob,
+                                        std::mt19937_64& rng,
+                                        std::span<int> responses) {
+  std::bernoulli_distribution missing_dist(missing_prob);
+  for (auto& response : responses) {
+    if (missing_dist(rng)) {
+      response = 0;
+    }
+  }
+}
