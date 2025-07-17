@@ -18,6 +18,7 @@
 #include "em_algorithm.h"
 
 #include <algorithm>
+#include <cassert>
 #include <chrono>
 #include <cmath>
 #include <iterator>
@@ -45,7 +46,11 @@ polca_parallel::EmAlgorithm::EmAlgorithm(
                       true),
       ln_l_array_(n_data),
       rng_(std::make_unique<std::mt19937_64>(
-          std::chrono::system_clock::now().time_since_epoch().count())) {}
+          std::chrono::system_clock::now().time_since_epoch().count())) {
+  assert(posterior.size() == n_data * n_cluster);
+  assert(prior.size() == n_data * n_cluster);
+  assert(estimated_prob.size() == n_outcomes.sum() * n_cluster);
+}
 
 polca_parallel::EmAlgorithm::EmAlgorithm(
     std::span<const int> responses, std::span<const double> initial_prob,
@@ -63,7 +68,8 @@ void polca_parallel::EmAlgorithm::Fit() {
 
   while (!is_success) {
     if (is_first_run) {
-      // copy initial prob to estimated prob
+      // copy initial prob to estimated prob)
+      assert(this->initial_prob_.size() == this->estimated_prob_.size());
       std::copy(this->initial_prob_.begin(), this->initial_prob_.end(),
                 this->estimated_prob_.begin());
     } else {
@@ -74,8 +80,10 @@ void polca_parallel::EmAlgorithm::Fit() {
 
     // make a copy initial probabilities if requested
     if (this->best_initial_prob_) {
+      std::span<double> best_initial_prob = this->best_initial_prob_.value();
+      assert(this->estimated_prob_.size() == best_initial_prob.size());
       std::copy(this->estimated_prob_.cbegin(), this->estimated_prob_.cend(),
-                this->best_initial_prob_.value().begin());
+                best_initial_prob.begin());
     }
 
     double ln_l_before = -INFINITY;
@@ -171,6 +179,7 @@ void polca_parallel::EmAlgorithm::InitPrior() {
   // prior probabilities are the same for all data points in this
   // implementation
   auto prior = this->prior_.begin();
+  assert(this->prior_.n_elem >= this->n_cluster_);
   std::fill(prior, std::next(prior, this->n_cluster_),
             1.0 / static_cast<double>(this->n_cluster_));
 }
@@ -179,6 +188,7 @@ void polca_parallel::EmAlgorithm::FinalPrior() {
   // Copying prior probabilities as each data point as the same prior
   auto prior = this->prior_.cbegin();
   std::vector<double> prior_copy(this->n_cluster_);
+  assert(this->prior_.n_elem >= this->n_cluster_);
   std::copy(prior, std::next(prior, this->n_cluster_), prior_copy.begin());
   for (std::size_t m = 0; m < this->n_cluster_; ++m) {
     this->prior_.col(m).fill(prior_copy.at(m));
@@ -188,6 +198,8 @@ void polca_parallel::EmAlgorithm::FinalPrior() {
 double polca_parallel::EmAlgorithm::GetPrior(
     [[maybe_unused]] const std::size_t data_index,
     const std::size_t cluster_index) const {
+  assert(cluster_index < this->n_cluster_);
+  assert(cluster_index <= this->prior_.n_elem);
   return this->prior_[cluster_index];
 }
 
@@ -199,9 +211,11 @@ void polca_parallel::EmAlgorithm::EStep() {
       // access to posterior_ in this manner should result in cache misses
       // however PosteriorUnnormalize() is designed for cache efficiency
       double prior = this->GetPrior(i_data, i_cluster);
-      this->posterior_[i_cluster * this->n_data_ + i_data] =
-          this->PosteriorUnnormalize(
-              responses_i, prior, this->estimated_prob_.unsafe_col(i_cluster));
+      std::size_t posterior_index = i_cluster * this->n_data_ + i_data;
+      assert(posterior_index < this->posterior_.n_elem);
+      assert(this->estimated_prob_.n_cols > i_cluster);
+      this->posterior_[posterior_index] = this->PosteriorUnnormalize(
+          responses_i, prior, this->estimated_prob_.unsafe_col(i_cluster));
     }
   }
 
@@ -226,6 +240,7 @@ bool polca_parallel::EmAlgorithm::MStep() {
   // estimate prior
   // for this implementation, the mean posterior, taking the mean over data
   // points
+  assert(this->prior_.n_elem > this->n_cluster_);
   arma::Row<double> prior(this->prior_.begin(), this->n_cluster_, false, true);
   prior = arma::mean(this->posterior_, 0);
 
@@ -249,6 +264,10 @@ void polca_parallel::EmAlgorithm::EstimateProbability() {
 void polca_parallel::EmAlgorithm::WeightedSumProb(
     const std::size_t cluster_index) {
   auto y = this->responses_.begin();
+
+  assert(this->estimated_prob_.n_cols > cluster_index);
+  assert(this->posterior_.n_cols > cluster_index);
+
   // point to outcome probabilites for given cluster for the zeroth category
   arma::Col<double> estimated_prob_col =
       this->estimated_prob_.unsafe_col(cluster_index);
@@ -256,6 +275,10 @@ void polca_parallel::EmAlgorithm::WeightedSumProb(
   for (double posterior_i : this->posterior_.unsafe_col(cluster_index)) {
     auto estimated_prob_iter = estimated_prob_col.begin();
     for (std::size_t n_outcome_j : this->n_outcomes_) {
+      assert(y < this->responses_.end());
+      assert(std::next(estimated_prob_iter, n_outcome_j) <=
+             estimated_prob_col.end());
+
       // selective summing of posterior
       *std::next(estimated_prob_iter, *y - 1) += posterior_i;
       // point to next category
@@ -282,6 +305,7 @@ void polca_parallel::EmAlgorithm::NormalWeightedSumProb(
   // normalise by the sum of posteriors
   // calculations can be reused as the prior is the mean of posteriors
   // from the E step
+  assert(estimated_prob_.n_cols > cluster_index);
   this->estimated_prob_.unsafe_col(cluster_index) /= normaliser;
 }
 
@@ -315,6 +339,9 @@ double polca_parallel::PosteriorUnnormalize(
   //
   // it is possible instead to do a sum of log likelihoods instead
   for (std::size_t n_outcome : n_outcomes) {
+    assert(responses_i_it < responses_i.end());
+    assert(std::next(estimated_prob_it, n_outcome) <= estimated_prob.cend());
+
     int y = *responses_i_it;  // cache hit by accesing adjacent memory
     std::advance(responses_i_it, 1);
     // cache hit in estimated_prob by accesing memory n_outcomes + y -1 away
@@ -324,6 +351,7 @@ double polca_parallel::PosteriorUnnormalize(
         likelihood *= *std::next(estimated_prob_it, y - 1);
       }
     } else {
+      assert(y > 0);
       likelihood *= *std::next(estimated_prob_it, y - 1);
     }
 

@@ -18,6 +18,7 @@
 #include "em_algorithm_array.h"
 
 #include <algorithm>
+#include <cassert>
 #include <thread>
 #include <type_traits>
 
@@ -184,7 +185,9 @@ void polca_parallel::EmAlgorithmArray::FitThread() {
       fitter->Fit();
       double ln_l = fitter->get_ln_l();
       if (this->ln_l_array_) {
-        this->ln_l_array_.value()[rep_index] = ln_l;
+        std::span<double> ln_l_array = this->ln_l_array_.value();
+        assert(rep_index < ln_l_array.size());
+        ln_l_array[rep_index] = ln_l;
       }
 
       // if ownership of rng transferred (if any) to fitter, get it back if
@@ -199,6 +202,10 @@ void polca_parallel::EmAlgorithmArray::FitThread() {
         this->optimal_ln_l_ = ln_l;
         this->n_iter_ = fitter->get_n_iter();
 
+        assert(posterior.size() == this->posterior_.size());
+        assert(prior.size() == this->prior_.size());
+        assert(estimated_prob.size() == this->estimated_prob_.size());
+
         std::copy(posterior.cbegin(), posterior.cend(),
                   this->posterior_.begin());
         std::copy(prior.cbegin(), prior.cend(), this->prior_.begin());
@@ -209,13 +216,17 @@ void polca_parallel::EmAlgorithmArray::FitThread() {
                                      polca_parallel::EmAlgorithmRegress> ||
                       std::is_same_v<EmAlgorithmType,
                                      polca_parallel::EmAlgorithmNanRegress>) {
+          assert(regress_coeff.size() == this->regress_coeff_.size());
           std::copy(regress_coeff.cbegin(), regress_coeff.cend(),
                     this->regress_coeff_.begin());
         }
 
         if (this->best_initial_prob_) {
+          std::span<double> best_initial_prob_ =
+              this->best_initial_prob_.value();
+          assert(best_initial_prob.size() == best_initial_prob_.size());
           std::copy(best_initial_prob.cbegin(), best_initial_prob.cend(),
-                    this->best_initial_prob_.value().begin());
+                    best_initial_prob_.begin());
         }
       }
       this->results_lock_.unlock();

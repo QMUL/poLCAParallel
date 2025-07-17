@@ -17,6 +17,7 @@
 
 #include "em_algorithm_regress.h"
 
+#include <cassert>
 #include <iterator>
 #include <stdexcept>
 
@@ -39,6 +40,8 @@ polca_parallel::EmAlgorithmRegress::EmAlgorithmRegress(
       n_parameters_(n_feature * (n_cluster - 1)),
       gradient_(this->n_parameters_),
       hessian_(this->n_parameters_, this->n_parameters_) {
+  assert(features.size() == n_data * n_feature);
+  assert(regress_coeff.size() == n_feature * (n_cluster - 1));
   this->init_regress_coeff();
 }
 
@@ -66,7 +69,9 @@ void polca_parallel::EmAlgorithmRegress::FinalPrior() {
 
 double polca_parallel::EmAlgorithmRegress::GetPrior(
     std::size_t data_index, std::size_t cluster_index) const {
-  return this->prior_[data_index + this->n_data_ * cluster_index];
+  std::size_t index = data_index + this->n_data_ * cluster_index;
+  assert(index < this->prior_.n_elem);
+  return this->prior_[index];
 }
 
 bool polca_parallel::EmAlgorithmRegress::IsInvalidLikelihood(
@@ -108,6 +113,7 @@ void polca_parallel::EmAlgorithmRegress::NormalWeightedSumProb(
     const std::size_t cluster_index) {
   // override as the normaliser cannot be calculated using prior
   // using sum of posterior instead
+  assert(cluster_index < this->posterior_.n_cols);
   double normaliser = arma::sum(this->posterior_.unsafe_col(cluster_index));
   this->polca_parallel::EmAlgorithm::NormalWeightedSumProb(cluster_index,
                                                            normaliser);
@@ -120,10 +126,15 @@ void polca_parallel::EmAlgorithmRegress::init_regress_coeff() {
 void polca_parallel::EmAlgorithmRegress::CalcGrad() {
   auto gradient = this->gradient_.begin();
   for (std::size_t m = 1; m < this->n_cluster_; ++m) {
+    assert(m < this->posterior_.n_cols);
+    assert(m < this->prior_.n_cols);
+
     auto posterior_m = this->posterior_.unsafe_col(m);
     auto prior_m = this->prior_.unsafe_col(m);
     auto post_minus_prior = posterior_m - prior_m;
     for (std::size_t p = 0; p < this->n_feature_; ++p) {
+      assert(gradient < this->gradient_.end());
+      assert(p < this->features_.n_cols);
       *gradient = arma::dot(this->features_.unsafe_col(p), post_minus_prior);
       std::advance(gradient, 1);
     }
@@ -146,15 +157,25 @@ void polca_parallel::EmAlgorithmRegress::CalcHessSubBlock(
   // the hessian does not consider the 0th cluster as the regression
   // coefficient for the 0th cluster is set to zero
 
+  assert(cluster_index_0 <= this->posterior_.n_cols);
+  assert(cluster_index_0 <= this->prior_.n_cols);
+
   auto posterior0 = this->posterior_.unsafe_col(cluster_index_0 + 1);
   auto prior0 = this->prior_.unsafe_col(cluster_index_0 + 1);
 
   // for the same cluster, copy over results as they will be modified
   bool is_same_cluster = cluster_index_0 == cluster_index_1;
 
+  assert(std::next(this->posterior_.begin(),
+                   (cluster_index_1 + 2) * this->n_data_) <=
+         this->posterior_.end());
   arma::Col<double> posterior1(std::next(this->posterior_.begin(),
                                          (cluster_index_1 + 1) * this->n_data_),
                                this->n_data_, is_same_cluster);
+
+  assert(
+      std::next(this->prior_.begin(), (cluster_index_1 + 2) * this->n_data_) <=
+      this->prior_.end());
   arma::Col<double> prior1(
       std::next(this->prior_.begin(), (cluster_index_1 + 1) * this->n_data_),
       this->n_data_, is_same_cluster);
@@ -199,6 +220,8 @@ void polca_parallel::EmAlgorithmRegress::CalcHessSubBlock(
 double polca_parallel::EmAlgorithmRegress::CalcHessElement(
     std::size_t feature_index_0, std::size_t feature_index_1,
     const arma::Col<double>& prior_post_inter) {
+  assert(feature_index_0 < this->features_.n_cols);
+  assert(feature_index_1 < this->features_.n_cols);
   return arma::sum(this->features_.unsafe_col(feature_index_0) %
                    this->features_.unsafe_col(feature_index_1) %
                    prior_post_inter);
@@ -211,5 +234,6 @@ void polca_parallel::EmAlgorithmRegress::AssignHessianAt(
   std::size_t index = cluster_index_1 * this->n_parameters_ * this->n_feature_ +
                       feature_index_1 * this->n_parameters_ +
                       cluster_index_0 * this->n_feature_ + feature_index_0;
+  assert(index < this->hessian_.n_elem);
   this->hessian_[index] = hess_element;
 }
