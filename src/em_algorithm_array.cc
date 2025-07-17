@@ -131,7 +131,7 @@ void polca_parallel::EmAlgorithmArray::SetFitterRng(
 }
 
 void polca_parallel::EmAlgorithmArray::MoveRngBackFromFitter(
-    polca_parallel::EmAlgorithm& fitter) {
+    [[maybe_unused]] polca_parallel::EmAlgorithm& fitter) {
   // do nothing, no rng handelled here
 }
 

@@ -25,12 +25,13 @@
 #include <vector>
 
 polca_parallel::EmAlgorithm::EmAlgorithm(
-    std::span<const double> features, std::span<const int> responses,
-    std::span<const double> initial_prob, std::size_t n_data,
-    std::size_t n_feature, polca_parallel::NOutcomes n_outcomes,
-    std::size_t n_cluster, unsigned int max_iter, double tolerance,
-    std::span<double> posterior, std::span<double> prior,
-    std::span<double> estimated_prob, std::span<double> regress_coeff)
+    [[maybe_unused]] std::span<const double> features,
+    std::span<const int> responses, std::span<const double> initial_prob,
+    std::size_t n_data, [[maybe_unused]] std::size_t n_feature,
+    polca_parallel::NOutcomes n_outcomes, std::size_t n_cluster,
+    unsigned int max_iter, double tolerance, std::span<double> posterior,
+    std::span<double> prior, std::span<double> estimated_prob,
+    [[maybe_unused]] std::span<double> regress_coeff)
     : responses_(responses),
       initial_prob_(initial_prob),
       n_data_(n_data),
@@ -185,7 +186,8 @@ void polca_parallel::EmAlgorithm::FinalPrior() {
 }
 
 double polca_parallel::EmAlgorithm::GetPrior(
-    const std::size_t data_index, const std::size_t cluster_index) const {
+    [[maybe_unused]] const std::size_t data_index,
+    const std::size_t cluster_index) const {
   return this->prior_[cluster_index];
 }
 
@@ -216,7 +218,7 @@ double polca_parallel::EmAlgorithm::PosteriorUnnormalize(
 }
 
 bool polca_parallel::EmAlgorithm::IsInvalidLikelihood(
-    double ln_l_difference) const {
+    [[maybe_unused]] double ln_l_difference) const {
   return std::isnan(this->ln_l_);
 }
 
