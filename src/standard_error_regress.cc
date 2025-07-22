@@ -32,7 +32,8 @@ polca_parallel::StandardErrorRegress::StandardErrorRegress(
           features, responses, probs, prior, posterior, n_data, n_feature,
           n_outcomes, n_cluster, prior_error, prob_error, regress_coeff_error),
       features_(const_cast<double*>(features.data()), n_data, n_feature, false,
-                true) {}
+                true),
+      regress_coeff_error_(regress_coeff_error) {}
 
 std::unique_ptr<polca_parallel::ErrorSolver>
 polca_parallel::StandardErrorRegress::InitErrorSolver() {

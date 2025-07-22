@@ -44,6 +44,8 @@ class StandardErrorRegress : public polca_parallel::StandardError {
    * </ul>
    */
   arma::Mat<double> features_;
+  /** Covariance matrix of the regression coefficient */
+  std::span<double> regress_coeff_error_;
 
  public:
   /**

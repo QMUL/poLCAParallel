@@ -48,6 +48,13 @@ class RegularisedError : public polca_parallel::StandardError {
                    std::span<double> prob_error,
                    std::span<double> regress_coeff_error);
 
+  /** @copydoc StandardError::StandardError */
+  RegularisedError(std::span<const int> responses,
+                   std::span<const double> probs, std::span<const double> prior,
+                   std::span<const double> posterior, std::size_t n_data,
+                   NOutcomes n_outcomes, std::size_t n_cluster,
+                   std::span<double> prior_error, std::span<double> prob_error);
+
   ~RegularisedError() override = default;
 };
 

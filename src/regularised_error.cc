@@ -39,6 +39,17 @@ polca_parallel::RegularisedError::RegularisedError(
       this->n_data_, this->n_outcomes_, this->n_cluster_);
 }
 
+polca_parallel::RegularisedError::RegularisedError(
+    std::span<const int> responses, std::span<const double> probs,
+    std::span<const double> prior, std::span<const double> posterior,
+    std::size_t n_data, polca_parallel::NOutcomes n_outcomes,
+    std::size_t n_cluster, std::span<double> prior_error,
+    std::span<double> prob_error)
+    : polca_parallel::RegularisedError(std::span<const double>(), responses,
+                                       probs, prior, posterior, n_data, 1,
+                                       n_outcomes, n_cluster, prior_error,
+                                       prob_error, std::span<double>()) {}
+
 polca_parallel::RegularisedRegressError::RegularisedRegressError(
     std::span<const double> features, std::span<const int> responses,
     std::span<const double> probs, std::span<const double> prior,

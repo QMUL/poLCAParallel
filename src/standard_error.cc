@@ -27,7 +27,7 @@ polca_parallel::StandardError::StandardError(
     std::size_t n_data, std::size_t n_feature,
     polca_parallel::NOutcomes n_outcomes, std::size_t n_cluster,
     std::span<double> prior_error, std::span<double> prob_error,
-    std::span<double> regress_coeff_error)
+    [[maybe_unused]] std::span<double> regress_coeff_error)
     : responses_(const_cast<int*>(responses.data()), n_data, n_outcomes.size(),
                  false, true),
       probs_(probs),
@@ -42,10 +42,19 @@ polca_parallel::StandardError::StandardError(
       n_cluster_(n_cluster),
       prior_error_(prior_error),
       prob_error_(prob_error),
-      regress_coeff_error_(regress_coeff_error),
       info_size_(n_feature_ * (n_cluster_ - 1) +
                  n_cluster_ * (n_outcomes.sum() - n_outcomes.size())),
       jacobian_width_(n_cluster_ + n_cluster_ * n_outcomes.sum()) {}
+
+polca_parallel::StandardError::StandardError(
+    std::span<const int> responses, std::span<const double> probs,
+    std::span<const double> prior, std::span<const double> posterior,
+    std::size_t n_data, polca_parallel::NOutcomes n_outcomes,
+    std::size_t n_cluster, std::span<double> prior_error,
+    std::span<double> prob_error)
+    : StandardError(std::span<const double>(), responses, probs, prior,
+                    posterior, n_data, 1, n_outcomes, n_cluster, prior_error,
+                    prob_error, std::span<double>()) {}
 
 void polca_parallel::StandardError::Calc() {
   this->SmoothProbs();
@@ -81,9 +90,9 @@ void polca_parallel::StandardError::SmoothProbs() {
 std::unique_ptr<polca_parallel::ErrorSolver>
 polca_parallel::StandardError::InitErrorSolver() {
   return std::make_unique<polca_parallel::ScoreSvdSolver>(
-      this->n_data_, this->n_feature_, this->n_outcomes_.sum(),
-      this->n_cluster_, this->info_size_, this->jacobian_width_,
-      this->prior_error_, this->prob_error_, this->regress_coeff_error_);
+      this->n_data_, this->n_outcomes_.sum(), this->n_cluster_,
+      this->info_size_, this->jacobian_width_, this->prior_error_,
+      this->prob_error_);
 }
 
 void polca_parallel::StandardError::CalcScore(arma::Mat<double>& score) const {
