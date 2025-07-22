@@ -17,6 +17,7 @@
 
 #include "standard_error_regress.h"
 
+#include <cassert>
 #include <iterator>
 
 #include "error_solver.h"
@@ -33,7 +34,9 @@ polca_parallel::StandardErrorRegress::StandardErrorRegress(
           n_outcomes, n_cluster, prior_error, prob_error, regress_coeff_error),
       features_(const_cast<double*>(features.data()), n_data, n_feature, false,
                 true),
-      regress_coeff_error_(regress_coeff_error) {}
+      regress_coeff_error_(regress_coeff_error) {
+  assert(features.size() == n_data * n_feature);
+}
 
 std::unique_ptr<polca_parallel::ErrorSolver>
 polca_parallel::StandardErrorRegress::InitErrorSolver() {
@@ -50,6 +53,10 @@ void polca_parallel::StandardErrorRegress::CalcScorePrior(
     auto score_prior_i =
         score_prior.cols((cluster_index - 1) * this->n_feature_,
                          cluster_index * this->n_feature_ - 1);
+
+    assert(cluster_index < this->posterior_->n_cols);
+    assert(cluster_index < this->prior_->n_cols);
+
     score_prior_i = this->features_.each_col() %
                     (this->posterior_->unsafe_col(cluster_index) -
                      this->prior_->unsafe_col(cluster_index));
@@ -65,16 +72,24 @@ void polca_parallel::StandardErrorRegress::CalcJacobianPrior(
       for (std::size_t i_feature = 0; i_feature < this->n_feature_;
            ++i_feature) {
         for (std::size_t i_data = 0; i_data < this->n_data_; ++i_data) {
-          double prior_i = (*this->prior_)[i_cluster * this->n_data_ + i_data];
-          double prior_j = (*this->prior_)[j_cluster * this->n_data_ + i_data];
+          std::size_t index_i = i_cluster * this->n_data_ + i_data;
+          std::size_t index_j = j_cluster * this->n_data_ + i_data;
+
+          assert(index_i < this->prior_->n_elem);
+          assert(index_j < this->prior_->n_elem);
+
+          double prior_i = (*this->prior_)[index_i];
+          double prior_j = (*this->prior_)[index_j];
           double jac_element = -prior_i * prior_j;
           if (i_cluster == j_cluster) {
             jac_element += prior_i;
           }
+          assert(feature < this->features_.cend());
           *jacobian += jac_element * *feature;
 
           std::advance(feature, 1);
         }
+        assert(&*jacobian < &*jacobian_prior.end());
         *jacobian /= static_cast<double>(this->n_data_);
         std::advance(jacobian, 1);
       }

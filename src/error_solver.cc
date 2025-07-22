@@ -18,6 +18,7 @@
 #include "error_solver.h"
 
 #include <algorithm>
+#include <cassert>
 #include <iterator>
 #include <limits>
 
@@ -76,6 +77,11 @@ void polca_parallel::InfoEigenSolver::ExtractErrorGivenEigen(
   // do root columns sum of squares, faster than full matrix multiplication
   arma::Row<double> std_err = arma::vecnorm(
       arma::diagmat(arma::sqrt(eigval_inv)) * eigvec.t() * jacobian, 2, 0);
+
+  assert(std_err.n_elem ==
+         this->n_cluster_ + this->sum_outcomes_ * this->n_cluster_);
+  assert(this->prior_error_.size() == this->n_cluster_);
+  assert(this->prob_error_.size() == this->sum_outcomes_ * this->n_cluster_);
 
   std::copy_n(std_err.cbegin(), this->n_cluster_, this->prior_error_.begin());
   std::copy_n(std::next(std_err.cbegin(), this->n_cluster_),
@@ -156,6 +162,11 @@ void polca_parallel::ScoreSvdSolver::ExtractErrorGivenEigen(
   // do root columns sum of squares, faster than full matrix multiplication
   arma::Row<double> std_err =
       arma::vecnorm(arma::diagmat(singular_inv) * v_mat.t() * jacobian, 2, 0);
+
+  assert(std_err.n_elem ==
+         this->n_cluster_ + this->sum_outcomes_ * this->n_cluster_);
+  assert(this->prior_error_.size() == this->n_cluster_);
+  assert(this->prob_error_.size() == this->sum_outcomes_ * this->n_cluster_);
 
   std::copy_n(std_err.cbegin(), this->n_cluster_, this->prior_error_.begin());
   std::copy_n(std::next(std_err.cbegin(), this->n_cluster_),
