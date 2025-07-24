@@ -127,6 +127,26 @@ std::vector<double> RandomInitialProb(polca_parallel::NOutcomes n_outcomes,
 void SetMissingAtRandom(double missing_prob, std::mt19937_64& rng,
                         std::span<int> responses);
 
+/**
+ * Calculate the number of fully observed responses
+ *
+ * Calculate (or count) the number of fully observed responses. Unobserved
+ * responses are coded as zero
+ *
+ * @param responses Design matrix TRANSPOSED of responses, matrix containing
+ * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
+ * has dimensions
+ * <ul>
+ *   <li>dim 0: for each category</li>
+ *   <li>dim 1: for each data point</li>
+ * </ul>
+ * @param n_data Number of data points
+ * @param n_category Number of categories in each response
+ * @return std::size_t Number of fully observed responses
+ */
+[[nodiscard]] std::size_t CalcNObs(std::span<const int> responses,
+                                   std::size_t n_data, std::size_t n_category);
+
 }  // namespace polca_parallel
 
 #endif  // POLCAPARALLEL_INCLUDE_UTIL_H_

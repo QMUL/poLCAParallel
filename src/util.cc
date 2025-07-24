@@ -131,3 +131,22 @@ void polca_parallel::SetMissingAtRandom(double missing_prob,
     assert(response >= 0);
   }
 }
+
+std::size_t polca_parallel::CalcNObs(std::span<const int> responses,
+                                     std::size_t n_data,
+                                     std::size_t n_category) {
+  std::size_t n_obs = 0;
+  auto response_i = responses.begin();
+  for (std::size_t i_data = 0; i_data < n_data; ++i_data) {
+    bool is_fully_observed = true;
+    for (std::size_t i_category = 0; i_category < n_category; ++i_category) {
+      assert(response_i < responses.end());
+      if (*response_i == 0) {
+        is_fully_observed = false;
+      }
+      std::advance(response_i, 1);
+    }
+    n_obs += is_fully_observed;
+  }
+  return n_obs;
+}
