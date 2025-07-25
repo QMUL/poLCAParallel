@@ -41,7 +41,7 @@ std::unique_ptr<polca_parallel::StandardError> InitStandardError(
     }
   } else {
     if (use_smooth) {
-      return std::make_unique<polca_parallel::RegularisedRegressError>(
+      return std::make_unique<polca_parallel::RegularisedErrorRegress>(
           std::forward<Args>(args)...);
     } else {
       return std::make_unique<polca_parallel::StandardErrorRegress>(

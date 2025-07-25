@@ -67,10 +67,10 @@ class RegularisedError : public polca_parallel::StandardError {
  * @copydoc StandardErrorRegress
  *
  */
-class RegularisedRegressError : public polca_parallel::StandardErrorRegress {
+class RegularisedErrorRegress : public polca_parallel::StandardErrorRegress {
  public:
   /** @copydoc StandardErrorRegress::StandardErrorRegress */
-  RegularisedRegressError(std::span<const double> features,
+  RegularisedErrorRegress(std::span<const double> features,
                           std::span<const int> responses,
                           std::span<const double> probs,
                           std::span<const double> prior,
@@ -80,7 +80,7 @@ class RegularisedRegressError : public polca_parallel::StandardErrorRegress {
                           std::span<double> prob_error,
                           std::span<double> regress_coeff_error);
 
-  ~RegularisedRegressError() override = default;
+  ~RegularisedErrorRegress() override = default;
 };
 }  // namespace polca_parallel
 
