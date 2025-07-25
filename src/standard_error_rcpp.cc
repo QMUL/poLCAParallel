@@ -20,12 +20,35 @@
 #include <cstddef>
 #include <memory>
 #include <span>
+#include <utility>
 #include <vector>
 
 #include "regularised_error.h"
 #include "standard_error.h"
 #include "standard_error_regress.h"
 #include "util.h"
+
+template <typename... Args>
+std::unique_ptr<polca_parallel::StandardError> InitStandardError(
+    std::size_t n_feature, bool use_smooth, Args... args) {
+  if (n_feature == 1) {
+    if (use_smooth) {
+      return std::make_unique<polca_parallel::RegularisedError>(
+          std::forward<Args>(args)...);
+    } else {
+      return std::make_unique<polca_parallel::StandardError>(
+          std::forward<Args>(args)...);
+    }
+  } else {
+    if (use_smooth) {
+      return std::make_unique<polca_parallel::RegularisedRegressError>(
+          std::forward<Args>(args)...);
+    } else {
+      return std::make_unique<polca_parallel::StandardErrorRegress>(
+          std::forward<Args>(args)...);
+    }
+  }
+}
 
 /**
  * To be exported to R, calculate the standard error for a poLCA model
@@ -91,62 +114,18 @@ Rcpp::List StandardErrorRcpp(Rcpp::NumericVector features,
   Rcpp::NumericVector probs_error(n_outcomes.sum() * n_cluster);
   Rcpp::NumericMatrix regress_coeff_error(len_regress_coeff, len_regress_coeff);
 
-  std::unique_ptr<polca_parallel::StandardError> error;
-
-  if (n_feature == 1) {
-    if (use_smooth) {
-      error = std::make_unique<polca_parallel::RegularisedError>(
-          std::span<const double>(features.cbegin(), features.size()),
-          std::span<const int>(responses.cbegin(), responses.size()),
-          std::span<const double>(probs.cbegin(), probs.size()),
-          std::span<const double>(prior.begin(), prior.size()),
-          std::span<const double>(posterior.begin(), posterior.size()), n_data,
-          n_feature, n_outcomes, n_cluster,
-          std::span<double>(prior_error.begin(), prior_error.size()),
-          std::span<double>(probs_error.begin(), probs_error.size()),
-          std::span<double>(regress_coeff_error.begin(),
-                            regress_coeff_error.size()));
-    } else {
-      error = std::make_unique<polca_parallel::StandardError>(
-          std::span<const double>(features.cbegin(), features.size()),
-          std::span<const int>(responses.cbegin(), responses.size()),
-          std::span<const double>(probs.cbegin(), probs.size()),
-          std::span<const double>(prior.begin(), prior.size()),
-          std::span<const double>(posterior.begin(), posterior.size()), n_data,
-          n_feature, n_outcomes, n_cluster,
-          std::span<double>(prior_error.begin(), prior_error.size()),
-          std::span<double>(probs_error.begin(), probs_error.size()),
-          std::span<double>(regress_coeff_error.begin(),
-                            regress_coeff_error.size()));
-    }
-  } else {
-    if (use_smooth) {
-      error = std::make_unique<polca_parallel::RegularisedRegressError>(
-          std::span<const double>(features.cbegin(), features.size()),
-          std::span<const int>(responses.cbegin(), responses.size()),
-          std::span<const double>(probs.cbegin(), probs.size()),
-          std::span<const double>(prior.begin(), prior.size()),
-          std::span<const double>(posterior.begin(), posterior.size()), n_data,
-          n_feature, n_outcomes, n_cluster,
-          std::span<double>(prior_error.begin(), prior_error.size()),
-          std::span<double>(probs_error.begin(), probs_error.size()),
-          std::span<double>(regress_coeff_error.begin(),
-                            regress_coeff_error.size()));
-    } else {
-      error = std::make_unique<polca_parallel::StandardErrorRegress>(
-          std::span<const double>(features.cbegin(), features.size()),
-          std::span<const int>(responses.cbegin(), responses.size()),
-          std::span<const double>(probs.cbegin(), probs.size()),
-          std::span<const double>(prior.begin(), prior.size()),
-          std::span<const double>(posterior.begin(), posterior.size()), n_data,
-          n_feature, n_outcomes, n_cluster,
-          std::span<double>(prior_error.begin(), prior_error.size()),
-          std::span<double>(probs_error.begin(), probs_error.size()),
-          std::span<double>(regress_coeff_error.begin(),
-                            regress_coeff_error.size()));
-    }
-  }
-
+  std::unique_ptr<polca_parallel::StandardError> error = InitStandardError(
+      n_feature, use_smooth,
+      std::span<const double>(features.cbegin(), features.size()),
+      std::span<const int>(responses.cbegin(), responses.size()),
+      std::span<const double>(probs.cbegin(), probs.size()),
+      std::span<const double>(prior.begin(), prior.size()),
+      std::span<const double>(posterior.begin(), posterior.size()), n_data,
+      n_feature, n_outcomes, n_cluster,
+      std::span<double>(prior_error.begin(), prior_error.size()),
+      std::span<double>(probs_error.begin(), probs_error.size()),
+      std::span<double>(regress_coeff_error.begin(),
+                        regress_coeff_error.size()));
   error->Calc();
 
   Rcpp::List to_return;
