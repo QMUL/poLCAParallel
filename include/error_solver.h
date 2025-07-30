@@ -175,7 +175,7 @@ class InfoEigenSolver : public polca_parallel::ErrorSolver {
    * prior_error, prob_error and regress_coeff_error
    *
    * @param eigval_inv the inverse of the eigenvalues of the information matrix
-   * @param eigven eigenvectors of the information matrix
+   * @param eigvec eigenvectors of the information matrix
    * @param jacobian the jacobian matrix
    */
   virtual void ExtractErrorGivenEigen(const arma::Col<double>& eigval_inv,

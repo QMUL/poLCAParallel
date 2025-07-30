@@ -88,7 +88,7 @@ std::unique_ptr<polca_parallel::StandardError> InitStandardError(
  * </ul>
  * @param n_data Number of data points
  * @param n_feature Number of features
- * @param n_outcomes Array of number of outcomes, for each category
+ * @param n_outcomes_int Array of number of outcomes, for each category
  * @param n_cluster Number of clusters fitted
  * @param use_smooth True to smooth the outcome probabilities
  * @return Rcpp::List

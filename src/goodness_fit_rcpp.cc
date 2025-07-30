@@ -50,7 +50,6 @@
  *   <li>dim 2: for each cluster</li>
  * </ul>
  * @param n_data number of data points
- * @param n_obs number of fully observed data points
  * @param n_outcomes_int vector, number of possible responses for each category
  * @param n_cluster number of clusters, or classes, to fit
  * @return a list containing:

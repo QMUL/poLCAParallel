@@ -21,6 +21,7 @@
 #include <cstddef>
 #include <random>
 #include <span>
+#include <vector>
 
 #include "arma.h"
 

@@ -53,9 +53,13 @@
  * </ul>
  * @param n_data number of data points
  * @param n_feature number of features
- * @param n_outcomes: vector, number of possible outcomes for each category
+ * @param n_outcomes_int: vector, number of possible outcomes for each category
  * @param n_cluster: number of clusters, or classes, to fit
- * @param n_rep: number of repetitions
+ * @param n_rep number of repetitions
+ * @param na_rm indicate to remove missing values from the responses or include
+ * them in the calculations. Missing values are coded as 0 in responses
+ * @param n_thread number of threads to use, repetitions are distributed across
+ * threads
  * @param max_iter: maximum number of iterations for EM algorithm
  * @param tolerance: stop fitting when the change in log likelihood is less than
  * this

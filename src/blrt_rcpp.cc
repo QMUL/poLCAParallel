@@ -64,7 +64,7 @@
  * </ul>
  * @param n_data Number of data points, used to bootstrap this many data
  * points
- * @param n_outcomes Array of number of outcomes, for each category
+ * @param n_outcomes_int Array of number of outcomes, for each category
  * @param n_bootstrap Number of bootstrap samples to generate
  * @param n_rep Number of initial values to try when fitting on the bootstrap
  * samples

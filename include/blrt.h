@@ -107,7 +107,8 @@ class Blrt {
    * @brief Construct a new Blrt object
    *
    * @param prior_null Null model, vector of prior probabilities for the null
-   * model, the probability data point is in cluster m NOT given responses
+   * model, the probability data point is in cluster m <b>not</b> given
+   * responses
    * <ul>
    *   <li>dim 0: for each cluster</li>
    * </ul>
@@ -120,7 +121,8 @@ class Blrt {
    *   <li>dim 2: for each cluster</li>
    * </ul>
    * @param prior_alt Alt model, vector of prior probabilities for the null
-   * model, the probability data point is in cluster m NOT given responses
+   * model, the probability data point is in cluster m <b>not</b> given
+   * responses
    * <ul>
    *   <li>dim 0: for each cluster</li>
    * </ul>
@@ -135,7 +137,6 @@ class Blrt {
    * @param n_data Number of data points, used to bootstrap this many data
    * points
    * @param n_outcomes Array of number of outcomes, for each category
-   * @param sum_outcomes Sum of all integers in n_outcomes
    * @param n_bootstrap Number of bootstrap samples to generate
    * @param n_rep Number of initial values to try when fitting on the bootstrap
    * samples
@@ -166,7 +167,7 @@ class Blrt {
    * Generate a bootstrap sample
    *
    * @param prior Vector of prior probabilities for the null
-   * model, probability data point is in cluster m NOT given responses
+   * model, probability data point is in cluster m <b>not</b> given responses
    * <ul>
    *   <li>dim 0: for each cluster</li>
    * </ul>

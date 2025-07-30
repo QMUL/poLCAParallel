@@ -18,9 +18,6 @@
 #include "util.h"
 
 #include <cassert>
-#include <numeric>
-
-#include "arma.h"
 
 polca_parallel::NOutcomes::NOutcomes(const std::size_t* data, std::size_t size)
     : std::span<const std::size_t>(data, size),

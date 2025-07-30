@@ -29,16 +29,21 @@
 namespace polca_parallel {
 
 /**
- * For fitting using EM algorithm for a given initial value, prior probabilities
- * are softmax functions of the features
+ * For fitting the poLCA regression problem using the EM algorithm
+ *
+ * For fitting the poLCA regression problem using the EM algorithm. In the
+ * regression problem, prior probabilities are obatined from the softmax
+ * functions of the features.
+ *
+ * Provide initial outcome probabilities to initalise the EM algorithm
  *
  * How to use:
  * <ul>
  *   <li>
  *     Pass the data, initial probabilities and other parameters to the
  *     constructor. Also in the constructor, pass an array to store the
- *     posterior and prior probabilities (for each cluster) and the estimated
- *     response probabilities
+ *     posterior and prior probabilities (for each cluster), estimated
+ *     outcome probabilities and the regression coefficients
  *   </li>
  *   <li>
  *     Call optional methods such as set_best_initial_prob(), set_seed()
@@ -76,42 +81,61 @@ class EmAlgorithmRegress : public polca_parallel::EmAlgorithm {
   /** Number of features */
   const std::size_t n_feature_;
   /**
-   * Vector length n_features_*(n_cluster-1), linear regression coefficient
-   * in matrix form, to be multiplied to the features and linked to the
-   * prior using softmax
+   * Matrix of coefficients, to be multiplied to the features and linked to the
+   * prior using softmax. The dimensions are of size
+   * <ul>
+   *   <li>dim 0: EmAlgorithmRegress::n_feature_</li>
+   *   <li>dim 1: EmAlgorithmRegress::n_cluster_ - 1</li>
+   * </ul>
    */
   arma::Mat<double> regress_coeff_;
   /** Number of parameters to estimate for the softmax */
   const std::size_t n_parameters_;
-  /** vector, length n_parameters_, gradient of the log likelihood */
+  /**
+   * Vector of length EmAlgorithmRegress::n_parameters_
+   *
+   * Gradient of the log likelihood
+   */
   arma::Col<double> gradient_;
-  /** matrix, n_parameters_ x n_parameters, hessian of the log likelihood */
+  /**
+   * Hessian of the log likelihood with dimensions
+   * <ul>
+   *   <li>dim 0: EmAlgorithmRegress::n_parameters_</li>
+   *   <li>dim 1: EmAlgorithmRegress::n_parameters_</li>
+   * </ul>
+   */
   arma::Mat<double> hessian_;
 
  public:
   /**
    * Construct a new EM algorithm regression object
    *
-   * Please see the description of the member variables for further information.
    * The following content pointed to shall be modified:
    * <ul>
-   *   <li>posterior</li>
-   *   <li>prior</li>
-   *   <li>estimated_prob</li>
-   *   <li>regress_coeff</li>
+   *   <li><code>posterior</code></li>
+   *   <li><code>prior</code></li>
+   *   <li><code>estimated_prob</code></li>
+   *   <li><code>regress_coeff</code></li>
    * </ul>
    *
-   * @param features Design matrix of features, matrix with dimensions
+   * @param features Design matrix of features, matrix with dimensions:
    * <ul>
    *   <li>dim 0: for each data point</li>
    *   <li>dim 1: for each feature</li>
    * </ul>
-   * @param responses Design matrix TRANSPOSED of responses, matrix containing
-   * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
-   * has dimensions
+   * @param responses Design matrix <b>transposed</b> of responses, matrix
+   * containing outcomes/responses for each category as integers 1, 2, 3, ....
+   * The matrix has dimensions
    * <ul>
    *   <li>dim 0: for each category</li>
    *   <li>dim 1: for each data point</li>
+   * </ul>
+   * @param initial_prob Vector of initial probabilities for each category and
+   * outcome, flatten list in the following order
+   * <ul>
+   *   <li>dim 0: for each outcome</li>
+   *   <li>dim 1: for each category</li>
+   *   <li>dim 2: for each cluster</li>
    * </ul>
    * @param n_data Number of data points
    * @param n_feature Number of features
@@ -131,8 +155,8 @@ class EmAlgorithmRegress : public polca_parallel::EmAlgorithm {
    * </ul>
    * @param prior Modified to contain the resulting prior probabilities after
    * calling Fit(). Design matrix of prior probabilities. It's the probability a
-   * data point is in cluster m NOT given responses after calculations. The
-   * matrix has the following dimensions dimensions
+   * data point is in cluster m <b>not</b> given responses after calculations.
+   * The matrix has the following dimensions
    * <ul>
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
@@ -146,9 +170,13 @@ class EmAlgorithmRegress : public polca_parallel::EmAlgorithm {
    *   <li>dim 1: for each category</li>
    *   <li>dim 2: for each cluster</li>
    * </ul>
-   * @param regress_coeff Vector length n_features_*(n_cluster-1), linear
-   * regression coefficient in matrix form, to be multiplied to the features and
-   * linked to the prior using softmax
+   * @param regress_coeff Modified to contain the resulting matrix of
+   * coefficients. To be multiplied to the features and linked to the prior
+   * using softmax. The dimensions are of size
+   * <ul>
+   *   <li>dim 0: EmAlgorithmRegress::n_feature_</li>
+   *   <li>dim 1: EmAlgorithmRegress::n_cluster_ - 1</li>
+   * </ul>
    */
   EmAlgorithmRegress(std::span<const double> features,
                      std::span<const int> responses,
@@ -165,13 +193,19 @@ class EmAlgorithmRegress : public polca_parallel::EmAlgorithm {
   /**
    * Reset parameters for a re-run
    *
-   * Reset the parameters estimated_prob_ with random starting values and
-   * regress_coeff_ all to zero
+   * Reset the parameters EmAlgorithm::estimated_prob_ with random starting
+   * values and EmAlgorithmRegress::regress_coeff_ all to zero
    */
   void Reset() override;
 
   void InitPrior() override;
 
+  /**
+   * Adjust prior return value to matrix format
+   *
+   * Does nothing, the member variable EmAlgorithmRegress::prior_ is already
+   * in the correct matrix format
+   */
   void FinalPrior() override;
 
   [[nodiscard]] double GetPrior(std::size_t data_index,
@@ -184,44 +218,47 @@ class EmAlgorithmRegress : public polca_parallel::EmAlgorithm {
    *
    * Update the regression coefficient, prior probabilities and
    * estimated response probabilities given the posterior probabilities.
-   * Modifies the member variables regress_coeff_, gradient_, hessian_, prior_
-   * and estimated_prob_
+   * Modifies the member variables EmAlgorithmRegress::regress_coeff_,
+   * EmAlgorithmRegress::gradient_, EmAlgorithmRegress::hessian_,
+   * EmAlgorithmRegress::prior_ and EmAlgorithm::estimated_prob_
    *
-   * @return true if the solver cannot find a solution, false if successful
+   * @return <code>true</code> if the solver cannot find a solution,
+   * <code>false</code> if successful
    */
   bool MStep() override;
 
   void NormalWeightedSumProb(const std::size_t cluster_index) override;
 
  private:
-  /** Initalise regress_coeff_ to all zero */
+  /** Initalise EmAlgorithmRegress::regress_coeff_ to all zeros */
   void init_regress_coeff();
 
   /**
    * Calculate gradient of the log likelihood
    *
-   * Updates the member variable gradient_
+   * Updates the member variable EmAlgorithmRegress::gradient_
    */
   void CalcGrad();
 
   /**
    * Calculate hessian of the log likelihood
    *
-   * Updates the member variable hessian_
+   * Updates the member variable EmAlgorithmRegress::hessian_
    */
   void CalcHess();
 
   /**
-   * Calculate one of the blocks of the hessian
+   * Calculate one of the blocks of the Hessian
    *
-   * Updates the member variable hessian_ with one of the blocks.
-   * The hessian consist of (n_cluster-1) by (n_cluster-1) blocks, each
-   * corresponding to cluster 1, 2, 3, ..., n_cluster-1.
+   * Updates the member variable EmAlgorithmRegress::hessian_ with one of the
+   * blocks. The hessian consists of (EmAlgorithmRegress::n_cluster_ - 1) by
+   * (EmAlgorithmRegress::n_cluster_ - 1) blocks, each corresponding to cluster
+   * 1, 2, 3, ..., EmAlgorithmRegress::n_cluster_ - 1
    *
    * @param cluster_index_0 row index of which block to work on
-   * can take values of 0, 1, 2, ..., n_cluster-2
+   * can take values of 0, 1, 2, ..., EmAlgorithmRegress::n_cluster_ - 2
    * @param cluster_index_1 column index of which block to work on
-   * can take values of 0, 1, 2, ..., n_cluster-2
+   * can take values of 0, 1, 2, ..., EmAlgorithmRegress::n_cluster_ - 2
    */
   void CalcHessSubBlock(std::size_t cluster_index_0,
                         std::size_t cluster_index_1);
@@ -229,12 +266,16 @@ class EmAlgorithmRegress : public polca_parallel::EmAlgorithm {
   /**
    * Calculate element of a block from the Hessian
    *
-   * @param feature_index_0 row index
+   * @param feature_index_0 column index
    * @param feature_index_1 column index
-   * @param prior_post_inter vector of length n_data, dependent on pair of
-   * clusters. Suppose r = posterior, pi = prior, u, v = cluster indexs.
-   * For same cluster, r_u*(1-r_u) - pi_u(1-pi_u)
-   * For different clusters, pi_u pi_v - r_u r_v
+   * @param prior_post_inter Vector of length EmAlgorithm::n_data_, dependent on
+   * pair of clusters. For cluster \f$m\f$, let \f$r_m\f$ be a vector of
+   * posteriors and \f$\pi_m\f$ be a vector of priors for cluster \f$m\f$. For
+   * a cluster pair \f$u\f$ and \f$v\f$, the argument should be:
+   * <ul>
+   *   <li>For \f$u=v\f$: \f$r_u(1-r_u) - \pi_u(1-\pi_u)\f$</li>
+   *   <li>Otherwise: \f$\pi_u \pi_v - r_u r_v\f$</li>
+   * </ul>
    * @return double value of an element of the Hessian
    */
   [[nodiscard]] double CalcHessElement(
@@ -246,15 +287,14 @@ class EmAlgorithmRegress : public polca_parallel::EmAlgorithm {
    *
    * Hessian is a block matrix, each rows/columns of block matrices correspond
    * to a cluster, and then each row/column of the block matrix correspond
-   * to a feature. Use this method to get a pointer of a specified element
-   * of the hessian matrix
+   * to a feature. Use this method to assign a specific element of the hessian
+   * matrix
    *
    * @param hess_element value of an entry of the Hessian
    * @param cluster_index_0 row index of block matrices
    * @param cluster_index_1 column index of block matrices
    * @param feature_index_0 row index within block matrix
    * @param feature_index_1 column index within block matrix
-   * @return double* pointer to an element of the Hessian
    */
   void AssignHessianAt(double hess_element, std::size_t cluster_index_0,
                        std::size_t cluster_index_1, std::size_t feature_index_0,

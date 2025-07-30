@@ -240,8 +240,8 @@ may be useful for further troubleshooting.
 
 ### Development Notes
 
-* It's very likelihood underflow occurs if the number of categories is too
-  large, more than ~300. This is because in the calculation of the
+* It's possible that likelihood underflow occurs if the number of categories is
+  too large, more than ~300. This is because in the calculation of the
   log-likelihood, the probabilities from each category are multiplied by each
   other. If there are $J$ categories, then there are $J$ probabilities to
   multiply together. This is addressed in commit 85ee419 but reverted. Consider

@@ -22,6 +22,7 @@
 #include <iterator>
 #include <memory>
 #include <thread>
+#include <utility>
 
 #include "arma.h"
 #include "em_algorithm_array_serial.h"

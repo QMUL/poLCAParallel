@@ -109,8 +109,8 @@ class Smoother {
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
    * </ul>
+   * @param n_data Number of data points
    * @param n_outcomes Array of number of outcomes, for each category
-   * @param sum_outcomes Sum of all integers in n_outcomes
    * @param n_cluster Number of clusters
    */
   Smoother(std::span<const double> probs, std::span<const double> prior,

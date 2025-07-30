@@ -43,8 +43,8 @@ namespace polca_parallel {
  * How to use:
  * <ul>
  *   <li>
- *     Pass the data (features, responses) and array to store results via the
- *     constructor
+ *     Pass the data (features, responses, initial probabilities) and memory to
+ *     store the results via the constructor
  *   </li>
  *   <li>
  *     Call optional methods SetSeed(), set_best_initial_prob() and/or
@@ -52,27 +52,48 @@ namespace polca_parallel {
  *   </li>
  *   <li>
  *     Call the method Fit<EmAlgorithm>() to run multiple EM algorithms where
- *     the type provided is EmAlgorithm or a subclass, ie: EmAlgorithm,
- *     EmAlgorithmNan, EmAlgorithmRegress and EmAlgorithmNanRegress. Select the
- *     one which best describes the problem and the data, ie if it is a
- *     regression problem or not. ie if the responses contains nan encoded as
- *     zeros. Results with the best log-likelihood are stored.
+ *     the type provided is EmAlgorithm or one of its subclass:
+ *       <ul>
+ *         <li>EmAlgorithm</li>
+ *         <li>EmAlgorithmNan</li>
+ *         <li>EmAlgorithmRegress</li>
+ *         <li>EmAlgorithmNanRegress</li>
+ *       </ul>
+ *     Choose a subclass which best describes the problem and the data
+ *       <ul>
+ *         <li>ie if it is a regression problem or not</li>
+ *         <li>ie if the responses contains nan encoded as zeros</li>
+ *       </ul>
+ *     The resulting fit with the best log-likelihood is recorded.
  *   </li>
  *   <li>
  *     Call the methods get_best_rep_index(), get_n_iter() and/or
  *     get_has_restarted() to get optional information
  *   </li>
  * </ul>
+ *
+ * It is very possible this could have been implemented using OpenMP instead.
  */
 class EmAlgorithmArray {
  private:
   /**
-   * Features to provide EmAlgorithm with. See EmAlgorithm for further details.
+   * Design matrix of features to provide to each EmAlgorithm, matrix with
+   * dimensions
+   * <ul>
+   *   <li>dim 0: for each data point</li>
+   *   <li>dim 1: for each feature</li>
+   * </ul>
+   * Can be empty and not used if using only for the non-regression problem
    */
   std::span<const double> features_;
   /**
-   * Responses to provide EmAlgorithm with. See EmAlgorithm for further details.
-   * format.
+   * Design matrix <b>transposed</b> of responses to provide to each
+   * EmAlgorithm, matrix containing outcomes/responses for each category as
+   * integers 1, 2, 3, .... The matrix has dimensions
+   * <ul>
+   *   <li>dim 0: for each category</li>
+   *   <li>dim 1: for each data point</li>
+   * </ul>
    */
   std::span<const int> responses_;
   /** Number of data points */
@@ -89,38 +110,65 @@ class EmAlgorithmArray {
   const double tolerance_;
   /**
    * To store the posterior result from the best repetition. Accessing and
-   * writing should be done with locking and unlocking results_lock_ when using
-   * multiple threads. It shall be the same format as the member variable with
-   * the same name in EmAlgorithm.
+   * writing should be done with locking and unlocking
+   * EmAlgorithmArray::results_lock_ when using multiple threads.
+   *
+   * Design matrix of posterior probabilities (also called responsibility), the
+   * probability a data point is in cluster m given responses, matrix with
+   * dimensions
+   * <ul>
+   *   <li>dim 0: for each data</li>
+   *   <li>dim 1: for each cluster</li>
+   * </ul>
    */
   std::span<double> posterior_;
   /**
    * To store the prior result from the best repetition. Accessing and writing
-   * should be done with locking and unlocking results_lock_ when using multiple
-   * threads. It shall be the same format as the member variable with the same
-   * name in EmAlgorithm.
+   * should be done with locking and unlocking EmAlgorithmArray::results_lock_
+   * when using multiple threads.
+   *
+   * Design matrix of prior probabilities, the probability a data point is in
+   * cluster m <b>not</b> given responses
+   * <ul>
+   *   <li>dim 0: for each data</li>
+   *   <li>dim 1: for each cluster</li>
+   * </ul>
    */
   std::span<double> prior_;
   /**
    * To store the estimated probabilities from the best repetition. Accessing
-   * and writing should be done with locking and unlocking results_lock_ when
-   * using multiple threads. It shall be the same format as the member variable
-   * with the same name in EmAlgorithm.
+   * and writing should be done with locking and unlocking
+   * EmAlgorithmArray::results_lock_ when using multiple threads.
+   *
+   * Vector of estimated response probabilities for each category, flatten list
+   * in the following order
+   * <ul>
+   *   <li>dim 0: for each outcome</li>
+   *   <li>dim 1: for each category</li>
+   *   <li>dim 2: for each cluster</li>
+   * </ul>
    */
   std::span<double> estimated_prob_;
   /**
    * To store the regression coefficients from the best repetition. Accessing
-   * and writing should be done with locking and unlocking results_lock_ when
-   * using multiple threads. It shall be the same format as the member variable
-   * with the same name in EmAlgorithm.
+   * and writing should be done with locking and unlocking
+   * EmAlgorithmArray::results_lock_ when using multiple threads.
+   *
+   * Matrix with dimensions:
+   * <ul>
+   *   <li>dim 0: EmAlgorithmArray::n_feature_</li>
+   *   <li>dim 1: EmAlgorithmArray::n_cluster_ - 1</li>
+   * </ul>
+   * This matrix is multiplied to the feature design matrix and then linked to
+   * the prior using softmax. Not used in the non-regression problem
    */
   std::span<double> regress_coeff_;
 
   /**
    * Optional, to store initial prob to obtain max likelihood or from the best
    * repetition. Accessing and writing should be done with locking and unlocking
-   * results_lock_ when using multiple threads. It shall be the same format as
-   * the member variable with the same name in EmAlgorithm.
+   * EmAlgorithmArray::results_lock_ when using multiple threads. It shall be
+   * the same format as the member variable with the same name in EmAlgorithm.
    */
   std::optional<std::span<double>> best_initial_prob_;
 
@@ -131,21 +179,20 @@ class EmAlgorithmArray {
   double optimal_ln_l_ = -INFINITY;
   /**
    * Number of iterations the optimal fitter has done. Accessing and writing
-   * should be done with locking and unlocking results_lock_ when using multiple
-   * threads.
+   * should be done with locking and unlocking EmAlgorithmArray::results_lock_
+   * when using multiple threads.
    */
   std::size_t n_iter_;
   /** True if the EM algorithm has to ever restart */
   bool has_restarted_ = false;
   /**
    * An array of initial probabilities, each repetition uses
-   * n_outcomes.sum()*n_cluster probabilities
+   * EmAlgorithmArray::n_outcomes_.sum() * EmAlgorithmArray::n_cluster_
+   * probabilities
    */
   std::span<const double> initial_prob_;
   /**
-   * The latest initial value is being worked on. Accessing and writing should
-   * be done with locking and unlocking n_rep_done_lock_ when using multiple
-   * threads.
+   * The latest initial value is being worked on
    */
   std::atomic<std::size_t> n_rep_done_ = 0;
   /**
@@ -158,13 +205,19 @@ class EmAlgorithmArray {
   /** Number of threads */
   const std::size_t n_thread_;
 
-  /** For locking optimal_ln_l_, best_rep_index_, n_iter_ and has_restarted_ */
+  /**
+   * For locking EmAlgorithmArray::posterior_, EmAlgorithmArray::prior_,
+   * EmAlgorithmArray::estimated_prob_, EmAlgorithmArray::regress_coeff_,
+   * EmAlgorithmArray::best_initial_prob_,
+   * EmAlgorithmArray::optimal_ln_l_, EmAlgorithmArray::n_iter_,
+   * EmAlgorithmArray::best_rep_index_ and EmAlgorithmArray::has_restarted_ */
   std::mutex results_lock_;
 
  protected:
   /**
-   * An array of seeds, for each repetition, used to seed each repetition, only
-   * used if a run fails and needs to generate new initial values
+   * An array of seeds, one for each repetition. It is used to seed the rng for
+   * each repetition, it is only used if a run fails and needs to generate new
+   * initial values
    */
   std::unique_ptr<std::vector<unsigned>> seed_array_;
 
@@ -177,10 +230,10 @@ class EmAlgorithmArray {
    *   <li>dim 0: for each data point</li>
    *   <li>dim 1: for each feature</li>
    * </ul>
-   * Can be empty if using only for clustering (non-regression)
-   * @param responses Design matrix TRANSPOSED of responses, matrix containing
-   * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
-   * has dimensions
+   * Can be empty and not used if using only for the non-regression problem
+   * @param responses Design matrix <b>transposed</b> of responses, matrix
+   * containing outcomes/responses for each category as integers 1, 2, 3, ....
+   * The matrix has dimensions
    * <ul>
    *   <li>dim 0: for each category</li>
    *   <li>dim 1: for each data point</li>
@@ -194,8 +247,11 @@ class EmAlgorithmArray {
    *   <li>dim 2: for each cluster</li>
    *   <li>dim 3: for each repetition</li>
    * </ul>
+   * Use RandomInitialProb() in util.h to produce random initial probabilities
+   * if required
    * @param n_data Number of data points
-   * @param n_feature Number of features
+   * @param n_feature Number of features, set to 1 if this is a non-regression
+   * problem
    * @param n_outcomes Array of the number of outcomes for each category and its
    * sum
    * @param n_cluster Number of clusters to fit
@@ -213,7 +269,7 @@ class EmAlgorithmArray {
    *   <li>dim 1: for each cluster</li>
    * </ul>
    * @param prior To store results, design matrix of prior probabilities,
-   * the probability a data point is in cluster m NOT given responses
+   * the probability a data point is in cluster m <b>not</b> given responses
    * <ul>
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
@@ -222,13 +278,16 @@ class EmAlgorithmArray {
    * probabilities for each category, flatten list in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
-   *   <li>dim 1: for each cluster</li>
-   *   <li>dim 2: for each category</li>
+   *   <li>dim 1: for each category</li>
+   *   <li>dim 2: for each cluster</li>
    * </ul>
-   * @param regress_coeff To store results, vector length
-   * n_features_*(n_cluster-1), linear regression coefficient in matrix
-   * form, to be multiplied to the features and linked to the prior
-   * using softmax
+   * @param regress_coeff To store results, matrix with dimensions:
+   * <ul>
+   *   <li>dim 0: EmAlgorithmArray::n_feature_</li>
+   *   <li>dim 1: EmAlgorithmArray::n_cluster_ - 1</li>
+   * </ul>
+   * This matrix is multiplied to the feature design matrix and then linked to
+   * the prior using softmax. Not used in the non-regression problem
    */
   EmAlgorithmArray(std::span<const double> features,
                    std::span<const int> responses,
@@ -246,9 +305,9 @@ class EmAlgorithmArray {
    * Construct a new EM Algorithm Array object for clustering (non-regression)
    * only.
    *
-   * @param responses Design matrix TRANSPOSED of responses, matrix containing
-   * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
-   * has dimensions
+   * @param responses Design matrix <b>transposed</b> of responses, matrix
+   * containing outcomes/responses for each category as integers 1, 2, 3, ....
+   * The matrix has dimensions
    * <ul>
    *   <li>dim 0: for each category</li>
    *   <li>dim 1: for each data point</li>
@@ -262,6 +321,7 @@ class EmAlgorithmArray {
    *   <li>dim 2: for each cluster</li>
    *   <li>dim 3: for each repetition</li>
    * </ul>
+   * Use RandomInitialProb() in util.h to produce random initial probabilities
    * @param n_data Number of data points
    * @param n_outcomes Array of the number of outcomes for each category and its
    * sum
@@ -280,7 +340,7 @@ class EmAlgorithmArray {
    *   <li>dim 1: for each cluster</li>
    * </ul>
    * @param prior To store results, design matrix of prior probabilities,
-   * the probability a data point is in cluster m NOT given responses
+   * the probability a data point is in cluster m <b>not</b> given responses
    * <ul>
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
@@ -289,8 +349,8 @@ class EmAlgorithmArray {
    * probabilities for each category, flatten list in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
-   *   <li>dim 1: for each cluster</li>
-   *   <li>dim 2: for each category</li>
+   *   <li>dim 1: for each category</li>
+   *   <li>dim 2: for each cluster</li>
    * </ul>
    */
   EmAlgorithmArray(std::span<const int> responses,
@@ -322,7 +382,12 @@ class EmAlgorithmArray {
   template <typename EmAlgorithmType>
   void Fit();
 
-  /** Set the member variable seed_array_ with a seed for each repetition */
+  /**
+   * Set the member variable EmAlgorithmArray::seed_array_
+   *
+   * Set the member variable EmAlgorithmArray::seed_array_ with a seed for each
+   * repetition
+   */
   virtual void SetSeed(std::seed_seq& seed);
 
   /**
