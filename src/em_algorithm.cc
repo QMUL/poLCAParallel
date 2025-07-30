@@ -205,6 +205,8 @@ double polca_parallel::EmAlgorithm::GetPrior(
 
 void polca_parallel::EmAlgorithm::EStep() {
   for (std::size_t i_data = 0; i_data < this->n_data_; ++i_data) {
+    assert((i_data + 1) * this->n_outcomes_.size() <= this->responses_.size());
+
     std::span<const int> responses_i = this->responses_.subspan(
         i_data * this->n_outcomes_.size(), this->n_outcomes_.size());
     for (std::size_t i_cluster = 0; i_cluster < this->n_cluster_; ++i_cluster) {

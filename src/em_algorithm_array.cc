@@ -156,6 +156,9 @@ void polca_parallel::EmAlgorithmArray::FitThread() {
         this->n_rep_done_.fetch_add(1, std::memory_order_relaxed);
 
     if (rep_index < this->n_rep_) {
+      assert((rep_index + 1) * this->n_outcomes_.sum() * n_cluster <=
+             this->initial_prob_.size());
+
       std::unique_ptr<polca_parallel::EmAlgorithm> fitter =
           std::make_unique<EmAlgorithmType>(
               this->features_, this->responses_,
