@@ -108,14 +108,11 @@ void polca_parallel::Blrt::RunThread() {
   std::vector<double> fitted_regress_coeff_alt(this->prior_alt_.size() - 1);
 
   while (is_working) {
-    // lock to retrive n_bootstrap_done_
-    // shall be unlocked in both if and else branches
-    this->n_bootstrap_done_lock_.lock();
-    if (this->n_bootstrap_done_ < this->n_bootstrap_) {
-      // increment for the next worker to work on
-      std::size_t i_bootstrap = this->n_bootstrap_done_++;
-      this->n_bootstrap_done_lock_.unlock();
+    // increment for the next worker to work on
+    std::size_t i_bootstrap =
+        this->n_bootstrap_done_.fetch_add(1, std::memory_order_relaxed);
 
+    if (i_bootstrap < this->n_bootstrap_) {
       // instantiate a rng
       std::unique_ptr<std::mt19937_64> rng =
           std::make_unique<std::mt19937_64>(this->seed_array_.at(i_bootstrap));
@@ -183,7 +180,6 @@ void polca_parallel::Blrt::RunThread() {
 
     } else {
       // all bootstrap samples done, stop working
-      this->n_bootstrap_done_lock_.unlock();
       is_working = false;
     }
   }

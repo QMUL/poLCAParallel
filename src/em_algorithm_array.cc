@@ -151,17 +151,11 @@ void polca_parallel::EmAlgorithmArray::FitThread() {
 
   bool is_working = true;
   while (is_working) {
-    // lock to retrive initial probability and other variables
-    // lock is outside the if statement so that this->n_rep_done_ can be read
-    // without modification from other threads
-    // shall be unlocked in both if and else branches
-    this->n_rep_done_lock_.lock();
-    if (this->n_rep_done_ < this->n_rep_) {
-      // increment for the next worker to work on
-      std::size_t rep_index = this->n_rep_done_++;
+    // increment for the next worker to work on
+    std::size_t rep_index =
+        this->n_rep_done_.fetch_add(1, std::memory_order_relaxed);
 
-      this->n_rep_done_lock_.unlock();
-
+    if (rep_index < this->n_rep_) {
       std::unique_ptr<polca_parallel::EmAlgorithm> fitter =
           std::make_unique<EmAlgorithmType>(
               this->features_, this->responses_,
@@ -233,7 +227,6 @@ void polca_parallel::EmAlgorithmArray::FitThread() {
 
     } else {
       // all initial values used, stop working
-      this->n_rep_done_lock_.unlock();
       is_working = false;
     }
   }

@@ -18,6 +18,7 @@
 #ifndef POLCAPARALLEL_INCLUDE_EM_ALGORITHM_ARRAY_H_
 #define POLCAPARALLEL_INCLUDE_EM_ALGORITHM_ARRAY_H_
 
+#include <atomic>
 #include <cstddef>
 #include <memory>
 #include <mutex>
@@ -146,7 +147,7 @@ class EmAlgorithmArray {
    * be done with locking and unlocking n_rep_done_lock_ when using multiple
    * threads.
    */
-  std::size_t n_rep_done_ = 0;
+  std::atomic<std::size_t> n_rep_done_ = 0;
   /**
    * Optional, maximum log-likelihood for each repetition. Set using
    * set_ln_l_array()
@@ -157,8 +158,6 @@ class EmAlgorithmArray {
   /** Number of threads */
   const std::size_t n_thread_;
 
-  /** For locking n_rep_done_ */
-  std::mutex n_rep_done_lock_;
   /** For locking optimal_ln_l_, best_rep_index_, n_iter_ and has_restarted_ */
   std::mutex results_lock_;
 
