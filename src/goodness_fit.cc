@@ -31,12 +31,12 @@ polca_parallel::GoodnessOfFit::GoodnessOfFit() {}
 void polca_parallel::GoodnessOfFit::Calc(std::span<const int> responses,
                                          std::span<const double> prior,
                                          std::span<const double> outcome_prob,
-                                         std::size_t n_data, std::size_t n_obs,
+                                         std::size_t n_data,
                                          polca_parallel::NOutcomes n_outcomes,
                                          std::size_t n_cluster) {
   // get observed and expected frequencies for each unique response
   this->CalcUniqueObserved(responses, n_data, n_outcomes);
-  this->CalcExpected(prior, outcome_prob, n_obs, n_outcomes, n_cluster);
+  this->CalcExpected(prior, outcome_prob, n_outcomes, n_cluster);
 }
 
 std::map<std::vector<int>, polca_parallel::Frequency>&
@@ -63,6 +63,7 @@ void polca_parallel::GoodnessOfFit::CalcUniqueObserved(
     }
 
     if (fullyobserved) {
+      ++this->n_obs_;
       std::vector<int> response_copy_i(response_span_i.begin(),
                                        response_span_i.end());
       // add or update observation count
@@ -80,8 +81,7 @@ void polca_parallel::GoodnessOfFit::CalcUniqueObserved(
 
 void polca_parallel::GoodnessOfFit::CalcExpected(
     std::span<const double> prior, std::span<const double> outcome_prob,
-    std::size_t n_obs, polca_parallel::NOutcomes n_outcomes,
-    std::size_t n_cluster) {
+    polca_parallel::NOutcomes n_outcomes, std::size_t n_cluster) {
   const arma::Mat<double> outcome_prob_arma(
       const_cast<double*>(outcome_prob.data()), n_outcomes.sum(), n_cluster,
       false, true);
@@ -105,7 +105,7 @@ void polca_parallel::GoodnessOfFit::CalcExpected(
           response_i_span, n_outcomes, outcome_prob_col, prior[m]);
     }
 
-    iter->second.expected = total_p * static_cast<double>(n_obs);
+    iter->second.expected = total_p * static_cast<double>(this->n_obs_);
   }
 }
 

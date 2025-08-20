@@ -73,6 +73,9 @@ class GoodnessOfFit {
    * frequency
    */
   std::map<std::vector<int>, Frequency> frequency_map_;
+  /** Number of fully observed data, calculated after calling
+   * CalcUniqueObserved()*/
+  std::size_t n_obs_ = 0;
 
  public:
   GoodnessOfFit();
@@ -106,14 +109,13 @@ class GoodnessOfFit {
    *   <li>dim 2: for each cluster</li>
    * </ul>
    * @param n_data Number of data points
-   * @param n_obs Number of fully observed data points
    * @param n_outcomes Vector of number of outcomes for each category and its
    * sum
    * @param n_cluster Number of clusters to fitted
    */
   void Calc(std::span<const int> responses, std::span<const double> prior,
             std::span<const double> outcome_prob, std::size_t n_data,
-            std::size_t n_obs, NOutcomes n_outcomes, std::size_t n_cluster);
+            NOutcomes n_outcomes, std::size_t n_cluster);
 
   [[nodiscard]] std::map<std::vector<int>, Frequency>& GetFrequencyMap();
 
@@ -169,13 +171,12 @@ class GoodnessOfFit {
    *   <li>dim 1: for each category</li>
    *   <li>dim 2: for each cluster</li>
    * </ul>
-   * @param n_obs number of fully observed data points
    * @param n_outcomes array of integers, number of outcomes for each category,
    * array of length n_category
    * @param n_cluster number of clusters (or classes)
    */
   void CalcExpected(std::span<const double> prior,
-                    std::span<const double> outcome_prob, std::size_t n_obs,
+                    std::span<const double> outcome_prob,
                     polca_parallel::NOutcomes n_outcomes,
                     std::size_t n_cluster);
 };

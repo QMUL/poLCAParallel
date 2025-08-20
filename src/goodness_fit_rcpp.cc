@@ -65,7 +65,6 @@
 Rcpp::List GoodnessFitRcpp(Rcpp::IntegerMatrix responses,
                            Rcpp::NumericVector prior,
                            Rcpp::NumericVector outcome_prob, std::size_t n_data,
-                           std::size_t n_obs,
                            Rcpp::IntegerVector n_outcomes_int,
                            std ::size_t n_cluster) {
   std::vector<std::size_t> n_outcomes_size_t(n_outcomes_int.cbegin(),
@@ -79,7 +78,7 @@ Rcpp::List GoodnessFitRcpp(Rcpp::IntegerMatrix responses,
       std::span<const int>(responses.cbegin(), responses.size()),
       std::span<const double>(prior.cbegin(), prior.size()),
       std::span<const double>(outcome_prob.cbegin(), outcome_prob.size()),
-      n_data, n_obs, n_outcomes, n_cluster);
+      n_data, n_outcomes, n_cluster);
 
   std::map<std::vector<int>, polca_parallel::Frequency>& frequency_map =
       goodness_of_fit.GetFrequencyMap();
