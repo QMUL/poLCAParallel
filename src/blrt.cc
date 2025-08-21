@@ -154,7 +154,7 @@ void polca_parallel::Blrt::RunThread() {
           std::span<double>(fitted_prob_null.begin(), fitted_prob_null.size()),
           std::span<double>(fitted_regress_coeff_null.begin(),
                             fitted_regress_coeff_null.size()));
-      null_model.SetRng(rng);
+      null_model.SetRng(std::move(rng));
       null_model.Fit<polca_parallel::EmAlgorithm>();
       rng = null_model.MoveRng();
 
@@ -170,7 +170,7 @@ void polca_parallel::Blrt::RunThread() {
           std::span<double>(fitted_prob_alt.begin(), fitted_prob_alt.size()),
           std::span<double>(fitted_regress_coeff_alt.begin(),
                             fitted_regress_coeff_alt.size()));
-      alt_model.SetRng(rng);
+      alt_model.SetRng(std::move(rng));
       alt_model.Fit<polca_parallel::EmAlgorithm>();
       rng = alt_model.MoveRng();
 
