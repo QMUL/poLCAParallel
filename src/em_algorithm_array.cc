@@ -149,88 +149,80 @@ void polca_parallel::EmAlgorithmArray::FitThread() {
   std::vector<double> regress_coeff(n_feature * (n_cluster - 1));
   std::vector<double> best_initial_prob(this->n_outcomes_.sum() * n_cluster);
 
-  bool is_working = true;
-  while (is_working) {
-    // increment for the next worker to work on
-    std::size_t rep_index =
-        this->n_rep_done_.fetch_add(1, std::memory_order_relaxed);
+  std::size_t rep_index =
+      this->n_rep_done_.fetch_add(1, std::memory_order_relaxed);
+  while (rep_index < this->n_rep_) {
+    assert((rep_index + 1) * this->n_outcomes_.sum() * n_cluster <=
+           this->initial_prob_.size());
 
-    if (rep_index < this->n_rep_) {
-      assert((rep_index + 1) * this->n_outcomes_.sum() * n_cluster <=
-             this->initial_prob_.size());
-
-      std::unique_ptr<polca_parallel::EmAlgorithm> fitter =
-          std::make_unique<EmAlgorithmType>(
-              this->features_, this->responses_,
-              this->initial_prob_.subspan(
-                  rep_index * this->n_outcomes_.sum() * n_cluster,
-                  this->n_outcomes_.sum() * n_cluster),
-              n_data, n_feature, this->n_outcomes_, n_cluster, this->max_iter_,
-              this->tolerance_,
-              std::span<double>(posterior.begin(), posterior.size()),
-              std::span<double>(prior.begin(), prior.size()),
-              std::span<double>(estimated_prob.begin(), estimated_prob.size()),
-              std::span<double>(regress_coeff.begin(), regress_coeff.size()));
-      if (this->best_initial_prob_) {
-        fitter->set_best_initial_prob(std::span<double>(
-            best_initial_prob.begin(), best_initial_prob.size()));
-      }
-
-      // each repetition uses their own rng
-      this->SetFitterRng(rep_index, *fitter);
-
-      fitter->Fit();
-      double ln_l = fitter->get_ln_l();
-      if (this->ln_l_array_) {
-        std::span<double> ln_l_array = this->ln_l_array_.value();
-        assert(rep_index < ln_l_array.size());
-        ln_l_array[rep_index] = ln_l;
-      }
-
-      // if ownership of rng transferred (if any) to fitter, get it back if
-      // needed
-      this->MoveRngBackFromFitter(*fitter);
-
-      // copy results if log likelihood improved
-      this->results_lock_.lock();
-      this->has_restarted_ |= fitter->get_has_restarted();
-      if (ln_l > this->optimal_ln_l_) {
-        this->best_rep_index_ = rep_index;
-        this->optimal_ln_l_ = ln_l;
-        this->n_iter_ = fitter->get_n_iter();
-
-        assert(posterior.size() == this->posterior_.size());
-        assert(prior.size() == this->prior_.size());
-        assert(estimated_prob.size() == this->estimated_prob_.size());
-
-        std::copy(posterior.cbegin(), posterior.cend(),
-                  this->posterior_.begin());
-        std::copy(prior.cbegin(), prior.cend(), this->prior_.begin());
-        std::copy(estimated_prob.cbegin(), estimated_prob.cend(),
-                  this->estimated_prob_.begin());
-        // copy over regress_coeff if this is a regression problem
-        if constexpr (std::is_same_v<EmAlgorithmType,
-                                     polca_parallel::EmAlgorithmRegress> ||
-                      std::is_same_v<EmAlgorithmType,
-                                     polca_parallel::EmAlgorithmNanRegress>) {
-          assert(regress_coeff.size() == this->regress_coeff_.size());
-          std::copy(regress_coeff.cbegin(), regress_coeff.cend(),
-                    this->regress_coeff_.begin());
-        }
-
-        if (this->best_initial_prob_) {
-          std::span<double> best_initial_prob_ =
-              this->best_initial_prob_.value();
-          assert(best_initial_prob.size() == best_initial_prob_.size());
-          std::copy(best_initial_prob.cbegin(), best_initial_prob.cend(),
-                    best_initial_prob_.begin());
-        }
-      }
-      this->results_lock_.unlock();
-
-    } else {
-      // all initial values used, stop working
-      is_working = false;
+    std::unique_ptr<polca_parallel::EmAlgorithm> fitter =
+        std::make_unique<EmAlgorithmType>(
+            this->features_, this->responses_,
+            this->initial_prob_.subspan(
+                rep_index * this->n_outcomes_.sum() * n_cluster,
+                this->n_outcomes_.sum() * n_cluster),
+            n_data, n_feature, this->n_outcomes_, n_cluster, this->max_iter_,
+            this->tolerance_,
+            std::span<double>(posterior.begin(), posterior.size()),
+            std::span<double>(prior.begin(), prior.size()),
+            std::span<double>(estimated_prob.begin(), estimated_prob.size()),
+            std::span<double>(regress_coeff.begin(), regress_coeff.size()));
+    if (this->best_initial_prob_) {
+      fitter->set_best_initial_prob(std::span<double>(
+          best_initial_prob.begin(), best_initial_prob.size()));
     }
+
+    // each repetition uses their own rng
+    this->SetFitterRng(rep_index, *fitter);
+
+    fitter->Fit();
+    double ln_l = fitter->get_ln_l();
+    if (this->ln_l_array_) {
+      std::span<double> ln_l_array = this->ln_l_array_.value();
+      assert(rep_index < ln_l_array.size());
+      ln_l_array[rep_index] = ln_l;
+    }
+
+    // if ownership of rng transferred (if any) to fitter, get it back if
+    // needed
+    this->MoveRngBackFromFitter(*fitter);
+
+    // copy results if log likelihood improved
+    this->results_lock_.lock();
+    this->has_restarted_ |= fitter->get_has_restarted();
+    if (ln_l > this->optimal_ln_l_) {
+      this->best_rep_index_ = rep_index;
+      this->optimal_ln_l_ = ln_l;
+      this->n_iter_ = fitter->get_n_iter();
+
+      assert(posterior.size() == this->posterior_.size());
+      assert(prior.size() == this->prior_.size());
+      assert(estimated_prob.size() == this->estimated_prob_.size());
+
+      std::copy(posterior.cbegin(), posterior.cend(), this->posterior_.begin());
+      std::copy(prior.cbegin(), prior.cend(), this->prior_.begin());
+      std::copy(estimated_prob.cbegin(), estimated_prob.cend(),
+                this->estimated_prob_.begin());
+      // copy over regress_coeff if this is a regression problem
+      if constexpr (std::is_same_v<EmAlgorithmType,
+                                   polca_parallel::EmAlgorithmRegress> ||
+                    std::is_same_v<EmAlgorithmType,
+                                   polca_parallel::EmAlgorithmNanRegress>) {
+        assert(regress_coeff.size() == this->regress_coeff_.size());
+        std::copy(regress_coeff.cbegin(), regress_coeff.cend(),
+                  this->regress_coeff_.begin());
+      }
+
+      if (this->best_initial_prob_) {
+        std::span<double> best_initial_prob_ = this->best_initial_prob_.value();
+        assert(best_initial_prob.size() == best_initial_prob_.size());
+        std::copy(best_initial_prob.cbegin(), best_initial_prob.cend(),
+                  best_initial_prob_.begin());
+      }
+    }
+    this->results_lock_.unlock();
+
+    // increment for the next worker to work on
+    rep_index = this->n_rep_done_.fetch_add(1, std::memory_order_relaxed);
   }
 }
