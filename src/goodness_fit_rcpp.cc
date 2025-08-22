@@ -84,7 +84,7 @@ Rcpp::List GoodnessFitRcpp(Rcpp::IntegerMatrix responses,
       goodness_of_fit.GetFrequencyMap();
 
   // get log likelihood ratio and chi squared statistics
-  auto [ln_l_ratio, chi_squared] = goodness_of_fit.GetStatistics(n_data);
+  auto [ln_l_ratio, chi_squared] = goodness_of_fit.GetStatistics();
 
   // transfer results from frequency_map to a NumericMatrix
   // frequency_table

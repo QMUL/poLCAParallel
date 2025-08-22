@@ -109,8 +109,8 @@ void polca_parallel::GoodnessOfFit::CalcExpected(
   }
 }
 
-std::tuple<double, double> polca_parallel::GoodnessOfFit::GetStatistics(
-    std::size_t n_data) const {
+std::tuple<double, double> polca_parallel::GoodnessOfFit::GetStatistics()
+    const {
   std::size_t n_unique = this->frequency_map_.size();
   // store statistics for each unique response
   arma::Row<double> chi_squared_array(n_unique);
@@ -140,7 +140,7 @@ std::tuple<double, double> polca_parallel::GoodnessOfFit::GetStatistics(
   // chi squared calculation also use unobserved responses
   double chi_squared =
       arma::sum(chi_squared_array) +
-      (static_cast<double>(n_data) - arma::sum(expected_array));
+      (static_cast<double>(this->n_obs_) - arma::sum(expected_array));
   double ln_l_ratio = 2.0 * arma::sum(ln_l_ratio_array);
 
   return {ln_l_ratio, chi_squared};

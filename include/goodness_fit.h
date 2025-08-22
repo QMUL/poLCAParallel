@@ -124,12 +124,10 @@ class GoodnessOfFit {
    *
    * Calculate and return the chi-squared statistics and log-likelihood ratio
    *
-   * @param n_data number of data points
    * @return std::array<double, 2> containing log-likelihood ratio and
    * chi-squared statistics
    */
-  [[nodiscard]] std::tuple<double, double> GetStatistics(
-      std::size_t n_data) const;
+  [[nodiscard]] std::tuple<double, double> GetStatistics() const;
 
  private:
   /**
