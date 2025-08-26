@@ -17,9 +17,10 @@
 
 #include "smoother.h"
 
+#include <cassert>
 #include <iterator>
 
-#include "RcppArmadillo.h"
+#include "arma.h"
 
 polca_parallel::Smoother::Smoother(std::span<const double> probs,
                                    std::span<const double> prior,
@@ -46,6 +47,7 @@ void polca_parallel::Smoother::Smooth() {
   auto probs = this->probs_.begin();
   for (double n_data_i : n_data) {
     for (std::size_t n_outcome_j : this->n_outcomes_) {
+      assert(std::next(probs, n_outcome_j) <= this->probs_.end());
       this->Smooth(n_data_i, 1.0, static_cast<double>(n_outcome_j),
                    std::span<double>(probs, n_outcome_j));
       std::advance(probs, n_outcome_j);

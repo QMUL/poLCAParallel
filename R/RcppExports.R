@@ -13,8 +13,8 @@ ylik <- function(probs, y, obs, items, numChoices, classes) {
     .Call(`_poLCAParallel_ylik`, probs, y, obs, items, numChoices, classes)
 }
 
-GoodnessFitRcpp <- function(responses, prior, outcome_prob, n_data, n_obs, n_outcomes_int, n_cluster) {
-    .Call(`_poLCAParallel_GoodnessFitRcpp`, responses, prior, outcome_prob, n_data, n_obs, n_outcomes_int, n_cluster)
+GoodnessFitRcpp <- function(responses, prior, outcome_prob, n_data, n_outcomes_int, n_cluster) {
+    .Call(`_poLCAParallel_GoodnessFitRcpp`, responses, prior, outcome_prob, n_data, n_outcomes_int, n_cluster)
 }
 
 StandardErrorRcpp <- function(features, responses, probs, prior, posterior, n_data, n_feature, n_outcomes_int, n_cluster, use_smooth) {

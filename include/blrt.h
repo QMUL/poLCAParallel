@@ -15,9 +15,10 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef POLCAPARALLEL_SRC_BLRT_H_
-#define POLCAPARALLEL_SRC_BLRT_H_
+#ifndef POLCAPARALLEL_INCLUDE_BLRT_H_
+#define POLCAPARALLEL_INCLUDE_BLRT_H_
 
+#include <atomic>
 #include <cstddef>
 #include <mutex>
 #include <random>
@@ -94,12 +95,9 @@ class Blrt {
   const double tolerance_;
 
   /** What bootstrap sample is being worked on */
-  std::size_t n_bootstrap_done_ = 0;
+  std::atomic<std::size_t> n_bootstrap_done_ = 0;
   /** Log-likelihood ratio for each bootstrap sample */
   std::span<double> ratio_array_;
-
-  /** For locking n_bootstrap_done_ */
-  std::mutex n_bootstrap_done_lock_;
 
   /** Array of seeds, for each bootstrap sample*/
   std::vector<unsigned> seed_array_;
@@ -193,4 +191,4 @@ class Blrt {
 
 }  // namespace polca_parallel
 
-#endif  // POLCAPARALLEL_SRC_BLRT_H_
+#endif  // POLCAPARALLEL_INCLUDE_BLRT_H_

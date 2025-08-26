@@ -73,8 +73,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // GoodnessFitRcpp
-Rcpp::List GoodnessFitRcpp(Rcpp::IntegerMatrix responses, Rcpp::NumericVector prior, Rcpp::NumericVector outcome_prob, std::size_t n_data, std::size_t n_obs, Rcpp::IntegerVector n_outcomes_int, std ::size_t n_cluster);
-RcppExport SEXP _poLCAParallel_GoodnessFitRcpp(SEXP responsesSEXP, SEXP priorSEXP, SEXP outcome_probSEXP, SEXP n_dataSEXP, SEXP n_obsSEXP, SEXP n_outcomes_intSEXP, SEXP n_clusterSEXP) {
+Rcpp::List GoodnessFitRcpp(Rcpp::IntegerMatrix responses, Rcpp::NumericVector prior, Rcpp::NumericVector outcome_prob, std::size_t n_data, Rcpp::IntegerVector n_outcomes_int, std ::size_t n_cluster);
+RcppExport SEXP _poLCAParallel_GoodnessFitRcpp(SEXP responsesSEXP, SEXP priorSEXP, SEXP outcome_probSEXP, SEXP n_dataSEXP, SEXP n_outcomes_intSEXP, SEXP n_clusterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -82,10 +82,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type prior(priorSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type outcome_prob(outcome_probSEXP);
     Rcpp::traits::input_parameter< std::size_t >::type n_data(n_dataSEXP);
-    Rcpp::traits::input_parameter< std::size_t >::type n_obs(n_obsSEXP);
     Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type n_outcomes_int(n_outcomes_intSEXP);
     Rcpp::traits::input_parameter< std ::size_t >::type n_cluster(n_clusterSEXP);
-    rcpp_result_gen = Rcpp::wrap(GoodnessFitRcpp(responses, prior, outcome_prob, n_data, n_obs, n_outcomes_int, n_cluster));
+    rcpp_result_gen = Rcpp::wrap(GoodnessFitRcpp(responses, prior, outcome_prob, n_data, n_outcomes_int, n_cluster));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -118,7 +117,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_poLCAParallel_BlrtRcpp", (DL_FUNC) &_poLCAParallel_BlrtRcpp, 12},
     {"_poLCAParallel_EmAlgorithmRcpp", (DL_FUNC) &_poLCAParallel_EmAlgorithmRcpp, 13},
     {"_poLCAParallel_ylik", (DL_FUNC) &_poLCAParallel_ylik, 6},
-    {"_poLCAParallel_GoodnessFitRcpp", (DL_FUNC) &_poLCAParallel_GoodnessFitRcpp, 7},
+    {"_poLCAParallel_GoodnessFitRcpp", (DL_FUNC) &_poLCAParallel_GoodnessFitRcpp, 6},
     {"_poLCAParallel_StandardErrorRcpp", (DL_FUNC) &_poLCAParallel_StandardErrorRcpp, 10},
     {"d2lldbeta2", (DL_FUNC) &d2lldbeta2, 8},
     {"postclass",  (DL_FUNC) &postclass,  8},

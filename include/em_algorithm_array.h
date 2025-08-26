@@ -15,9 +15,10 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef POLCAPARALLEL_SRC_EM_ALGORITHM_ARRAY_H_
-#define POLCAPARALLEL_SRC_EM_ALGORITHM_ARRAY_H_
+#ifndef POLCAPARALLEL_INCLUDE_EM_ALGORITHM_ARRAY_H_
+#define POLCAPARALLEL_INCLUDE_EM_ALGORITHM_ARRAY_H_
 
+#include <atomic>
 #include <cstddef>
 #include <memory>
 #include <mutex>
@@ -146,7 +147,7 @@ class EmAlgorithmArray {
    * be done with locking and unlocking n_rep_done_lock_ when using multiple
    * threads.
    */
-  std::size_t n_rep_done_ = 0;
+  std::atomic<std::size_t> n_rep_done_ = 0;
   /**
    * Optional, maximum log-likelihood for each repetition. Set using
    * set_ln_l_array()
@@ -157,8 +158,6 @@ class EmAlgorithmArray {
   /** Number of threads */
   const std::size_t n_thread_;
 
-  /** For locking n_rep_done_ */
-  std::mutex n_rep_done_lock_;
   /** For locking optimal_ln_l_, best_rep_index_, n_iter_ and has_restarted_ */
   std::mutex results_lock_;
 
@@ -178,6 +177,7 @@ class EmAlgorithmArray {
    *   <li>dim 0: for each data point</li>
    *   <li>dim 1: for each feature</li>
    * </ul>
+   * Can be empty if using only for clustering (non-regression)
    * @param responses Design matrix TRANSPOSED of responses, matrix containing
    * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
    * has dimensions
@@ -239,6 +239,67 @@ class EmAlgorithmArray {
                    double tolerance, std::span<double> posterior,
                    std::span<double> prior, std::span<double> estimated_prob,
                    std::span<double> regress_coeff);
+
+  /**
+   * Construct a new EM Algorithm Array object
+   *
+   * Construct a new EM Algorithm Array object for clustering (non-regression)
+   * only.
+   *
+   * @param responses Design matrix TRANSPOSED of responses, matrix containing
+   * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
+   * has dimensions
+   * <ul>
+   *   <li>dim 0: for each category</li>
+   *   <li>dim 1: for each data point</li>
+   * </ul>
+   * @param initial_prob Vector of initial probabilities for each outcome, for
+   * each category, for each cluster and for each repetition, flatten list in
+   * the following order
+   * <ul>
+   *   <li>dim 0: for each outcome</li>
+   *   <li>dim 1: for each category</li>
+   *   <li>dim 2: for each cluster</li>
+   *   <li>dim 3: for each repetition</li>
+   * </ul>
+   * @param n_data Number of data points
+   * @param n_outcomes Array of the number of outcomes for each category and its
+   * sum
+   * @param n_cluster Number of clusters to fit
+   * @param n_rep Number of repetitions to do, this defines dim 3 of
+   * initial_prob
+   * @param n_thread Number of threads to use
+   * @param max_iter Maximum number of iterations for EM algorithm
+   * @param tolerance Tolerance for the difference in log-likelihood, used for
+   * stopping condition
+   * @param posterior To store results, design matrix of posterior probabilities
+   * (also called responsibility), the probability a data point is in cluster
+   * m given responses, matrix with dimensions
+   * <ul>
+   *   <li>dim 0: for each data</li>
+   *   <li>dim 1: for each cluster</li>
+   * </ul>
+   * @param prior To store results, design matrix of prior probabilities,
+   * the probability a data point is in cluster m NOT given responses
+   * <ul>
+   *   <li>dim 0: for each data</li>
+   *   <li>dim 1: for each cluster</li>
+   * </ul>
+   * @param estimated_prob To store results, vector of estimated response
+   * probabilities for each category, flatten list in the following order
+   * <ul>
+   *   <li>dim 0: for each outcome</li>
+   *   <li>dim 1: for each cluster</li>
+   *   <li>dim 2: for each category</li>
+   * </ul>
+   */
+  EmAlgorithmArray(std::span<const int> responses,
+                   std::span<const double> initial_prob, std::size_t n_data,
+                   NOutcomes n_outcomes, std::size_t n_cluster,
+                   std::size_t n_rep, std::size_t n_thread,
+                   unsigned int max_iter, double tolerance,
+                   std::span<double> posterior, std::span<double> prior,
+                   std::span<double> estimated_prob);
 
   virtual ~EmAlgorithmArray() = default;
 
@@ -340,4 +401,4 @@ class EmAlgorithmArray {
 
 }  // namespace polca_parallel
 
-#endif  // POLCAPARALLEL_SRC_EM_ALGORITHM_ARRAY_H_
+#endif  // POLCAPARALLEL_INCLUDE_EM_ALGORITHM_ARRAY_H_

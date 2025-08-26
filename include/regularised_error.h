@@ -15,8 +15,8 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef POLCAPARALLEL_SRC_REGULARISED_ERROR_H
-#define POLCAPARALLEL_SRC_REGULARISED_ERROR_H
+#ifndef POLCAPARALLEL_INCLUDE_REGULARISED_ERROR_H
+#define POLCAPARALLEL_INCLUDE_REGULARISED_ERROR_H
 
 #include <cstddef>
 #include <span>
@@ -48,6 +48,13 @@ class RegularisedError : public polca_parallel::StandardError {
                    std::span<double> prob_error,
                    std::span<double> regress_coeff_error);
 
+  /** @copydoc StandardError::StandardError */
+  RegularisedError(std::span<const int> responses,
+                   std::span<const double> probs, std::span<const double> prior,
+                   std::span<const double> posterior, std::size_t n_data,
+                   NOutcomes n_outcomes, std::size_t n_cluster,
+                   std::span<double> prior_error, std::span<double> prob_error);
+
   ~RegularisedError() override = default;
 };
 
@@ -60,10 +67,10 @@ class RegularisedError : public polca_parallel::StandardError {
  * @copydoc StandardErrorRegress
  *
  */
-class RegularisedRegressError : public polca_parallel::StandardErrorRegress {
+class RegularisedErrorRegress : public polca_parallel::StandardErrorRegress {
  public:
   /** @copydoc StandardErrorRegress::StandardErrorRegress */
-  RegularisedRegressError(std::span<const double> features,
+  RegularisedErrorRegress(std::span<const double> features,
                           std::span<const int> responses,
                           std::span<const double> probs,
                           std::span<const double> prior,
@@ -73,8 +80,8 @@ class RegularisedRegressError : public polca_parallel::StandardErrorRegress {
                           std::span<double> prob_error,
                           std::span<double> regress_coeff_error);
 
-  ~RegularisedRegressError() override = default;
+  ~RegularisedErrorRegress() override = default;
 };
 }  // namespace polca_parallel
 
-#endif  // POLCAPARALLEL_SRC_REGULARISED_ERROR_H
+#endif  // POLCAPARALLEL_INCLUDE_REGULARISED_ERROR_H

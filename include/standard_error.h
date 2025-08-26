@@ -15,14 +15,14 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef POLCAPARALLEL_SRC_STANDARD_ERROR_H
-#define POLCAPARALLEL_SRC_STANDARD_ERROR_H
+#ifndef POLCAPARALLEL_INCLUDE_STANDARD_ERROR_H
+#define POLCAPARALLEL_INCLUDE_STANDARD_ERROR_H
 
 #include <cstddef>
 #include <memory>
 #include <span>
 
-#include "RcppArmadillo.h"
+#include "arma.h"
 #include "error_solver.h"
 #include "smoother.h"
 #include "util.h"
@@ -111,8 +111,6 @@ class StandardError {
    * </ul>
    */
   std::span<double> prob_error_;
-  /** Covariance matrix of the regression coefficient */
-  std::span<double> regress_coeff_error_;
   /** The size of the information matrix*/
   const std::size_t info_size_;
   /** The width of the Jacobian matrix*/
@@ -181,6 +179,61 @@ class StandardError {
                 std::size_t n_cluster, std::span<double> prior_error,
                 std::span<double> prob_error,
                 std::span<double> regress_coeff_error);
+
+  /**
+   * Construct a new StandardError object
+   *
+   * Call Calc() and the resulting errors will be saved to prior_error and
+   * prob_error
+   *
+   * @param responses Design matrix of responses, matrix containing
+   * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
+   * has dimensions
+   * <ul>
+   *   <li>dim 0: for each data point</li>
+   *   <li>dim 1: for each category</li>
+   * </ul>
+   * @param probs Vector of probabilities for each outcome, for each category,
+   * for each cluster flatten list of matrices
+   * <ul>
+   *   <li>dim 0: for each outcome</li>
+   *   <li>dim 1: for each category</li>
+   *   <li>dim 2: for each cluster</li>
+   * </ul>
+   * @param prior Design matrix of prior probabilities, probability data point
+   * is in cluster m NOT given responses after calculations, it shall be in
+   * matrix form with dimensions
+   * <ul>
+   *   <li>dim 0: for each data</li>
+   *   <li>dim 1: for each cluster</li>
+   * </ul>
+   * @param posterior Design matrix of posterior probabilities (also called
+   * responsibility), probability data point is in cluster m given responses
+   * matrix
+   * <ul>
+   *   <li>dim 0: for each data</li>
+   *   <li>dim 1: for each cluster</li>
+   * </ul>
+   * @param n_data Number of data points
+   * @param n_outcomes Array of number of outcomes, for each category, and its
+   * sum
+   * @param n_cluster Number of clusters fitted
+   * @param prior_error Vector to contain the standard error for the prior
+   * probabilities for each cluster, modified after calling Calc()
+   * @param prob_error Vector to contain the standard error for the outcome
+   * probabilities category and cluster, modified after calling Calc()
+   * flatten list of matrices
+   * <ul>
+   *   <li>dim 0: for each outcome</li>
+   *   <li>dim 1: for each category</li>
+   *   <li>dim 2: for each cluster</li>
+   * </ul>
+   */
+  StandardError(std::span<const int> responses, std::span<const double> probs,
+                std::span<const double> prior,
+                std::span<const double> posterior, std::size_t n_data,
+                NOutcomes n_outcomes, std::size_t n_cluster,
+                std::span<double> prior_error, std::span<double> prob_error);
 
   virtual ~StandardError() = default;
 
@@ -314,4 +367,4 @@ class StandardError {
 
 }  // namespace polca_parallel
 
-#endif  // POLCAPARALLEL_SRC_STANDARD_ERROR_H
+#endif  // POLCAPARALLEL_INCLUDE_STANDARD_ERROR_H

@@ -31,6 +31,16 @@ polca_parallel::EmAlgorithmArraySerial::EmAlgorithmArraySerial(
                                        n_rep, 1, max_iter, tolerance, posterior,
                                        prior, estimated_prob, regress_coeff) {}
 
+polca_parallel::EmAlgorithmArraySerial::EmAlgorithmArraySerial(
+    std::span<const int> responses, std::span<const double> initial_prob,
+    std::size_t n_data, polca_parallel::NOutcomes n_outcomes,
+    std::size_t n_cluster, std::size_t n_rep, unsigned int max_iter,
+    double tolerance, std::span<double> posterior, std::span<double> prior,
+    std::span<double> estimated_prob)
+    : polca_parallel::EmAlgorithmArray(
+          responses, initial_prob, n_data, n_outcomes, n_cluster, n_rep, 1,
+          max_iter, tolerance, posterior, prior, estimated_prob) {}
+
 void polca_parallel::EmAlgorithmArraySerial::SetSeed(std::seed_seq& seed) {
   this->seed_array_ = std::make_unique<std::vector<unsigned>>(1);
   seed.generate(this->seed_array_->begin(), this->seed_array_->end());
@@ -44,7 +54,7 @@ void polca_parallel::EmAlgorithmArraySerial::SetSeed(unsigned seed) {
 }
 
 void polca_parallel::EmAlgorithmArraySerial::SetRng(
-    std::unique_ptr<std::mt19937_64>& rng) {
+    std::unique_ptr<std::mt19937_64> rng) {
   this->rng_ = std::move(rng);
 }
 
@@ -54,7 +64,8 @@ polca_parallel::EmAlgorithmArraySerial::MoveRng() {
 }
 
 void polca_parallel::EmAlgorithmArraySerial::SetFitterRng(
-    std::size_t rep_index, polca_parallel::EmAlgorithm& fitter) {
+    [[maybe_unused]] std::size_t rep_index,
+    polca_parallel::EmAlgorithm& fitter) {
   if (this->rng_) {
     fitter.set_rng(std::move(this->rng_));
   }

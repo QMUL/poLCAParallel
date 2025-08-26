@@ -15,14 +15,14 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef POLCAPARALLEL_SRC_EM_ALGORITHM_NAN_H_
-#define POLCAPARALLEL_SRC_EM_ALGORITHM_NAN_H_
+#ifndef POLCAPARALLEL_INCLUDE_EM_ALGORITHM_NAN_H_
+#define POLCAPARALLEL_INCLUDE_EM_ALGORITHM_NAN_H_
 
 #include <cstddef>
 #include <span>
 #include <vector>
 
-#include "RcppArmadillo.h"
+#include "arma.h"
 #include "em_algorithm.h"
 #include "em_algorithm_regress.h"
 #include "util.h"
@@ -105,6 +105,18 @@ class EmAlgorithmNan : public EmAlgorithmNanTemplate<EmAlgorithm> {
                  std::span<double> posterior, std::span<double> prior,
                  std::span<double> estimated_prob,
                  std::span<double> regress_coeff);
+
+  /**
+   * EM algorithm with NaN handling
+   *
+   * @copydoc EmAlgorithm::EmAlgorithm
+   */
+  EmAlgorithmNan(std::span<const int> responses,
+                 std::span<const double> initial_prob, std::size_t n_data,
+                 NOutcomes n_outcomes, std::size_t n_cluster,
+                 unsigned int max_iter, double tolerance,
+                 std::span<double> posterior, std::span<double> prior,
+                 std::span<double> estimated_prob);
 
   ~EmAlgorithmNan() override = default;
 };
@@ -208,4 +220,4 @@ void NanNormalWeightedSumProb(const std::size_t cluster_index,
 
 }  // namespace polca_parallel
 
-#endif  // POLCAPARALLEL_SRC_EM_ALGORITHM_NAN_H_
+#endif  // POLCAPARALLEL_INCLUDE_EM_ALGORITHM_NAN_H_

@@ -69,6 +69,17 @@ polca_parallel::EmAlgorithmNan::EmAlgorithmNan(
           n_cluster, max_iter, tolerance, posterior, prior, estimated_prob,
           regress_coeff) {}
 
+polca_parallel::EmAlgorithmNan::EmAlgorithmNan(
+    std::span<const int> responses, std::span<const double> initial_prob,
+    std::size_t n_data, polca_parallel::NOutcomes n_outcomes,
+    std::size_t n_cluster, unsigned int max_iter, double tolerance,
+    std::span<double> posterior, std::span<double> prior,
+    std::span<double> estimated_prob)
+    : EmAlgorithmNanTemplate<EmAlgorithm>(
+          std::span<const double>(), responses, initial_prob, n_data, 1,
+          n_outcomes, n_cluster, max_iter, tolerance, posterior, prior,
+          estimated_prob, std::span<double>()) {}
+
 polca_parallel::EmAlgorithmNanRegress::EmAlgorithmNanRegress(
     std::span<const double> features, std::span<const int> responses,
     std::span<const double> initial_prob, std::size_t n_data,

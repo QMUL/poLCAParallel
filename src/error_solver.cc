@@ -18,34 +18,28 @@
 #include "error_solver.h"
 
 #include <algorithm>
+#include <cassert>
 #include <iterator>
 #include <limits>
 
 polca_parallel::ErrorSolver::ErrorSolver(
-    std::size_t n_data, std::size_t n_feature, std::size_t sum_outcomes,
-    std::size_t n_cluster, std::size_t info_size, std::size_t jacobian_width,
-    std::span<double> prior_error, std::span<double> prob_error,
-    std::span<double> regress_coeff_error)
+    std::size_t n_data, std::size_t sum_outcomes, std::size_t n_cluster,
+    std::size_t info_size, std::size_t jacobian_width,
+    std::span<double> prior_error, std::span<double> prob_error)
     : n_data_(n_data),
-      n_feature_(n_feature),
       sum_outcomes_(sum_outcomes),
       n_cluster_(n_cluster),
       info_size_(info_size),
       jacobian_width_(jacobian_width),
       prior_error_(prior_error),
-      prob_error_(prob_error),
-      regress_coeff_error_(regress_coeff_error.data(),
-                           n_feature * (n_cluster - 1),
-                           n_feature * (n_cluster - 1), false, true) {}
+      prob_error_(prob_error) {}
 
 polca_parallel::InfoEigenSolver::InfoEigenSolver(
-    std::size_t n_data, std::size_t n_feature, std::size_t sum_outcomes,
-    std::size_t n_cluster, std::size_t info_size, std::size_t jacobian_width,
-    std::span<double> prior_error, std::span<double> prob_error,
-    std::span<double> regress_coeff_error)
-    : polca_parallel::ErrorSolver(n_data, n_feature, sum_outcomes, n_cluster,
-                                  info_size, jacobian_width, prior_error,
-                                  prob_error, regress_coeff_error) {}
+    std::size_t n_data, std::size_t sum_outcomes, std::size_t n_cluster,
+    std::size_t info_size, std::size_t jacobian_width,
+    std::span<double> prior_error, std::span<double> prob_error)
+    : polca_parallel::ErrorSolver(n_data, sum_outcomes, n_cluster, info_size,
+                                  jacobian_width, prior_error, prob_error) {}
 
 void polca_parallel::InfoEigenSolver::Solve(const arma::Mat<double>& score,
                                             const arma::Mat<double>& jacobian) {
@@ -84,6 +78,11 @@ void polca_parallel::InfoEigenSolver::ExtractErrorGivenEigen(
   arma::Row<double> std_err = arma::vecnorm(
       arma::diagmat(arma::sqrt(eigval_inv)) * eigvec.t() * jacobian, 2, 0);
 
+  assert(std_err.n_elem ==
+         this->n_cluster_ + this->sum_outcomes_ * this->n_cluster_);
+  assert(this->prior_error_.size() == this->n_cluster_);
+  assert(this->prob_error_.size() == this->sum_outcomes_ * this->n_cluster_);
+
   std::copy_n(std_err.cbegin(), this->n_cluster_, this->prior_error_.begin());
   std::copy_n(std::next(std_err.cbegin(), this->n_cluster_),
               this->sum_outcomes_ * this->n_cluster_,
@@ -95,9 +94,13 @@ polca_parallel::InfoEigenRegressSolver::InfoEigenRegressSolver(
     std::size_t n_cluster, std::size_t info_size, std::size_t jacobian_width,
     std::span<double> prior_error, std::span<double> prob_error,
     std::span<double> regress_coeff_error)
-    : polca_parallel::InfoEigenSolver(
-          n_data, n_feature, sum_outcomes, n_cluster, info_size, jacobian_width,
-          prior_error, prob_error, regress_coeff_error) {}
+    : polca_parallel::InfoEigenSolver(n_data, sum_outcomes, n_cluster,
+                                      info_size, jacobian_width, prior_error,
+                                      prob_error),
+      n_feature_(n_feature),
+      regress_coeff_error_(regress_coeff_error.data(),
+                           n_feature * (n_cluster - 1),
+                           n_feature * (n_cluster - 1), false, true) {}
 
 void polca_parallel::InfoEigenRegressSolver::ExtractErrorGivenEigen(
     const arma::Col<double>& eigval_inv, const arma::Mat<double>& eigvec,
@@ -117,13 +120,11 @@ void polca_parallel::InfoEigenRegressSolver::ExtractErrorGivenEigen(
 }
 
 polca_parallel::ScoreSvdSolver::ScoreSvdSolver(
-    std::size_t n_data, std::size_t n_feature, std::size_t sum_outcomes,
-    std::size_t n_cluster, std::size_t info_size, std::size_t jacobian_width,
-    std::span<double> prior_error, std::span<double> prob_error,
-    std::span<double> regress_coeff_error)
-    : polca_parallel::ErrorSolver(n_data, n_feature, sum_outcomes, n_cluster,
-                                  info_size, jacobian_width, prior_error,
-                                  prob_error, regress_coeff_error) {}
+    std::size_t n_data, std::size_t sum_outcomes, std::size_t n_cluster,
+    std::size_t info_size, std::size_t jacobian_width,
+    std::span<double> prior_error, std::span<double> prob_error)
+    : polca_parallel::ErrorSolver(n_data, sum_outcomes, n_cluster, info_size,
+                                  jacobian_width, prior_error, prob_error) {}
 
 void polca_parallel::ScoreSvdSolver::Solve(const arma::Mat<double>& score,
                                            const arma::Mat<double>& jacobian) {
@@ -162,6 +163,11 @@ void polca_parallel::ScoreSvdSolver::ExtractErrorGivenEigen(
   arma::Row<double> std_err =
       arma::vecnorm(arma::diagmat(singular_inv) * v_mat.t() * jacobian, 2, 0);
 
+  assert(std_err.n_elem ==
+         this->n_cluster_ + this->sum_outcomes_ * this->n_cluster_);
+  assert(this->prior_error_.size() == this->n_cluster_);
+  assert(this->prob_error_.size() == this->sum_outcomes_ * this->n_cluster_);
+
   std::copy_n(std_err.cbegin(), this->n_cluster_, this->prior_error_.begin());
   std::copy_n(std::next(std_err.cbegin(), this->n_cluster_),
               this->sum_outcomes_ * this->n_cluster_,
@@ -173,9 +179,12 @@ polca_parallel::ScoreSvdRegressSolver::ScoreSvdRegressSolver(
     std::size_t n_cluster, std::size_t info_size, std::size_t jacobian_width,
     std::span<double> prior_error, std::span<double> prob_error,
     std::span<double> regress_coeff_error)
-    : polca_parallel::ScoreSvdSolver(n_data, n_feature, sum_outcomes, n_cluster,
-                                     info_size, jacobian_width, prior_error,
-                                     prob_error, regress_coeff_error) {}
+    : polca_parallel::ScoreSvdSolver(n_data, sum_outcomes, n_cluster, info_size,
+                                     jacobian_width, prior_error, prob_error),
+      n_feature_(n_feature),
+      regress_coeff_error_(regress_coeff_error.data(),
+                           n_feature * (n_cluster - 1),
+                           n_feature * (n_cluster - 1), false, true) {}
 
 void polca_parallel::ScoreSvdRegressSolver::ExtractErrorGivenEigen(
     const arma::Col<double>& singular_inv, const arma::Mat<double>& v_mat,
