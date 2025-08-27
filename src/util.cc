@@ -60,7 +60,7 @@ void polca_parallel::Random(std::span<const double> prior,
   }
 }
 
-void polca_parallel::RandomProb(std::span<const size_t> n_outcomes,
+void polca_parallel::RandomProb(std::span<const std::size_t> n_outcomes,
                                 const std::size_t n_cluster,
                                 std::mt19937_64& rng, arma::Mat<double>& prob) {
   std::uniform_real_distribution<double> random_distribution(0.0, 1.0);
