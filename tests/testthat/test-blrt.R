@@ -77,3 +77,33 @@ test_that("full-data", {
     20
   ))
 })
+
+test_that("missing-data", {
+  set.seed(-15347082)
+  expect_no_error(test_blrt(
+    100,
+    c(2, 3, 5, 2, 2),
+    3,
+    1,
+    TRUE,
+    4,
+    1000,
+    1e-10,
+    0.1,
+    20
+  ))
+
+  set.seed(-15347082)
+  expect_no_error(test_blrt(
+    100,
+    c(2, 3, 5, 2, 2),
+    3,
+    1,
+    FALSE,
+    4,
+    1000,
+    1e-10,
+    0.1,
+    20
+  ))
+})
