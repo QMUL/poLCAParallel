@@ -1,0 +1,90 @@
+Bootstrap: docker
+From: ubuntu:24.04
+
+%environment
+    export LC_ALL=C
+    export R_LIBS_USER=""
+    export DEBIAN_FRONTEND="noninteractive"
+    export DEBCONF_NONINTERACTIVE_SEEN=true
+
+%post
+    apt update -y
+    apt install -y wget
+    apt install -y git
+    apt install -y libxml2-dev
+    apt install -y cmake
+
+    # doxygen
+    apt install -y doxygen=1.9.8+ds-2build5
+    apt install -y graphviz
+
+    # R and dependent packages
+    apt install -y r-base=4.3.3-2build2
+
+    # 'MASS' version 7.3-60.2 is in the repositories but depends on R (>= 4.4.0)
+    # 'MASS' version 7.3-60.2 is in the repositories but depends on R (>= 4.5)
+    cd /tmp
+    wget https://cran.r-project.org/src/contrib/Archive/MASS/MASS_7.3-59.tar.gz
+
+    R -e "install.packages('remotes')"
+    R -e "remotes::install_version('Rcpp', version='1.1.0')"
+    R -e "remotes::install_version('RcppArmadillo', version='14.6.3-1')"
+    R -e "remotes::install_version('roxygen2', version='7.3.2')"
+    R -e "remotes::install_version('poLCA', version='1.6.0.1')"
+    R -e "remotes::install_version('scatterplot3d', version='0.3-44')"
+    R -e "remotes::install_version('testthat', version='3.2.3')"
+
+    R CMD INSTALL MASS*.tar.gz
+
+    # poLCAParallel
+    cd /usr/src/
+    git clone https://github.com/QMUL/poLCAParallel.git
+
+    R -e "Rcpp::compileAttributes('poLCAParallel')"
+    R -e "roxygen2::roxygenize('poLCAParallel')"
+    R CMD INSTALL --preclean --no-multiarch poLCAParallel
+
+    cd poLCAParallel
+    doxygen
+
+    # Catch2
+    cd /usr/src
+    git clone https://github.com/catchorg/Catch2.git
+    cd Catch2
+    git checkout v3.8.1
+    cmake -B build -S .
+    cmake --build build --target install
+
+    # armadillo (stand-alone)
+    cd /tmp
+    wget https://sourceforge.net/projects/arma/files/armadillo-14.6.3.tar.xz
+    tar -xf armadillo-14.6.3.tar.xz -C /usr/src/
+    cd /usr/src/armadillo*
+    cmake .
+    make install
+
+    # make C++ tests
+    cd /usr/src/poLCAParallel
+    mkdir build
+    cd build
+    cmake ..
+    cmake --build .
+
+%test
+    cd /usr/src/poLCAParallel/build
+    ./test_blrt
+    ./test_em_algorithm
+    ./test_em_algorithm_array
+    ./test_em_algorithm_array_serial
+    ./test_em_algorithm_nan
+    ./test_em_algorithm_regress
+    ./test_goodness_fit
+    ./test_regularised_error
+    ./test_smoother
+    ./test_standard_error
+    ./test_standard_error_regress
+    cd ..
+    R -e "testthat::test_local()"
+
+%runscript
+    R "$@"

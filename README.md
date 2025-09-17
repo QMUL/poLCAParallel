@@ -221,22 +221,54 @@ Install the package using
 R CMD INSTALL --preclean --no-multiarch poLCAParallel
 ```
 
-### Troubleshooting
+### Testing
 
-If the installation instructions fail or there are other problems, please check
-the possible following prerequisites are installed:
+The testing of the C++ code is done using
+[Catch2](https://github.com/catchorg/Catch2) and the R code using
+[testthat](https://testthat.r-lib.org/). All test codes are in `tests/`.
 
-* A C++ compiler like [gcc](https://gcc.gnu.org/) or
-  [clang](https://clang.llvm.org/)
-* [Armadillo](http://arma.sourceforge.net/) (see the
-  [installation manual](https://arma.sourceforge.net/download.html) for further
-  details)
-* [LAPACK](http://www.netlib.org/lapack/)
-* [OpenBLAS](https://www.openblas.net/)
+The tests for the C++ code are done by compiling the test code, isolated from
+any R ecosystem, and running the compiled executables. It requires cmake, Catch2
+and [armadillo](https://arma.sourceforge.net/). To compile the code, from the
+repository root, make a new directory and use cmake inside it
 
-An [Apptainer](https://apptainer.org/) definition file `poLCAParallel.def` is
-provided which installs R, prerequisites and poLCAParallel in a container. This
-may be useful for further troubleshooting.
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+This will compile several executables with names `test_`. Execute one to run a
+test e.g. `./test_em_algorithm`.
+
+To test the R code, run the following at the repository root
+
+```bash
+R -e "testthat::test_local()"
+```
+
+### Apptainer
+
+[Apptainer](https://apptainer.org/) definition files are provided, which can be
+used to install the package inside a container. These may be useful for further
+troubleshooting or development.
+
+* The definition file `poLCAParallel.def` installs R and the package only. No
+  version pinning
+* The definition file `poLCAParallel-dev.def` installs the R package as well as
+  generating documentation and running tests within the container. Versions of
+  dependencies are pinned to the ones used during development or maintenance
+
+To build the container, use the command (or similar)
+
+```bash
+apptainer build poLCAParallel-dev.sif poLCAParallel-dev.def
+```
+
+Within the container, the package is located in `/usr/src/poLCAParallel`. When
+using the definition file `poLCAParallel-dev.def`, the C++ doxygen documentation
+is located in `/usr/src/poLCAParallel/html`.
 
 ### Development Notes
 
