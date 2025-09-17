@@ -51,9 +51,10 @@ random_features <- function(n_data, n_features) {
 #'   * numChoices: integer vector, number of outcomes for each category
 #'   * classes: integer, number of classes (or clusters)
 random_unvectorized_probs <- function(n_outcomes, n_cluster) {
-  probs <- list(vecprobs = generate_initial_probs(
-    NULL, 1, length(n_outcomes), n_outcomes, n_cluster
-  )$vector, numChoices = n_outcomes, classes = n_cluster)
+  probs <- list(
+    vecprobs = random_vectorized_probs(n_outcomes, n_cluster),
+    numChoices = n_outcomes, classes = n_cluster
+  )
   probs <- poLCAParallel.unvectorize(probs)
   return(probs)
 }
