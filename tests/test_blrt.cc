@@ -68,13 +68,9 @@ TEST_CASE("blrt", "[blrt]") {
 
   std::vector<double> ratio_array(n_bootstrap, std::nan(""));
 
-  polca_parallel::Blrt blrt(
-      std::span<const double>(prior_null.begin(), prior_null.size()),
-      std::span<const double>(probs_null.begin(), probs_null.size()),
-      std::span<const double>(prior_alt.begin(), prior_alt.size()),
-      std::span<const double>(probs_alt.begin(), probs_alt.size()), n_data,
-      n_outcomes, n_bootstrap, n_rep, n_thread, max_iter, tolerance,
-      std::span<double>(ratio_array.begin(), ratio_array.size()));
+  polca_parallel::Blrt blrt(prior_null, probs_null, prior_alt, probs_alt,
+                            n_data, n_outcomes, n_bootstrap, n_rep, n_thread,
+                            max_iter, tolerance, ratio_array);
 
   blrt.SetSeed(seed_seq);
   blrt.Run();
@@ -86,13 +82,9 @@ TEST_CASE("blrt", "[blrt]") {
   SECTION("blrt-reproducible") {
     std::vector<double> ratio_array_2(n_bootstrap);
 
-    polca_parallel::Blrt blrt_2(
-        std::span<const double>(prior_null.begin(), prior_null.size()),
-        std::span<const double>(probs_null.begin(), probs_null.size()),
-        std::span<const double>(prior_alt.begin(), prior_alt.size()),
-        std::span<const double>(probs_alt.begin(), probs_alt.size()), n_data,
-        n_outcomes, n_bootstrap, n_rep, 1, max_iter, tolerance,
-        std::span<double>(ratio_array_2.begin(), ratio_array_2.size()));
+    polca_parallel::Blrt blrt_2(prior_null, probs_null, prior_alt, probs_alt,
+                                n_data, n_outcomes, n_bootstrap, n_rep, 1,
+                                max_iter, tolerance, ratio_array_2);
     blrt_2.SetSeed(seed_seq);
     blrt_2.Run();
 

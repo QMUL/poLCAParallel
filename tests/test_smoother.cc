@@ -55,11 +55,8 @@ TEST_CASE("smoother") {
   arma::Mat<double> posterior =
       polca_parallel_test::RandomClusterProbs(n_data, n_cluster, rng);
 
-  polca_parallel::Smoother smoother(
-      std::span<double>(probs.begin(), probs.size()),
-      std::span<double>(prior.begin(), prior.size()),
-      std::span<double>(posterior.begin(), posterior.size()), n_data,
-      n_outcomes, n_cluster);
+  polca_parallel::Smoother smoother(probs, prior, posterior, n_data, n_outcomes,
+                                    n_cluster);
   smoother.Smooth();
 
   std::span<const double> probs_smooth = smoother.get_probs();

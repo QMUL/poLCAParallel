@@ -60,8 +60,7 @@ TEST_CASE("std-non-regress", "[std][non_regression]") {
   arma::Mat<int> responses_arma(responses.data(), n_outcomes.size(), n_data);
   arma::inplace_trans(responses_arma);
 
-  polca_parallel_test::SetMissingAtRandom(
-      missing_prob, rng, std::span<int>(responses.begin(), responses.size()));
+  polca_parallel_test::SetMissingAtRandom(missing_prob, rng, responses);
 
   arma::Mat<double> prior = arma::repmat(
       polca_parallel_test::RandomClusterProbs(1, n_cluster, rng), n_data, 1);
@@ -69,8 +68,6 @@ TEST_CASE("std-non-regress", "[std][non_regression]") {
       polca_parallel_test::RandomClusterProbs(n_data, n_cluster, rng);
 
   polca_parallel_test::BlackBoxTestStandardError<polca_parallel::StandardError>(
-      std::span<const double>(),
-      std::span<const int>(responses_arma.cbegin(), responses_arma.size()),
-      std::span<const double>(probs.cbegin(), probs.size()), prior, posterior,
+      std::span<const double>(), responses_arma, probs, prior, posterior,
       n_data, 1, n_outcomes, n_cluster, is_full_constructor);
 }

@@ -115,17 +115,11 @@ Rcpp::List StandardErrorRcpp(Rcpp::NumericVector features,
   Rcpp::NumericMatrix regress_coeff_error(len_regress_coeff, len_regress_coeff);
 
   std::unique_ptr<polca_parallel::StandardError> error = InitStandardError(
-      n_feature, use_smooth,
-      std::span<const double>(features.cbegin(), features.size()),
-      std::span<const int>(responses.cbegin(), responses.size()),
-      std::span<const double>(probs.cbegin(), probs.size()),
-      std::span<const double>(prior.begin(), prior.size()),
-      std::span<const double>(posterior.begin(), posterior.size()), n_data,
-      n_feature, n_outcomes, n_cluster,
-      std::span<double>(prior_error.begin(), prior_error.size()),
-      std::span<double>(probs_error.begin(), probs_error.size()),
-      std::span<double>(regress_coeff_error.begin(),
-                        regress_coeff_error.size()));
+      n_feature, use_smooth, std::span<const double>(features),
+      std::span<const int>(responses), std::span<const double>(probs),
+      std::span<const double>(prior), std::span<const double>(posterior),
+      n_data, n_feature, n_outcomes, n_cluster, std::span<double>(prior_error),
+      std::span<double>(probs_error), std::span<double>(regress_coeff_error));
   error->Calc();
 
   Rcpp::List to_return;

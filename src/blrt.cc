@@ -74,7 +74,6 @@ void polca_parallel::Blrt::Run() {
 void polca_parallel::Blrt::RunThread() {
   // to store the bootstrap samples
   std::vector<int> bootstrap_data(this->n_data_ * this->n_outcomes_.size());
-  std::span<int> bootstrap_span(bootstrap_data.begin(), bootstrap_data.size());
 
   // allocate memory for storing initial values for the probabilities
   std::vector<double> init_prob_null(this->n_outcomes_.sum() *
@@ -134,36 +133,24 @@ void polca_parallel::Blrt::RunThread() {
     }
 
     // bootstrap data using null model
-    this->Bootstrap(this->prior_null_, this->prob_null_, *rng, bootstrap_span);
+    this->Bootstrap(this->prior_null_, this->prob_null_, *rng, bootstrap_data);
 
     // null model fit
     polca_parallel::EmAlgorithmArraySerial null_model(
-        features, bootstrap_span,
-        std::span<const double>(init_prob_null.cbegin(), init_prob_null.size()),
-        this->n_data_, 1, this->n_outcomes_, this->prior_null_.size(),
-        this->n_rep_, this->max_iter_, this->tolerance_,
-        std::span<double>(fitted_posterior_null.begin(),
-                          fitted_posterior_null.size()),
-        std::span<double>(fitted_prior_null.begin(), fitted_prior_null.size()),
-        std::span<double>(fitted_prob_null.begin(), fitted_prob_null.size()),
-        std::span<double>(fitted_regress_coeff_null.begin(),
-                          fitted_regress_coeff_null.size()));
+        features, bootstrap_data, init_prob_null, this->n_data_, 1,
+        this->n_outcomes_, this->prior_null_.size(), this->n_rep_,
+        this->max_iter_, this->tolerance_, fitted_posterior_null,
+        fitted_prior_null, fitted_prob_null, fitted_regress_coeff_null);
     null_model.SetRng(std::move(rng));
     null_model.Fit<polca_parallel::EmAlgorithm>();
     rng = null_model.MoveRng();
 
     // alt model fit
     polca_parallel::EmAlgorithmArraySerial alt_model(
-        features, bootstrap_span,
-        std::span<const double>(init_prob_alt.cbegin(), init_prob_alt.size()),
-        this->n_data_, 1, this->n_outcomes_, this->prior_alt_.size(),
-        this->n_rep_, this->max_iter_, this->tolerance_,
-        std::span<double>(fitted_posterior_alt.begin(),
-                          fitted_posterior_alt.size()),
-        std::span<double>(fitted_prior_alt.begin(), fitted_prior_alt.size()),
-        std::span<double>(fitted_prob_alt.begin(), fitted_prob_alt.size()),
-        std::span<double>(fitted_regress_coeff_alt.begin(),
-                          fitted_regress_coeff_alt.size()));
+        features, bootstrap_data, init_prob_alt, this->n_data_, 1,
+        this->n_outcomes_, this->prior_alt_.size(), this->n_rep_,
+        this->max_iter_, this->tolerance_, fitted_posterior_alt,
+        fitted_prior_alt, fitted_prob_alt, fitted_regress_coeff_alt);
     alt_model.SetRng(std::move(rng));
     alt_model.Fit<polca_parallel::EmAlgorithm>();
     rng = alt_model.MoveRng();

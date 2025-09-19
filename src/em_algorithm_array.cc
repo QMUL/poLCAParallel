@@ -162,14 +162,9 @@ void polca_parallel::EmAlgorithmArray::FitThread() {
                 rep_index * this->n_outcomes_.sum() * n_cluster,
                 this->n_outcomes_.sum() * n_cluster),
             n_data, n_feature, this->n_outcomes_, n_cluster, this->max_iter_,
-            this->tolerance_,
-            std::span<double>(posterior.begin(), posterior.size()),
-            std::span<double>(prior.begin(), prior.size()),
-            std::span<double>(estimated_prob.begin(), estimated_prob.size()),
-            std::span<double>(regress_coeff.begin(), regress_coeff.size()));
+            this->tolerance_, posterior, prior, estimated_prob, regress_coeff);
     if (this->best_initial_prob_) {
-      fitter->set_best_initial_prob(std::span<double>(
-          best_initial_prob.begin(), best_initial_prob.size()));
+      fitter->set_best_initial_prob(best_initial_prob);
     }
 
     // each repetition uses their own rng

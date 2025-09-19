@@ -60,8 +60,7 @@ TEST_CASE("std-regress", "[std][regression]") {
   arma::Mat<int> responses_arma(responses.data(), n_outcomes.size(), n_data);
   arma::inplace_trans(responses_arma);
 
-  polca_parallel_test::SetMissingAtRandom(
-      missing_prob, rng, std::span<int>(responses.begin(), responses.size()));
+  polca_parallel_test::SetMissingAtRandom(missing_prob, rng, responses);
 
   std::vector<double> features(n_data * n_feature);
   for (double& feature : features) {
@@ -75,9 +74,7 @@ TEST_CASE("std-regress", "[std][regression]") {
       polca_parallel_test::RandomClusterProbs(n_data, n_cluster, rng);
 
   polca_parallel_test::BlackBoxTestStandardError<
-      polca_parallel::StandardErrorRegress>(
-      std::span<const double>(features.begin(), features.size()),
-      std::span<const int>(responses_arma.cbegin(), responses_arma.size()),
-      std::span<const double>(probs.cbegin(), probs.size()), prior, posterior,
-      n_data, n_feature, n_outcomes, n_cluster, true);
+      polca_parallel::StandardErrorRegress>(features, responses_arma, probs,
+                                            prior, posterior, n_data, n_feature,
+                                            n_outcomes, n_cluster, true);
 }

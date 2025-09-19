@@ -75,8 +75,6 @@ TEST_CASE("em-regression-full-data", "[em][full_data][regression]") {
 
   polca_parallel_test::BlackBoxTestEmAlgorithm<
       polca_parallel::EmAlgorithmRegress>(
-      features, std::span<const int>(responses.begin(), responses.size()),
-      std::span<const double>(initial_prob.begin(), initial_prob.size()),
-      n_data, n_feature, n_outcomes, n_cluster, max_iter, tolerance, seed,
-      true);
+      features, responses, initial_prob, n_data, n_feature, n_outcomes,
+      n_cluster, max_iter, tolerance, seed, true);
 }

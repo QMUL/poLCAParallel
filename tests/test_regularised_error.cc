@@ -59,8 +59,7 @@ TEST_CASE("regularised-error-non-regress", "[std],[non_regression]") {
   std::vector<int> responses =
       polca_parallel_test::RandomMarginal(n_data, n_outcomes, rng);
 
-  polca_parallel_test::SetMissingAtRandom(
-      missing_prob, rng, std::span<int>(responses.begin(), responses.size()));
+  polca_parallel_test::SetMissingAtRandom(missing_prob, rng, responses);
 
   arma::Mat<double> prior = arma::repmat(
       polca_parallel_test::RandomClusterProbs(1, n_cluster, rng), n_data, 1);
@@ -69,10 +68,8 @@ TEST_CASE("regularised-error-non-regress", "[std],[non_regression]") {
 
   polca_parallel_test::BlackBoxTestStandardError<
       polca_parallel::RegularisedError>(
-      std::span<const double>(),
-      std::span<const int>(responses.cbegin(), responses.size()),
-      std::span<const double>(probs.cbegin(), probs.size()), prior, posterior,
-      n_data, 1, n_outcomes, n_cluster, is_full_constructor);
+      std::span<const double>(), responses, probs, prior, posterior, n_data, 1,
+      n_outcomes, n_cluster, is_full_constructor);
 }
 
 TEST_CASE("regularised-error-regress", "[std],[regression]") {
@@ -98,8 +95,7 @@ TEST_CASE("regularised-error-regress", "[std],[regression]") {
   arma::Mat<int> responses_arma(responses.data(), n_outcomes.size(), n_data);
   arma::inplace_trans(responses_arma);
 
-  polca_parallel_test::SetMissingAtRandom(
-      missing_prob, rng, std::span<int>(responses.begin(), responses.size()));
+  polca_parallel_test::SetMissingAtRandom(missing_prob, rng, responses);
 
   std::vector<double> features(n_data * n_feature);
   for (double& feature : features) {
@@ -114,8 +110,6 @@ TEST_CASE("regularised-error-regress", "[std],[regression]") {
 
   polca_parallel_test::BlackBoxTestStandardError<
       polca_parallel::RegularisedErrorRegress>(
-      std::span<const double>(features.begin(), features.size()),
-      std::span<const int>(responses_arma.cbegin(), responses_arma.size()),
-      std::span<const double>(probs.cbegin(), probs.size()), prior, posterior,
-      n_data, n_feature, n_outcomes, n_cluster, true);
+      features, responses_arma, probs, prior, posterior, n_data, n_feature,
+      n_outcomes, n_cluster, true);
 }

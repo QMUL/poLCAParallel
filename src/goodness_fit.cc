@@ -91,7 +91,7 @@ void polca_parallel::GoodnessOfFit::CalcExpected(
        iter != this->frequency_map_.end(); ++iter) {
     // calculate likelihood
     std::vector<int> response_i = iter->first;
-    std::span<int> response_i_span(response_i.data(), response_i.size());
+    std::span<int> response_i_span(response_i);
 
     double total_p = 0.0;  // to be summed over all clusters
 

@@ -111,20 +111,16 @@ TEST_CASE("em-array-serial-non-regression-full-data",
   SECTION("EmAlgorithm") {
     polca_parallel_test::BlackBoxTestEmAlgorithmArray<
         polca_parallel::EmAlgorithmArraySerial, polca_parallel::EmAlgorithm>(
-        std::span<const double>(),
-        std::span<const int>(responses.begin(), responses.size()),
-        std::span<const double>(initial_prob.begin(), initial_prob.size()),
-        n_data, 1, n_outcomes, n_cluster, n_rep, n_thread, max_iter, tolerance,
-        seed_seq, is_full_constructor);
+        std::span<const double>(), responses, initial_prob, n_data, 1,
+        n_outcomes, n_cluster, n_rep, n_thread, max_iter, tolerance, seed_seq,
+        is_full_constructor);
   }
   SECTION("EmAlgorithmNan") {
     polca_parallel_test::BlackBoxTestEmAlgorithmArray<
         polca_parallel::EmAlgorithmArraySerial, polca_parallel::EmAlgorithmNan>(
-        std::span<const double>(),
-        std::span<const int>(responses.begin(), responses.size()),
-        std::span<const double>(initial_prob.begin(), initial_prob.size()),
-        n_data, 1, n_outcomes, n_cluster, n_rep, n_thread, max_iter, tolerance,
-        seed_seq, is_full_constructor);
+        std::span<const double>(), responses, initial_prob, n_data, 1,
+        n_outcomes, n_cluster, n_rep, n_thread, max_iter, tolerance, seed_seq,
+        is_full_constructor);
   }
 }
 
@@ -166,21 +162,15 @@ TEST_CASE("em-array-serial-regression-full-data",
     polca_parallel_test::BlackBoxTestEmAlgorithmArray<
         polca_parallel::EmAlgorithmArraySerial,
         polca_parallel::EmAlgorithmRegress>(
-        std::span<const double>(features.begin(), features.size()),
-        std::span<const int>(responses.begin(), responses.size()),
-        std::span<const double>(initial_prob.begin(), initial_prob.size()),
-        n_data, n_feature, n_outcomes, n_cluster, n_rep, n_thread, max_iter,
-        tolerance, seed_seq, true);
+        features, responses, initial_prob, n_data, n_feature, n_outcomes,
+        n_cluster, n_rep, n_thread, max_iter, tolerance, seed_seq, true);
   }
   SECTION("EmAlgorithmNanRegress") {
     polca_parallel_test::BlackBoxTestEmAlgorithmArray<
         polca_parallel::EmAlgorithmArraySerial,
         polca_parallel::EmAlgorithmNanRegress>(
-        std::span<const double>(features.begin(), features.size()),
-        std::span<const int>(responses.begin(), responses.size()),
-        std::span<const double>(initial_prob.begin(), initial_prob.size()),
-        n_data, n_feature, n_outcomes, n_cluster, n_rep, n_thread, max_iter,
-        tolerance, seed_seq, true);
+        features, responses, initial_prob, n_data, n_feature, n_outcomes,
+        n_cluster, n_rep, n_thread, max_iter, tolerance, seed_seq, true);
   }
 }
 
@@ -212,16 +202,13 @@ TEST_CASE("em-array-serial-non-regression-missing-data",
 
   std::vector<int> responses =
       polca_parallel_test::RandomMarginal(n_data, n_outcomes, rng);
-  polca_parallel_test::SetMissingAtRandom(
-      missing_prob, rng, std::span<int>(responses.begin(), responses.size()));
+  polca_parallel_test::SetMissingAtRandom(missing_prob, rng, responses);
 
   polca_parallel_test::BlackBoxTestEmAlgorithmArray<
       polca_parallel::EmAlgorithmArraySerial, polca_parallel::EmAlgorithmNan>(
-      std::span<const double>(),
-      std::span<const int>(responses.begin(), responses.size()),
-      std::span<const double>(initial_prob.begin(), initial_prob.size()),
-      n_data, 1, n_outcomes, n_cluster, n_rep, n_thread, max_iter, tolerance,
-      seed_seq, is_full_constructor);
+      std::span<const double>(), responses, initial_prob, n_data, 1, n_outcomes,
+      n_cluster, n_rep, n_thread, max_iter, tolerance, seed_seq,
+      is_full_constructor);
 }
 
 TEST_CASE("em-array-serial-regression-missing-data",
@@ -252,8 +239,7 @@ TEST_CASE("em-array-serial-regression-missing-data",
 
   std::vector<int> responses =
       polca_parallel_test::RandomMarginal(n_data, n_outcomes, rng);
-  polca_parallel_test::SetMissingAtRandom(
-      missing_prob, rng, std::span<int>(responses.begin(), responses.size()));
+  polca_parallel_test::SetMissingAtRandom(missing_prob, rng, responses);
 
   std::vector<double> features(n_data * n_feature);
   for (double& feature : features) {
@@ -264,11 +250,8 @@ TEST_CASE("em-array-serial-regression-missing-data",
   polca_parallel_test::BlackBoxTestEmAlgorithmArray<
       polca_parallel::EmAlgorithmArraySerial,
       polca_parallel::EmAlgorithmNanRegress>(
-      std::span<const double>(features.begin(), features.size()),
-      std::span<const int>(responses.begin(), responses.size()),
-      std::span<const double>(initial_prob.begin(), initial_prob.size()),
-      n_data, n_feature, n_outcomes, n_cluster, n_rep, n_thread, max_iter,
-      tolerance, seed_seq, true);
+      features, responses, initial_prob, n_data, n_feature, n_outcomes,
+      n_cluster, n_rep, n_thread, max_iter, tolerance, seed_seq, true);
 }
 
 TEST_CASE("em-array-serial-rng-methods", "[em_array]") {
@@ -314,11 +297,8 @@ TEST_CASE("em-array-serial-rng-methods", "[em_array]") {
   std::unique_ptr<polca_parallel::EmAlgorithmArraySerial> fitter =
       std::make_unique<polca_parallel::EmAlgorithmArraySerial>(
           features, responses, initial_prob, n_data, n_feature, n_outcomes,
-          n_cluster, n_rep, max_iter, tolerance,
-          std::span<double>(posterior.begin(), posterior.size()),
-          std::span<double>(prior.begin(), prior.size()),
-          std::span<double>(estimated_prob.begin(), estimated_prob.size()),
-          std::span<double>(regress_coeff.begin(), regress_coeff.size()));
+          n_cluster, n_rep, max_iter, tolerance, posterior, prior,
+          estimated_prob, regress_coeff);
 
   auto [posterior_2, prior_2, estimated_prob_2, regress_coeff_2] =
       polca_parallel_test::InitOutputs(n_data, n_feature, n_outcomes,
@@ -326,11 +306,8 @@ TEST_CASE("em-array-serial-rng-methods", "[em_array]") {
   std::unique_ptr<polca_parallel::EmAlgorithmArraySerial> fitter_2 =
       std::make_unique<polca_parallel::EmAlgorithmArraySerial>(
           features, responses, initial_prob, n_data, n_feature, n_outcomes,
-          n_cluster, n_rep, max_iter, tolerance,
-          std::span<double>(posterior_2.begin(), posterior_2.size()),
-          std::span<double>(prior_2.begin(), prior_2.size()),
-          std::span<double>(estimated_prob_2.begin(), estimated_prob_2.size()),
-          std::span<double>(regress_coeff_2.begin(), regress_coeff_2.size()));
+          n_cluster, n_rep, max_iter, tolerance, posterior_2, prior_2,
+          estimated_prob_2, regress_coeff_2);
 
   SECTION("set-seed") {
     // test results are reproducible using SetSeed()

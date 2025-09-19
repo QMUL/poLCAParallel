@@ -69,9 +69,6 @@ TEST_CASE("em-full-data", "[em][full_data][non_regression]") {
       polca_parallel_test::RandomMarginal(n_data, n_outcomes, rng);
 
   polca_parallel_test::BlackBoxTestEmAlgorithm<polca_parallel::EmAlgorithm>(
-      std::span<const double>(),
-      std::span<const int>(responses.begin(), responses.size()),
-      std::span<const double>(initial_prob.begin(), initial_prob.size()),
-      n_data, 1, n_outcomes, n_cluster, max_iter, tolerance, seed,
-      is_full_constructor);
+      std::span<const double>(), responses, initial_prob, n_data, 1, n_outcomes,
+      n_cluster, max_iter, tolerance, seed, is_full_constructor);
 }

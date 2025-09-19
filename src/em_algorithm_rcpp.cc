@@ -105,21 +105,14 @@ Rcpp::List EmAlgorithmRcpp(Rcpp::NumericMatrix features,
 
   // fit using EM algorithm
   polca_parallel::EmAlgorithmArray fitter(
-      std::span<const double>(features.cbegin(), features.size()),
-      std::span<const int>(responses.cbegin(), responses.size()),
-      std::span<const double>(initial_prob.cbegin(), initial_prob.size()),
-      n_data, n_feature, n_outcomes, n_cluster, n_rep, n_thread, max_iter,
-      tolerance, std::span<double>(posterior.begin(), posterior.size()),
-      std::span<double>(prior.begin(), prior.size()),
-      std::span<double>(estimated_prob.begin(), estimated_prob.size()),
-      std::span<double>(regress_coeff.begin(), regress_coeff.size()));
+      features, responses, initial_prob, n_data, n_feature, n_outcomes,
+      n_cluster, n_rep, n_thread, max_iter, tolerance, posterior, prior,
+      estimated_prob, regress_coeff);
 
   std::seed_seq seed_seq(seed.cbegin(), seed.cend());
   fitter.SetSeed(seed_seq);
-  fitter.set_best_initial_prob(
-      std::span<double>(best_initial_prob.begin(), best_initial_prob.size()));
-  fitter.set_ln_l_array(
-      std::span<double>(ln_l_array.begin(), ln_l_array.size()));
+  fitter.set_best_initial_prob(best_initial_prob);
+  fitter.set_ln_l_array(ln_l_array);
 
   bool is_regress = n_feature > 1;
   if (is_regress) {

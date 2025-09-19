@@ -65,14 +65,10 @@ TEST_CASE("em-nan-non-regression", "[em][non_regression]") {
   std::vector<int> responses =
       polca_parallel_test::RandomMarginal(n_data, n_outcomes, rng);
 
-  polca_parallel_test::SetMissingAtRandom(
-      missing_prob, rng, std::span<int>(responses.begin(), responses.size()));
+  polca_parallel_test::SetMissingAtRandom(missing_prob, rng, responses);
   polca_parallel_test::BlackBoxTestEmAlgorithm<polca_parallel::EmAlgorithmNan>(
-      std::span<const double>(),
-      std::span<const int>(responses.begin(), responses.size()),
-      std::span<const double>(initial_prob.begin(), initial_prob.size()),
-      n_data, 1, n_outcomes, n_cluster, max_iter, tolerance, seed,
-      is_full_constructor);
+      std::span<const double>(), responses, initial_prob, n_data, 1, n_outcomes,
+      n_cluster, max_iter, tolerance, seed, is_full_constructor);
 }
 
 TEST_CASE("em-nan-regression-missing-data", "[em][regression]") {
@@ -110,12 +106,9 @@ TEST_CASE("em-nan-regression-missing-data", "[em][regression]") {
     feature = dist(rng);
   }
 
-  polca_parallel_test::SetMissingAtRandom(
-      missing_prob, rng, std::span<int>(responses.begin(), responses.size()));
+  polca_parallel_test::SetMissingAtRandom(missing_prob, rng, responses);
   polca_parallel_test::BlackBoxTestEmAlgorithm<
       polca_parallel::EmAlgorithmNanRegress>(
-      features, std::span<const int>(responses.begin(), responses.size()),
-      std::span<const double>(initial_prob.begin(), initial_prob.size()),
-      n_data, n_feature, n_outcomes, n_cluster, max_iter, tolerance, seed,
-      is_full_constructor);
+      features, responses, initial_prob, n_data, n_feature, n_outcomes,
+      n_cluster, max_iter, tolerance, seed, is_full_constructor);
 }

@@ -276,26 +276,18 @@ void polca_parallel_test::BlackBoxTestEmAlgorithm(
     if (is_full_constructor) {
       fitter = std::make_unique<EmAlgorithmType>(
           features, responses, initial_prob, n_data, n_feature, n_outcomes,
-          n_cluster, max_iter, tolerance,
-          std::span<double>(posterior.begin(), posterior.size()),
-          std::span<double>(prior.begin(), prior.size()),
-          std::span<double>(estimated_prob.begin(), estimated_prob.size()),
-          std::span<double>(regress_coeff.begin(), regress_coeff.size()));
+          n_cluster, max_iter, tolerance, posterior, prior, estimated_prob,
+          regress_coeff);
     } else {
       fitter = std::make_unique<EmAlgorithmType>(
           responses, initial_prob, n_data, n_outcomes, n_cluster, max_iter,
-          tolerance, std::span<double>(posterior.begin(), posterior.size()),
-          std::span<double>(prior.begin(), prior.size()),
-          std::span<double>(estimated_prob.begin(), estimated_prob.size()));
+          tolerance, posterior, prior, estimated_prob);
     }
   } else {
     fitter = std::make_unique<EmAlgorithmType>(
         features, responses, initial_prob, n_data, n_feature, n_outcomes,
-        n_cluster, max_iter, tolerance,
-        std::span<double>(posterior.begin(), posterior.size()),
-        std::span<double>(prior.begin(), prior.size()),
-        std::span<double>(estimated_prob.begin(), estimated_prob.size()),
-        std::span<double>(regress_coeff.begin(), regress_coeff.size()));
+        n_cluster, max_iter, tolerance, posterior, prior, estimated_prob,
+        regress_coeff);
   }
 
   SECTION("test-outputs") {
@@ -309,8 +301,7 @@ void polca_parallel_test::BlackBoxTestEmAlgorithm(
 
   SECTION("test-further-optional-outputs") {
     std::vector<double> best_initial_prob(n_outcomes.sum() * n_cluster);
-    fitter->set_best_initial_prob(
-        std::span<double>(best_initial_prob.begin(), best_initial_prob.size()));
+    fitter->set_best_initial_prob(best_initial_prob);
 
     fitter->set_seed(seed);
     fitter->Fit();
@@ -318,9 +309,8 @@ void polca_parallel_test::BlackBoxTestEmAlgorithm(
         n_data, n_outcomes, n_cluster, posterior, prior, estimated_prob,
         regress_coeff);
     polca_parallel_test::TestEmAlgorithmOptionalOutputs(*fitter, max_iter);
-    polca_parallel_test::TestOutcomeProbs(
-        n_outcomes, n_cluster,
-        std::span<double>(best_initial_prob.begin(), best_initial_prob.size()));
+    polca_parallel_test::TestOutcomeProbs(n_outcomes, n_cluster,
+                                          best_initial_prob);
 
     SECTION("test-reproducible") {
       auto [posterior_2, prior_2, estimated_prob_2, regress_coeff_2] =
@@ -331,16 +321,10 @@ void polca_parallel_test::BlackBoxTestEmAlgorithm(
       std::unique_ptr<polca_parallel::EmAlgorithm> fitter_2 =
           std::make_unique<EmAlgorithmType>(
               features, responses, initial_prob, n_data, n_feature, n_outcomes,
-              n_cluster, max_iter, tolerance,
-              std::span<double>(posterior_2.begin(), posterior_2.size()),
-              std::span<double>(prior_2.begin(), prior_2.size()),
-              std::span<double>(estimated_prob_2.begin(),
-                                estimated_prob_2.size()),
-              std::span<double>(regress_coeff_2.begin(),
-                                regress_coeff_2.size()));
+              n_cluster, max_iter, tolerance, posterior_2, prior_2,
+              estimated_prob_2, regress_coeff_2);
 
-      fitter_2->set_best_initial_prob(std::span<double>(
-          best_initial_prob_2.begin(), best_initial_prob_2.size()));
+      fitter_2->set_best_initial_prob(best_initial_prob_2);
 
       // differ by assigning rng rather than seed_seq
       std::unique_ptr<std::mt19937_64> rng_2 =
@@ -488,35 +472,23 @@ void polca_parallel_test::BlackBoxTestEmAlgorithmArray(
     if (is_full_constructor) {
       fitter = std::make_unique<EmAlgorithmArrayType>(
           features, responses, initial_prob, n_data, n_feature, n_outcomes,
-          n_cluster, n_rep, n_thread, max_iter, tolerance,
-          std::span<double>(posterior.begin(), posterior.size()),
-          std::span<double>(prior.begin(), prior.size()),
-          std::span<double>(estimated_prob.begin(), estimated_prob.size()),
-          std::span<double>(regress_coeff.begin(), regress_coeff.size()));
+          n_cluster, n_rep, n_thread, max_iter, tolerance, posterior, prior,
+          estimated_prob, regress_coeff);
     } else {
       fitter = std::make_unique<EmAlgorithmArrayType>(
           responses, initial_prob, n_data, n_outcomes, n_cluster, n_rep,
-          n_thread, max_iter, tolerance,
-          std::span<double>(posterior.begin(), posterior.size()),
-          std::span<double>(prior.begin(), prior.size()),
-          std::span<double>(estimated_prob.begin(), estimated_prob.size()));
+          n_thread, max_iter, tolerance, posterior, prior, estimated_prob);
     }
   } else {
     if (is_full_constructor) {
       fitter = std::make_unique<EmAlgorithmArrayType>(
           features, responses, initial_prob, n_data, n_feature, n_outcomes,
-          n_cluster, n_rep, max_iter, tolerance,
-          std::span<double>(posterior.begin(), posterior.size()),
-          std::span<double>(prior.begin(), prior.size()),
-          std::span<double>(estimated_prob.begin(), estimated_prob.size()),
-          std::span<double>(regress_coeff.begin(), regress_coeff.size()));
+          n_cluster, n_rep, max_iter, tolerance, posterior, prior,
+          estimated_prob, regress_coeff);
     } else {
       fitter = std::make_unique<EmAlgorithmArrayType>(
           responses, initial_prob, n_data, n_outcomes, n_cluster, n_rep,
-          max_iter, tolerance,
-          std::span<double>(posterior.begin(), posterior.size()),
-          std::span<double>(prior.begin(), prior.size()),
-          std::span<double>(estimated_prob.begin(), estimated_prob.size()));
+          max_iter, tolerance, posterior, prior, estimated_prob);
     }
   }
 
@@ -533,10 +505,8 @@ void polca_parallel_test::BlackBoxTestEmAlgorithmArray(
   SECTION("test-further-optional-outputs") {
     std::vector<double> ln_l_array(n_rep);
     std::vector<double> best_initial_prob(n_outcomes.sum() * n_cluster);
-    fitter->set_best_initial_prob(
-        std::span<double>(best_initial_prob.begin(), best_initial_prob.size()));
-    fitter->set_ln_l_array(
-        std::span<double>(ln_l_array.begin(), ln_l_array.size()));
+    fitter->set_best_initial_prob(best_initial_prob);
+    fitter->set_ln_l_array(ln_l_array);
     fitter->SetSeed(seed_seq);
     fitter->Fit<EmAlgorithmType>();
     polca_parallel_test::TestDefaultOutputs<EmAlgorithmType>(
@@ -567,28 +537,18 @@ void polca_parallel_test::BlackBoxTestEmAlgorithmArray(
                                    polca_parallel::EmAlgorithmArray>) {
         fitter_2 = std::make_unique<EmAlgorithmArrayType>(
             features, responses, initial_prob, n_data, n_feature, n_outcomes,
-            n_cluster, n_rep, n_thread, max_iter, tolerance,
-            std::span<double>(posterior_2.begin(), posterior_2.size()),
-            std::span<double>(prior_2.begin(), prior_2.size()),
-            std::span<double>(estimated_prob_2.begin(),
-                              estimated_prob_2.size()),
-            std::span<double>(regress_coeff_2.begin(), regress_coeff_2.size()));
+            n_cluster, n_rep, n_thread, max_iter, tolerance, posterior_2,
+            prior_2, estimated_prob_2, regress_coeff_2);
       } else {
         fitter_2 = std::make_unique<EmAlgorithmArrayType>(
             features, responses, initial_prob, n_data, n_feature, n_outcomes,
-            n_cluster, n_rep, max_iter, tolerance,
-            std::span<double>(posterior_2.begin(), posterior_2.size()),
-            std::span<double>(prior_2.begin(), prior_2.size()),
-            std::span<double>(estimated_prob_2.begin(),
-                              estimated_prob_2.size()),
-            std::span<double>(regress_coeff_2.begin(), regress_coeff_2.size()));
+            n_cluster, n_rep, max_iter, tolerance, posterior_2, prior_2,
+            estimated_prob_2, regress_coeff_2);
       }
 
       fitter_2->SetSeed(seed_seq);
-      fitter_2->set_best_initial_prob(std::span<double>(
-          best_initial_prob_2.begin(), best_initial_prob_2.size()));
-      fitter_2->set_ln_l_array(
-          std::span<double>(ln_l_array_2.begin(), ln_l_array_2.size()));
+      fitter_2->set_best_initial_prob(best_initial_prob_2);
+      fitter_2->set_ln_l_array(ln_l_array_2);
 
       fitter_2->Fit<EmAlgorithmType>();
 
@@ -673,32 +633,17 @@ void polca_parallel_test::BlackBoxTestStandardError(
   if constexpr (std::is_base_of<polca_parallel::StandardErrorRegress,
                                 StandardErrorType>::value) {
     standard_error = std::make_unique<StandardErrorType>(
-        features, responses, probs,
-        std::span<const double>(prior.begin(), prior.size()),
-        std::span<const double>(posterior.begin(), posterior.size()), n_data,
-        n_feature, n_outcomes, n_cluster,
-        std::span<double>(prior_error.begin(), prior_error.size()),
-        std::span<double>(probs_error.begin(), probs_error.size()),
-        std::span<double>(regress_coeff_error.begin(),
-                          regress_coeff_error.size()));
+        features, responses, probs, prior, posterior, n_data, n_feature,
+        n_outcomes, n_cluster, prior_error, probs_error, regress_coeff_error);
   } else {
     if (is_full_constructor) {
       standard_error = std::make_unique<StandardErrorType>(
-          features, responses, probs,
-          std::span<const double>(prior.begin(), prior.size()),
-          std::span<const double>(posterior.begin(), posterior.size()), n_data,
-          n_feature, n_outcomes, n_cluster,
-          std::span<double>(prior_error.begin(), prior_error.size()),
-          std::span<double>(probs_error.begin(), probs_error.size()),
-          std::span<double>());
+          features, responses, probs, prior, posterior, n_data, n_feature,
+          n_outcomes, n_cluster, prior_error, probs_error, std::span<double>());
     } else {
       standard_error = std::make_unique<StandardErrorType>(
-          responses, probs,
-          std::span<const double>(prior.begin(), prior.size()),
-          std::span<const double>(posterior.begin(), posterior.size()), n_data,
-          n_outcomes, n_cluster,
-          std::span<double>(prior_error.begin(), prior_error.size()),
-          std::span<double>(probs_error.begin(), probs_error.size()));
+          responses, probs, prior, posterior, n_data, n_outcomes, n_cluster,
+          prior_error, probs_error);
     }
   }
 
