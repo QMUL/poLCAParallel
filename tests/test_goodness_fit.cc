@@ -36,7 +36,7 @@
 #include "util.h"
 #include "util_test.h"
 
-TEST_CASE("goodness-of-fit") {
+TEST_CASE("goodness-of-fit", "[gof]") {
   std::size_t n_data = GENERATE(10, 100);
   std::size_t n_category = GENERATE(2, 5);
   std::size_t max_n_outcome = GENERATE(2, 5);

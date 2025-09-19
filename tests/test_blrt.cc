@@ -32,7 +32,7 @@
 #include "util.h"
 #include "util_test.h"
 
-TEST_CASE("test-blrt") {
+TEST_CASE("blrt", "[blrt]") {
   std::size_t n_data = GENERATE(10);
   std::size_t n_category = GENERATE(2, 5);
   std::size_t max_n_outcome = GENERATE(2, 5);
@@ -83,7 +83,7 @@ TEST_CASE("test-blrt") {
     CHECK(!std::isnan(ratio));
   }
 
-  SECTION("test-reproducible") {
+  SECTION("blrt-reproducible") {
     std::vector<double> ratio_array_2(n_bootstrap);
 
     polca_parallel::Blrt blrt_2(

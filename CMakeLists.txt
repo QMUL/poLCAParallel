@@ -6,7 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 include_directories(include)
 
-file(GLOB_RECURSE ALL_SRC_FILES CONFIGURE_DEPENDS src/*.cc)
+file(GLOB ALL_SRC_FILES CONFIGURE_DEPENDS src/*.cc)
+file(GLOB TEST_SOURCES CONFIGURE_DEPENDS tests/*.cc)
 list(FILTER ALL_SRC_FILES EXCLUDE REGEX ".*_rcpp\\.cc$")
 
 find_package(Armadillo REQUIRED)
@@ -16,26 +17,9 @@ find_package(LAPACK REQUIRED)
 
 add_compile_definitions(ARMA_WARN_LEVEL=1)
 
-set(TEST_UTIL tests/util_test.cc)
-
-function(add_test_executable name source)
-  add_executable(${name}
-    ${ALL_SRC_FILES}
-    ${source}
-    ${TEST_UTIL}
-  )
-  target_link_libraries(${name} PRIVATE armadillo LAPACK::LAPACK BLAS::BLAS Catch2::Catch2WithMain)
-  target_include_directories(${name} PRIVATE tests/)
-endfunction()
-
-add_test_executable(test_em_algorithm_array         tests/test_em_algorithm_array.cc)
-add_test_executable(test_em_algorithm_array_serial  tests/test_em_algorithm_array_serial.cc)
-add_test_executable(test_em_algorithm               tests/test_em_algorithm.cc)
-add_test_executable(test_em_algorithm_regress       tests/test_em_algorithm_regress.cc)
-add_test_executable(test_em_algorithm_nan           tests/test_em_algorithm_nan.cc)
-add_test_executable(test_standard_error             tests/test_standard_error.cc)
-add_test_executable(test_standard_error_regress     tests/test_standard_error_regress.cc)
-add_test_executable(test_regularised_error          tests/test_regularised_error.cc)
-add_test_executable(test_smoother                   tests/test_smoother.cc)
-add_test_executable(test_goodness_fit               tests/test_goodness_fit.cc)
-add_test_executable(test_blrt                       tests/test_blrt.cc)
+add_executable(test_polca_parallel
+  ${ALL_SRC_FILES}
+  ${TEST_SOURCES}
+)
+target_link_libraries(test_polca_parallel PRIVATE armadillo LAPACK::LAPACK BLAS::BLAS Catch2::Catch2WithMain)
+target_include_directories(test_polca_parallel PRIVATE tests/)

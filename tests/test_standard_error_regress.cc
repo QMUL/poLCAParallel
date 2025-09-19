@@ -37,7 +37,7 @@
 #include "util.h"
 #include "util_test.h"
 
-TEST_CASE("test-regress") {
+TEST_CASE("std-regress", "[std][regression]") {
   std::size_t n_data = GENERATE(10, 100, 1000);
   std::size_t n_feature = GENERATE(2, 5);
   std::size_t n_category = GENERATE(2, 5);

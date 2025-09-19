@@ -40,7 +40,7 @@
 #include "util.h"
 #include "util_test.h"
 
-TEST_CASE("full-data") {
+TEST_CASE("em-regression-full-data", "[em][full_data][regression]") {
   std::size_t n_data = GENERATE(100);
   std::size_t n_feature = GENERATE(2, 4);
   std::size_t n_category = GENERATE(2, 5);

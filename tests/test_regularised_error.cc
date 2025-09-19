@@ -38,7 +38,7 @@
 #include "util.h"
 #include "util_test.h"
 
-TEST_CASE("test-non-regress") {
+TEST_CASE("regularised-error-non-regress", "[std],[non_regression]") {
   std::size_t n_data = GENERATE(10, 100, 1000);
   std::size_t n_category = GENERATE(2, 5, 10);
   std::size_t max_n_outcome = GENERATE(2, 5, 10);
@@ -75,7 +75,7 @@ TEST_CASE("test-non-regress") {
       n_data, 1, n_outcomes, n_cluster, is_full_constructor);
 }
 
-TEST_CASE("test-regress") {
+TEST_CASE("regularised-error-regress", "[std],[regression]") {
   std::size_t n_data = GENERATE(10, 100, 1000);
   std::size_t n_feature = GENERATE(2, 5);
   std::size_t n_category = GENERATE(2, 5);

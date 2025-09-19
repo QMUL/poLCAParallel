@@ -37,7 +37,7 @@
 #include "util.h"
 #include "util_test.h"
 
-TEST_CASE("non-regress") {
+TEST_CASE("em-nan-non-regression", "[em][non_regression]") {
   std::size_t n_data = GENERATE(100);
   std::size_t n_category = GENERATE(2, 5);
   std::size_t max_n_outcome = GENERATE(2, 5);
@@ -75,7 +75,7 @@ TEST_CASE("non-regress") {
       is_full_constructor);
 }
 
-TEST_CASE("regress") {
+TEST_CASE("em-nan-regression-missing-data", "[em][regression]") {
   std::size_t n_data = GENERATE(100);
   std::size_t n_feature = GENERATE(2, 4);
   std::size_t n_category = GENERATE(2, 5);

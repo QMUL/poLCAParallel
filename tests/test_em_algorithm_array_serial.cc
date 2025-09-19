@@ -80,7 +80,8 @@
 #include "util.h"
 #include "util_test.h"
 
-TEST_CASE("full-data") {
+TEST_CASE("em-array-serial-non-regression-full-data",
+          "[em_array][full_data][non_regression]") {
   std::size_t n_data = GENERATE(10);
   std::size_t n_category = GENERATE(2);
   std::size_t max_n_outcome = GENERATE(2);
@@ -127,7 +128,8 @@ TEST_CASE("full-data") {
   }
 }
 
-TEST_CASE("full-data-regress") {
+TEST_CASE("em-array-serial-regression-full-data",
+          "[em_array][full_data][regression]") {
   std::size_t n_data = GENERATE(500);
   std::size_t n_feature = GENERATE(2);
   std::size_t n_category = GENERATE(5);
@@ -182,7 +184,8 @@ TEST_CASE("full-data-regress") {
   }
 }
 
-TEST_CASE("missing-data") {
+TEST_CASE("em-array-serial-non-regression-missing-data",
+          "[em_array][missing_data][non_regression]") {
   std::size_t n_data = GENERATE(100);
   std::size_t n_category = GENERATE(2);
   std::size_t max_n_outcome = GENERATE(2);
@@ -221,7 +224,8 @@ TEST_CASE("missing-data") {
       seed_seq, is_full_constructor);
 }
 
-TEST_CASE("missing-data-regress") {
+TEST_CASE("em-array-serial-regression-missing-data",
+          "[em_array][missing_data][regression]") {
   std::size_t n_data = GENERATE(500);
   std::size_t n_feature = GENERATE(2);
   std::size_t n_category = GENERATE(5);
@@ -267,7 +271,7 @@ TEST_CASE("missing-data-regress") {
       tolerance, seed_seq, true);
 }
 
-TEST_CASE("test-rng-methods") {
+TEST_CASE("em-array-serial-rng-methods", "[em_array]") {
   std::size_t n_data = GENERATE(500);
   std::size_t n_feature = GENERATE(2);
   std::size_t n_category = GENERATE(5);
@@ -328,7 +332,7 @@ TEST_CASE("test-rng-methods") {
           std::span<double>(estimated_prob_2.begin(), estimated_prob_2.size()),
           std::span<double>(regress_coeff_2.begin(), regress_coeff_2.size()));
 
-  SECTION("test-set-seed") {
+  SECTION("set-seed") {
     // test results are reproducible using SetSeed()
     fitter->SetSeed(seed);
     fitter_2->SetSeed(seed);
@@ -348,7 +352,7 @@ TEST_CASE("test-rng-methods") {
     }
   }
 
-  SECTION("test-set-rng") {
+  SECTION("set-rng") {
     // test results are reproducible using SetRng()
     // also tests if the rng returned using MoveRng() have the same state
     std::unique_ptr<std::mt19937_64> rng_1 = std::make_unique<std::mt19937_64>(

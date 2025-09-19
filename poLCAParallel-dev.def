@@ -72,17 +72,7 @@ From: ubuntu:24.04
 
 %test
     cd /usr/src/poLCAParallel/build
-    ./test_blrt
-    ./test_em_algorithm
-    ./test_em_algorithm_array
-    ./test_em_algorithm_array_serial
-    ./test_em_algorithm_nan
-    ./test_em_algorithm_regress
-    ./test_goodness_fit
-    ./test_regularised_error
-    ./test_smoother
-    ./test_standard_error
-    ./test_standard_error_regress
+    ./test_polca_parallel
     cd ..
     R -e "testthat::test_local()"
 

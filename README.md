@@ -228,7 +228,7 @@ The testing of the C++ code is done using
 [testthat](https://testthat.r-lib.org/). All test codes are in `tests/`.
 
 The tests for the C++ code are done by compiling the test code, isolated from
-any R ecosystem, and running the compiled executables. It requires cmake, Catch2
+any R ecosystem, and running a compiled executable. It requires cmake, Catch2
 and [armadillo](https://arma.sourceforge.net/). To compile the code, from the
 repository root, make a new directory and use cmake inside it
 
@@ -239,8 +239,8 @@ cmake ..
 cmake --build .
 ```
 
-This will compile several executables with names `test_`. Execute one to run a
-test e.g. `./test_em_algorithm`.
+This will compile an executable called `test_polca_parallel`. Execute it to run
+the tests. Pass names or tags to run specific tests, see `tests/*.cc`.
 
 To test the R code, run the following at the repository root
 

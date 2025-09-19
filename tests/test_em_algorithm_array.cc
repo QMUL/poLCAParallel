@@ -76,7 +76,8 @@
 #include "util.h"
 #include "util_test.h"
 
-TEST_CASE("full-data") {
+TEST_CASE("em-array-non-regression-full-data",
+          "[em_array][full_data][non_regression]") {
   std::size_t n_data = GENERATE(10);
   std::size_t n_category = GENERATE(2);
   std::size_t max_n_outcome = GENERATE(2);
@@ -123,7 +124,8 @@ TEST_CASE("full-data") {
   }
 }
 
-TEST_CASE("full-data-regress") {
+TEST_CASE("em-array-regression-full-data",
+          "[em_array][full_data][regression]") {
   std::size_t n_data = GENERATE(500);
   std::size_t n_feature = GENERATE(2);
   std::size_t n_category = GENERATE(5);
@@ -177,7 +179,8 @@ TEST_CASE("full-data-regress") {
   }
 }
 
-TEST_CASE("missing-data") {
+TEST_CASE("em-array-non-regression-missing-data",
+          "[em_array][missing_data][non_regression]") {
   std::size_t n_data = GENERATE(100);
   std::size_t n_category = GENERATE(2);
   std::size_t max_n_outcome = GENERATE(2);
@@ -216,7 +219,8 @@ TEST_CASE("missing-data") {
       seed_seq, is_full_constructor);
 }
 
-TEST_CASE("missing-data-regress") {
+TEST_CASE("em-array-regression-missing-data",
+          "[em_array][missing_data][regression]") {
   std::size_t n_data = GENERATE(500);
   std::size_t n_feature = GENERATE(2);
   std::size_t n_category = GENERATE(5);

@@ -41,7 +41,7 @@
 #include "util.h"
 #include "util_test.h"
 
-TEST_CASE("full-data") {
+TEST_CASE("em-full-data", "[em][full_data][non_regression]") {
   std::size_t n_data = GENERATE(10, 100);
   std::size_t n_category = GENERATE(2, 5);
   std::size_t max_n_outcome = GENERATE(2, 5);

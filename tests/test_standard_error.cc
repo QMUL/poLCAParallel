@@ -37,7 +37,7 @@
 #include "util.h"
 #include "util_test.h"
 
-TEST_CASE("test-non-regress") {
+TEST_CASE("std-non-regress", "[std][non_regression]") {
   std::size_t n_data = GENERATE(10, 100, 1000);
   std::size_t n_category = GENERATE(2, 5, 10);
   std::size_t max_n_outcome = GENERATE(2, 5, 10);
