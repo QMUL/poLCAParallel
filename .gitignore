@@ -10,3 +10,6 @@ man/*
 html/
 latex/
 *.pdf
+build/
+*.sif
+.vscode/
