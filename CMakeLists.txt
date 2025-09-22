@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(poLCAParallel VERSION 1.2.3 HOMEPAGE_URL https://github.com/QMUL/poLCAParallel LANGUAGES CXX)
+project(poLCAParallel VERSION 1.2.4 HOMEPAGE_URL https://github.com/QMUL/poLCAParallel LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
