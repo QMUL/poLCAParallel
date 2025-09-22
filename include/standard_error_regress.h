@@ -74,8 +74,8 @@ class StandardErrorRegress : public polca_parallel::StandardError {
    *   <li>dim 2: for each cluster</li>
    * </ul>
    * @param prior Design matrix of prior probabilities, probability data point
-   * is in cluster m NOT given responses after calculations, it shall be in
-   * matrix form with dimensions
+   * is in cluster m <b>not</b> given responses after calculations, it shall be
+   * in matrix form with dimensions
    * <ul>
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>

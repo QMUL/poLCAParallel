@@ -78,31 +78,34 @@ class GoodnessOfFit {
   std::size_t n_obs_ = 0;
 
  public:
+  /** Construct a GoodnessOfFit object */
   GoodnessOfFit();
 
   virtual ~GoodnessOfFit() = default;
 
   /**
-   * Construct a GoodnessOfFit object
+   * Calculate the observed and expected frequencies
    *
-   * @param responses Design matrix TRANSPOSED of responses, matrix containing
-   * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
-   * has dimensions
+   * Calculate the observed and expected frequencies for each unique response
+   * in the parameter <code>responses</code>. The member variables
+   * GoodnessOfFit::frequency_map_ and GoodnessOfFit::n_obs_ are modified
+   *
+   * This class supports missing data, encode missing data with 0 in
+   * <code>responses</code>. Data points with missing values are ignored
+   *
+   * @param responses Design matrix <b>transposed</b> of responses, matrix
+   * containing outcomes/responses for each category as integers 1, 2, 3, ....
+   * Missing values may be encoded as 0. The matrix has dimensions
    * <ul>
    *   <li>dim 0: for each category</li>
    *   <li>dim 1: for each data point</li>
    * </ul>
-   * @param prior Contains the resulting prior probabilities after calling
-   * Fit(). Design matrix of prior probabilities. It's the probability a data
-   * point is in cluster m NOT given responses after calculations. The matrix
-   * has the following dimensions dimensions
+   * @param prior Vector containing the prior probabilities for each cluster
    * <ul>
-   *   <li>dim 0: for each data</li>
-   *   <li>dim 1: for each cluster</li>
+   *   <li>dim 0: for each cluster</li>
    * </ul>
-   * @param outcome_prob Contains the resulting outcome probabilities after
-   * calling Fit(). Vector of estimated response probabilities, conditioned on
-   * cluster, for each category. A flatten list in the following order
+   * @param outcome_prob The outcome probabilities, conditioned on the
+   * cluster and category. A flatten list in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -117,6 +120,10 @@ class GoodnessOfFit {
             std::span<const double> outcome_prob, std::size_t n_data,
             NOutcomes n_outcomes, std::size_t n_cluster);
 
+  /**
+   * @return Map of uniquely observed responses with their observed and expected
+   * frequency
+   */
   [[nodiscard]] std::map<std::vector<int>, Frequency>& GetFrequencyMap();
 
   /**
@@ -124,31 +131,28 @@ class GoodnessOfFit {
    *
    * Calculate and return the chi-squared statistics and log-likelihood ratio
    *
-   * @return std::array<double, 2> containing log-likelihood ratio and
-   * chi-squared statistics
+   * @return Log-likelihood ratio and chi-squared statistics
    */
   [[nodiscard]] std::tuple<double, double> GetStatistics() const;
 
  private:
   /**
-   * Update the frequency map with unique observations and their count
+   * Update the frequency map with unique responses and their count
    *
-   * Iterate through all the responses, then find and count unique combinations
-   * of outcomes which were observed in the dataset. Results are stored in a
-   * map. Observations are presented as a std::vector<int> of length n_category,
-   * each element contains an int which represents the resulting outcome for
-   * each category.
+   * Find and count unique combinations of outcomes which are observed in the
+   * dataset. Results are stored in the member variable
+   * GoodnessOfFit::frequency_map_. Unique responses are saved as keys in the
+   * map and the count the value of Frequency.observed
    *
-   * @param responses Design matrix TRANSPOSED of responses, matrix containing
-   * outcomes/responses
-   * for each category as integers 1, 2, 3, .... The matrix has dimensions
+   * @param responses Design matrix <b>transposed</b> of responses, matrix
+   * containing outcomes/responses for each category as integers 1, 2, 3, ....
+   * The matrix has dimensions
    * <ul>
    *   <li>dim 0: for each category</li>
    *   <li>dim 1: for each data point</li>
    * </ul>
-   * @param n_data number of data points
-   * @param n_outcomes array of integers, number of outcomes for each category,
-   * array of length n_category
+   * @param n_data Number of data points
+   * @param n_outcomes Array of integers, number of outcomes for each category
    */
   void CalcUniqueObserved(std::span<const int> responses, std::size_t n_data,
                           std::span<const std::size_t> n_outcomes);
@@ -156,22 +160,21 @@ class GoodnessOfFit {
   /**
    * Update the frequency map to contain expected frequencies
    *
-   * Update the expected frequency in a map of <vector<int>, Frequency> by
-   * modifying the value of Frequency.expected with the likelihood of that
-   * unique reponse with multiplied by n_data
+   * For each key or unique response in the member variable
+   * GoodnessOfFit::frequency_map_, modify the value of Frequency.expected with
+   * the likelihood of that unique reponse multiplied by GoodnessOfFit::n_obs_
    *
-   * @param prior vector of prior probabilities (probability in a cluster),
-   * length n_cluster
-   * @param outcome_prob Vector of estimated response probabilities, conditioned
-   * on cluster, for each category. A flattened list in the following order
+   * @param prior Vector of prior probabilities (probability in a cluster),
+   * length <code>n_cluster</code>
+   * @param outcome_prob Vector of response probabilities, conditioned on
+   * cluster and category. A flattened list in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
    *   <li>dim 2: for each cluster</li>
    * </ul>
-   * @param n_outcomes array of integers, number of outcomes for each category,
-   * array of length n_category
-   * @param n_cluster number of clusters (or classes)
+   * @param n_outcomes Array of integers, number of outcomes for each category
+   * @param n_cluster Number of clusters
    */
   void CalcExpected(std::span<const double> prior,
                     std::span<const double> outcome_prob,

@@ -68,9 +68,9 @@ class StandardError {
    */
   std::span<const double> probs_;
   /**
-   * Design matrix of prior probabilities, probability data point is in
-   * cluster m NOT given responses after calculations, it shall be in matrix
-   * form with dimensions
+   * Design matrix of prior probabilities, probability data point is in cluster
+   * m <b>not</b> given responses after calculations, it shall be in matrix form
+   * with dimensions
    * <ul>
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
@@ -115,15 +115,20 @@ class StandardError {
   const std::size_t info_size_;
   /** The width of the Jacobian matrix*/
   const std::size_t jacobian_width_;
-  /** For smoothing the probabilities in prior, posterior and probs */
+  /**
+   * For smoothing the probabilities
+   *
+   * For smoothing the probabilities in StandardError::prior_,
+   * StandardError::posterior_ and StandardError::probs_
+   */
   std::unique_ptr<polca_parallel::Smoother> smoother_;
 
  public:
   /**
    * Construct a new StandardError object
    *
-   * Call Calc() and the resulting errors will be saved to prior_error and
-   * prob_error
+   * Call Calc() and the resulting errors will be saved to
+   * <code>prior_error</code> and <code>prob_error</code>
    *
    * @param features Not used
    * @param responses Design matrix of responses, matrix containing
@@ -141,8 +146,8 @@ class StandardError {
    *   <li>dim 2: for each cluster</li>
    * </ul>
    * @param prior Design matrix of prior probabilities, probability data point
-   * is in cluster m NOT given responses after calculations, it shall be in
-   * matrix form with dimensions
+   * is in cluster m <b>not</b> given responses after calculations, it shall be
+   * in matrix form with dimensions
    * <ul>
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
@@ -183,8 +188,9 @@ class StandardError {
   /**
    * Construct a new StandardError object
    *
-   * Call Calc() and the resulting errors will be saved to prior_error and
-   * prob_error
+   * Construct a new StandardError object for the non-regression problem only.
+   * Call Calc() and the resulting errors will be saved to
+   * <code>prior_error</code> and <code>prob_error</code>
    *
    * @param responses Design matrix of responses, matrix containing
    * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
@@ -201,8 +207,8 @@ class StandardError {
    *   <li>dim 2: for each cluster</li>
    * </ul>
    * @param prior Design matrix of prior probabilities, probability data point
-   * is in cluster m NOT given responses after calculations, it shall be in
-   * matrix form with dimensions
+   * is in cluster m <b>not</b> given responses after calculations, it shall be
+   * in matrix form with dimensions
    * <ul>
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
@@ -240,8 +246,10 @@ class StandardError {
   /**
    * Calculate the standard errors
    *
-   * Calculate the standard errors. Results are saved in the provided pointers
-   * prior_error, prob_error and regress_coeff_error
+   * Calculate the standard errors. Results are saved by modifying the member
+   * variables StandardError::prior_error_ and StandardError::prob_error_. For
+   * the regression problem, also modifies
+   * StandardErrorRegress::regress_coeff_error_
    */
   void Calc();
 
@@ -249,9 +257,8 @@ class StandardError {
   /**
    * Smooth the probabilities prior, posterior and prob if a smoother exists
    *
-   * Smooth the probabilities prior, posterior and prob if a smoother exists.
-   * The pointers probs_, prior_ and posterior_ will point to the smoothed
-   * probabilities.
+   * Smooth the probabilities StandardError::prior_, StandardError::posterior_
+   * and StandardError::probs_ if a smoother exists
    */
   void SmoothProbs();
 
@@ -277,20 +284,21 @@ class StandardError {
    * Calculate the scores for the prior for all clusters except the zeroth one
    * for all data points
    *
-   * @param score_prior MODIFIED - submatrix of the complete score matrix, to
-   * fill in with scores of the prior probabilities (and regression parameter if
-   * applicable)
+   * @param score_prior <b>modified</b> submatrix of the complete score matrix,
+   * to fill in with scores of the prior probabilities (and regression parameter
+   * if applicable)
    */
   virtual void CalcScorePrior(arma::subview<double>& score_prior) const;
 
   /**
-   * Calculate the scores for ALL outcome probabilities (except zeroth outcome)
+   * Calculate the scores for <b>all</b> outcome probabilities
    *
-   * Calculate the scores for outcome probabilities for all clusters, categories
-   * and outcomes (except for the zeroth outcome) for all data points.
+   * Calculate the scores for <b>all</b> outcome probabilities for all clusters,
+   * categories and outcomes (except for the zeroth outcome) for all data
+   * points.
    *
-   * @param score_probs MODIFIED - submatrix of the complete score matrix, to
-   * fill in with the scores of the outcome probabilities
+   * @param score_probs <b>modified</b> submatrix of the complete score matrix,
+   * to fill in with the scores of the outcome probabilities
    */
   void CalcScoreProbs(arma::subview<double>& score_probs) const;
 
@@ -304,8 +312,8 @@ class StandardError {
    * @param prob outcome probability for a given cluster, category and outcome
    * @param responses_j responses for a given category
    * @param posterior_i posterior for a given cluster
-   * @param score_col MODIFIED, column of the score matrix to modify for a given
-   * cluster, category and outcome
+   * @param score_col <b>modified</b> column of the score matrix to modify for a
+   * given cluster, category and outcome
    */
   void CalcScoreProbsCol(std::size_t outcome_index, double prob,
                          const arma::subview_col<int>& responses_j,
@@ -315,24 +323,21 @@ class StandardError {
   /**
    * Calculate the Jacobian matrix
    *
-   * Calculate the Jacobian matrix, a block diagonal matrix, and saves it in the
-   * provided pointer
+   * Calculate the Jacobian matrix, a block diagonal matrix, and save it in the
+   * provided armadillo matrix
    *
-   * @param jacobian pointer to save the Jacobian matrix
+   * @param jacobian <b>modified</b> to save the Jacobian matrix
    */
   void CalcJacobian(arma::Mat<double>& jacobian) const;
 
   /**
    * Calculate the block matrix for the prior in the Jacobian matrix
    *
-   * Calculate the block matrix for the prior in the Jacobian matrix and saves
-   * it in the provided pointer. The provided pointer is shifted, ready for the
-   * next block matrix.
+   * Calculate the block matrix for the prior in the Jacobian matrix and save
+   * it in the provided armadillo subview
    *
-   * @param jacobian_ptr MODIFIED, the start of the block matrix in the Jacobian
-   * matrix, the calculated block matrix is saved in *jacobian_ptr.
-   * *jacobian_ptr is modified so that it points to the start of the next block
-   * matrix after calling this method
+   * @param jacobian_prior <b>modified</b> the subview containing the block
+   * matrix in the Jacobian matrix
    */
   virtual void CalcJacobianPrior(arma::subview<double>& jacobian_prior) const;
 
@@ -340,25 +345,21 @@ class StandardError {
    * Calculate all block matrices for the probabilities in the Jacobian matrix
    *
    * Calculate all block matrices for the outcome probabilities in the Jacobian
-   * matrix and saves it in the provided pointer. The provided pointer is
-   * shifted, ready for the next block matrix.
+   * matrix and save it in the provided armadillo subview
    *
-   * @param jacobian_ptr MODIFIED, the start of the block matrix in the Jacobian
-   * matrix, the calculated block matrices are saved in *jacobian_ptr.
-   * *jacobian_ptr is modified so that it points to the start of the next block
-   * matrix after calling this method
+   * @param jacobian_probs <b>modified</b> the subview containing the block
+   * matrix in the Jacobian matrix
    */
   void CalcJacobianProbs(arma::subview<double>& jacobian_probs) const;
 
   /**
    * Calculate a block matrix for given probabilities
    *
-   * Calculate a block matrix for given probabilities and saves it in the
-   * provided pointer. The provided pointer is shifted, ready for the next
-   * block matrix.
+   * Calculate a block matrix for given probabilities and save it in the
+   * provided armadillo subview
    *
    * @param probs array of probabilities to construct the block matrix with
-   * @param jacobian_block MODIFIED, the block matrix in the Jacobian
+   * @param jacobian_block <b>modified</b> the block matrix in the Jacobian
    * matrix
    */
   void CalcJacobianBlock(std::span<const double> probs,

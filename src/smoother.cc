@@ -59,16 +59,15 @@ void polca_parallel::Smoother::Smooth() {
 }
 
 std::span<const double> polca_parallel::Smoother::get_probs() {
-  return std::span<const double>(this->probs_.begin(), this->probs_.size());
+  return std::span<const double>(this->probs_);
 }
 
 std::span<const double> polca_parallel::Smoother::get_prior() {
-  return std::span<const double>(this->prior_.begin(), this->prior_.size());
+  return std::span<const double>(this->prior_);
 }
 
 std::span<const double> polca_parallel::Smoother::get_posterior() {
-  return std::span<const double>(this->posterior_.begin(),
-                                 this->posterior_.size());
+  return std::span<const double>(this->posterior_);
 }
 
 void polca_parallel::Smoother::Smooth(double n_data, double num_add,

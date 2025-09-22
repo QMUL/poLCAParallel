@@ -50,7 +50,6 @@
  *   <li>dim 2: for each cluster</li>
  * </ul>
  * @param n_data number of data points
- * @param n_obs number of fully observed data points
  * @param n_outcomes_int vector, number of possible responses for each category
  * @param n_cluster number of clusters, or classes, to fit
  * @return a list containing:
@@ -74,11 +73,8 @@ Rcpp::List GoodnessFitRcpp(Rcpp::IntegerMatrix responses,
   std::size_t n_category = n_outcomes.size();
 
   polca_parallel::GoodnessOfFit goodness_of_fit;
-  goodness_of_fit.Calc(
-      std::span<const int>(responses.cbegin(), responses.size()),
-      std::span<const double>(prior.cbegin(), prior.size()),
-      std::span<const double>(outcome_prob.cbegin(), outcome_prob.size()),
-      n_data, n_outcomes, n_cluster);
+  goodness_of_fit.Calc(responses, prior, outcome_prob, n_data, n_outcomes,
+                       n_cluster);
 
   std::map<std::vector<int>, polca_parallel::Frequency>& frequency_map =
       goodness_of_fit.GetFrequencyMap();

@@ -21,6 +21,7 @@
 #include <cstddef>
 #include <random>
 #include <span>
+#include <vector>
 
 #include "arma.h"
 
@@ -68,20 +69,6 @@ void Random(std::span<const double> prior, std::span<const double> prob,
             std::span<int> response);
 
 /**
- * Generate random responses
- *
- * Generate random responses using random priors and outcome probabilities.
- * Provide a rng and the resulting random responses are returned
- *
- * @param n_data Number of data points
- * @param n_outcomes Number of outcomes for each category
- * @param rng Random number generator
- * @return std::vector<int> The generated responses
- */
-std::vector<int> RandomMarginal(std::size_t n_data, NOutcomes n_outcomes,
-                                std::mt19937_64& rng);
-
-/**
  * Generate random response probabilities
  *
  * @param n_outcomes vector length n_category, number of outcomes for each
@@ -113,39 +100,6 @@ void RandomProb(std::span<const std::size_t> n_outcomes,
 std::vector<double> RandomInitialProb(polca_parallel::NOutcomes n_outcomes,
                                       const std::size_t n_cluster,
                                       std::size_t n_rep, std::mt19937_64& rng);
-
-/**
- * Set missing data at random to the responses
- *
- * Set missing data at random to the responses by setting them to zero
- *
- * @param missing_prob the probability a data point is set to zero or missing
- * @param rng random number generator
- * @param responses
- *
- */
-void SetMissingAtRandom(double missing_prob, std::mt19937_64& rng,
-                        std::span<int> responses);
-
-/**
- * Calculate the number of fully observed responses
- *
- * Calculate (or count) the number of fully observed responses. Unobserved
- * responses are coded as zero
- *
- * @param responses Design matrix TRANSPOSED of responses, matrix containing
- * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
- * has dimensions
- * <ul>
- *   <li>dim 0: for each category</li>
- *   <li>dim 1: for each data point</li>
- * </ul>
- * @param n_data Number of data points
- * @param n_category Number of categories in each response
- * @return std::size_t Number of fully observed responses
- */
-[[nodiscard]] std::size_t CalcNObs(std::span<const int> responses,
-                                   std::size_t n_data, std::size_t n_category);
 
 }  // namespace polca_parallel
 

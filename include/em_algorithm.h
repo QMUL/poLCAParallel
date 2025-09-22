@@ -30,15 +30,17 @@
 namespace polca_parallel {
 
 /**
- * For fitting poLCA using the EM algorithm for a given initial value
+ * For fitting poLCA using the EM algorithm
+ *
+ * Provide initial outcome probabilities to initalise the EM algorithm
  *
  * How to use:
  * <ul>
  *   <li>
  *     Pass the data, initial probabilities and other parameters to the
  *     constructor. Also in the constructor, pass an array to store the
- *     posterior and prior probabilities (for each cluster) and the estimated
- *     response probabilities
+ *     posterior and prior probabilities (for each cluster), estimated
+ *     outcome probabilities
  *   </li>
  *   <li>
  *     Call optional methods such as set_best_initial_prob(), set_seed()
@@ -58,8 +60,9 @@ namespace polca_parallel {
 class EmAlgorithm {
  protected:
   /**
-   * Design matrix TRANSPOSED of responses, matrix containing outcomes/responses
-   * for each category as integers 1, 2, 3, .... The matrix has dimensions
+   * Design matrix <b>transposed</b> of responses, matrix containing
+   * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
+   * has dimensions
    * <ul>
    *   <li>dim 0: for each category</li>
    *   <li>dim 1: for each data point</li>
@@ -97,16 +100,23 @@ class EmAlgorithm {
    */
   arma::Mat<double> posterior_;
   /**
-   * Design matrix of prior probabilities. It's the probability a data point is
-   * in cluster m NOT given responses after calculations. The matrix has the
-   * following dimensions
+   * Design matrix of prior probabilities
+   *
+   * The probability a data point is in cluster m <b>not</b> given responses
+   * after calculations. The matrix has the following dimensions
    * <ul>
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
    * </ul>
-   * During the start and calculations, it may take on a different form. Use the
-   * method GetPrior() to get the prior for a data point and cluster rather than
-   * accessing the member variable direction
+   *
+   * During the start and calculations, it may take on a different form
+   * depending on the class implementation. For example, in EmAlgorithm, the
+   * prior probability is the same for all data points. In EmAlgorithmRegress,
+   * the prior probability is different for all data points. Thus in
+   * EmAlgorithm, only the first m elements are used.
+   *
+   * Use the method GetPrior() to get the prior for a data point and cluster
+   * rather than accessing the member variable direction during Fit()
    */
   arma::Mat<double> prior_;
   /**
@@ -121,9 +131,10 @@ class EmAlgorithm {
    */
   arma::Mat<double> estimated_prob_;
   /**
-   * Optional, vector of INITIAL response probabilities used to get the maximum
-   * log-likelihood, this member variable is optional, set to NULL if not used.
-   * Set using set_best_initial_prob()
+   * Optional, vector of <b>initial</b> response probabilities used to get the
+   * maximum log-likelihood, this member variable is optional. Set using
+   * set_best_initial_prob()
+   *
    * A flattened list in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
@@ -154,18 +165,20 @@ class EmAlgorithm {
   /**
    * Construct a new EM algorithm object
    *
-   * Please see the description of the member variables for further information.
    * The following content pointed to shall be modified:
    * <ul>
-   *   <li>posterior</li>
-   *   <li>prior</li>
-   *   <li>estimated_prob</li>
+   *   <li><code>posterior</code></li>
+   *   <li><code>prior</code></li>
+   *   <li><code>estimated_prob</code></li>
    * </ul>
    *
+   * Some parameters are ignored. This is designed so that the signature is the
+   * same as the subclasses such as polca_parallel::EmAlgorithmRegress
+   *
    * @param features Not used and ignored
-   * @param responses Design matrix TRANSPOSED of responses, matrix containing
-   * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
-   * has dimensions
+   * @param responses Design matrix <b>transposed</b> of responses, matrix
+   * containing outcomes/responses for each category as integers 1, 2, 3, ....
+   * The matrix has dimensions
    * <ul>
    *   <li>dim 0: for each category</li>
    *   <li>dim 1: for each data point</li>
@@ -178,7 +191,7 @@ class EmAlgorithm {
    *   <li>dim 2: for each cluster</li>
    * </ul>
    * @param n_data Number of data points
-   * @param n_feature Number of features
+   * @param n_feature Number of features, set this to 1
    * @param n_outcomes Vector of number of outcomes for each category and its
    * sum
    * @param n_cluster Number of clusters to fit
@@ -195,8 +208,8 @@ class EmAlgorithm {
    * </ul>
    * @param prior Modified to contain the resulting prior probabilities after
    * calling Fit(). Design matrix of prior probabilities. It's the probability a
-   * data point is in cluster m NOT given responses after calculations. The
-   * matrix has the following dimensions dimensions
+   * data point is in cluster <code>m</code> <b>not</b> given responses after
+   * calculations. The matrix has the following dimensions
    * <ul>
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
@@ -223,17 +236,18 @@ class EmAlgorithm {
   /**
    * Construct a new EM algorithm object
    *
-   * Please see the description of the member variables for further information.
+   * Construct a new EM algorithm object for the non-regression problem only
+   *
    * The following content pointed to shall be modified:
    * <ul>
-   *   <li>posterior</li>
-   *   <li>prior</li>
-   *   <li>estimated_prob</li>
+   *   <li><code>posterior</code></li>
+   *   <li><code>prior</code></li>
+   *   <li><code>estimated_prob</code></li>
    * </ul>
    *
-   * @param responses Design matrix TRANSPOSED of responses, matrix containing
-   * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
-   * has dimensions
+   * @param responses Design matrix <b>transposed</b> of responses, matrix
+   * containing outcomes/responses for each category as integers 1, 2, 3, ....
+   * The matrix has dimensions
    * <ul>
    *   <li>dim 0: for each category</li>
    *   <li>dim 1: for each data point</li>
@@ -262,8 +276,8 @@ class EmAlgorithm {
    * </ul>
    * @param prior Modified to contain the resulting prior probabilities after
    * calling Fit(). Design matrix of prior probabilities. It's the probability a
-   * data point is in cluster m NOT given responses after calculations. The
-   * matrix has the following dimensions dimensions
+   * data point is in cluster <code>m</code> <b>not</b> given responses after
+   * calculations. The matrix has the following dimensions
    * <ul>
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
@@ -288,40 +302,29 @@ class EmAlgorithm {
   virtual ~EmAlgorithm() = default;
 
   /**
-   * Fit data to model using EM algorithm
+   * Fit model to data using EM algorithm
    *
    * Data is provided through the constructor, important results are stored in
    * the member variables:
    * <ul>
-   *   <li>posterior_</li>
-   *   <li>prior_</li>
-   *   <li>estimated_prob_</li>
-   *   <li>ln_l_array_</li>
-   *   <li>ln_l_</li>
-   *   <li>n_iter_</li>
-   *   <li>optionally, best_initial_prob_</li>
+   *   <li>EmAlgorithm::posterior_</li>
+   *   <li>EmAlgorithm::prior_</li>
+   *   <li>EmAlgorithm::estimated_prob_</li>
+   *   <li>EmAlgorithm::ln_l_</li>
+   *   <li>EmAlgorithm::ln_l_array_</li>
+   *   <li>EmAlgorithm::n_iter_</li>
+   *   <li>EmAlgorithm::has_restarted_</li>
+   *   <li>optionally, EmAlgorithm::best_initial_prob_</li>
    * </ul>
    */
   void Fit();
 
   /**
-   * Reset this object so that it can be re-used for another run with new
-   * initial probabilities
-   *
-   * @param initial_prob Vector of initial probabilities for each category and
-   * outcome, flatten list in the following order
-   * <ul>
-   *   <li>dim 0: for each outcome</li>
-   *   <li>dim 1: for each category</li>
-   *   <li>dim 2: for each cluster</li>
-   * </ul>
-   */
-
-  /**
    * Set where to store initial probabilities (optional)
    *
-   * @param best_initial_prob Vector of INITIAL response probabilities used to
-   * get the maximum log-likelihood, flatten list in the following order
+   * @param best_initial_prob Vector to store the <b>initial</b> response
+   * probabilities used to get the maximum log-likelihood, flatten list in the
+   * following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -337,16 +340,23 @@ class EmAlgorithm {
   [[nodiscard]] unsigned int get_n_iter() const;
 
   /**
-   * Indicate if it needed to use new initial values during a fit, it can happen
-   * if a matrix is singular for example
+   * Indicate if it was needed to use new initial values during a fit, it can
+   * happen if a matrix is singular in the regression problem for example
    */
   [[nodiscard]] bool get_has_restarted() const;
 
-  /** Set rng using a seed, for generating new random initial values */
+  /**
+   * Set rng using a seed, for generating new random initial values
+   *
+   * Set EmAlgorithm::rng_ using a seed, for generating new random initial
+   * values
+   */
   void set_seed(unsigned seed);
 
   /**
    * Set rng by transferring ownership of an rng to this object
+   *
+   * Set EmAlgorithm::rng_ by transferring ownership of an rng to this object
    *
    * Use this method if you want to use your own rng instead of the default
    * rng
@@ -354,10 +364,9 @@ class EmAlgorithm {
   void set_rng(std::unique_ptr<std::mt19937_64> rng);
 
   /**
-   * Transfer ownership of rng from this object
+   * Transfer ownership of EmAlgorithm::rng_ from this object
    *
-   * Use this method if you want to ensure the rng you pass in set_rng() lives
-   * when this object goes out of scope
+   * Retrive the rng passed in set_rng()
    * */
   [[nodiscard]] std::unique_ptr<std::mt19937_64> move_rng();
 
@@ -365,19 +374,34 @@ class EmAlgorithm {
   /**
    * Reset parameters for a re-run
    *
-   * Reset the parameters estimated_prob_ with random starting values
+   * Reset the parameters EmAlgorithm::estimated_prob_ with random starting
+   * values
    */
   virtual void Reset();
 
   /**
    * Initialise prior probabilities
    *
-   * Initialise the content of prior_ which contains prior probabilities for
-   * each cluster, ready for the EM algorithm
+   * Initialise the content of EmAlgorithm::prior_ which contains prior
+   * probabilities for each cluster, ready for the EM algorithm
    */
   virtual void InitPrior();
 
-  /** Adjust prior return value to matrix format */
+  /**
+   * Adjust prior return value to matrix format
+   *
+   * Adjust the member variable EmAlgorithm::prior_ so that it is in matrix
+   * format. During Fit(), EmAlgorithm::prior_ is a vector of length
+   * EmAlgorithm::n_cluster_ as it assumes each data point has the same prior.
+   * Use this method to duplicate the prior for each data point so that the
+   * member variable EmAlgorithm::prior_ becomes a matrix with the following
+   * dimensions:
+   *
+   * <ul>
+   *   <li>dim 0: for each data point
+   *   <li>dim 1: for each cluster
+   * </ul>
+   */
   virtual void FinalPrior();
 
   /**
@@ -393,23 +417,23 @@ class EmAlgorithm {
   /**
    * Do E step
    *
-   * Update the posterior probabilities given the prior probabilities and
-   * estimated response probabilities. Modifies the member variables posterior_
-   * and ln_l_array_. Calculations from the E step also provide the elements
-   * for ln_l_array_.
+   * Update the posterior probabilities and log likelihood given the prior
+   * probabilities and estimated response probabilities. Modifies the member
+   * variables EmAlgorithm::posterior_ and EmAlgorithm::ln_l_array_
    */
   void EStep();
 
   /**
-   * Calculates the unnormalize posterior and assign it to posterior_
+   * Calculates the unnormalize posterior and set it to EmAlgorithm::posterior_
    *
-   * Calculates the unnormalize posterior and asign it to posterior_. See
-   * PosteriorUnnormalize() for further information.
+   * Calculates the unnormalize posterior for a given cluster and assign it to
+   * EmAlgorithm::posterior_. See polca_parallel::PosteriorUnnormalize() for
+   * further information
    *
-   * @param data_index data point index 0, 1, 2, ..., n_data - 1
-   * @param cluster_index cluster index 0, 1, 2, ..., n_cluster - 1
-   * @param estimated_prob A column view of estimated_prob_. A flattened
-   * list in the following order
+   * @param responses_i vector of responses for a given cluster
+   * @param prior prior for a given cluster
+   * @param estimated_prob the corresponding cluster's column view of
+   * EmAlgorithm::estimated_prob_. A flattened list in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -424,8 +448,8 @@ class EmAlgorithm {
    *
    * @param ln_l_difference the change in log-likelihood after an iteration of
    * EM
-   * @return true if the likelihood is invalid
-   * @return false if the likelihood is okay
+   * @return <code>true</code> if the likelihood is invalid, <code>false</code>
+   * if the likelihood is okay
    */
   [[nodiscard]] virtual bool IsInvalidLikelihood(double ln_l_difference) const;
 
@@ -433,33 +457,50 @@ class EmAlgorithm {
    * Do M step
    *
    * Update the prior probabilities and estimated response probabilities given
-   * the posterior probabilities. Modifies the member variables prior_ and
-   * estimated_prob_
+   * the posterior probabilities. Modifies the member variables
+   * EmAlgorithm::prior_ and EmAlgorithm::estimated_prob_
    *
-   * @return false
+   * @return <code>false</code>
    */
   virtual bool MStep();
 
   /**
-   * Estimate probability
+   * Estimate outcome probability
    *
-   * Updates and modify the member variable estimated_prob_ using the
-   * posterior
+   * Updates and modifies the member variable EmAlgorithm::estimated_prob_ using
+   * the posterior
    */
   void EstimateProbability();
 
   /**
-   * Weighted sum of outcomes for a given cluster
+   * Weighted sum of posteriors for a given cluster
    *
-   * Calculates the sum of outcomes weighted by the posterior for a given
-   * cluster (or vice versa) where the outcomes are either zeros (the outcome
-   * has not been observed) or ones (the outcome has been observed). This is
-   * done for all categories. The member variable estimated_prob_ is updated
-   * with the results for the corresponding cluster.
+   * Update a column of the member variable EmAlgorithm::estimated_prob_ with a
+   * weighted sum. For a given cluster, category and outcome, this weighted sum
+   * is of posteriors over all data points, where the weight is a boolean
+   * whether a response has been observed or not.
    *
-   * This is used to estimate outcome probabilities. Because the responses or
-   * observed outcomes are binary, the weighted sum can also be viewed as a
-   * selective sum of posteriors.
+   * The weighted sum can also be viewed as a selective sum of posteriors.
+   *
+   * The weighted sum is as follows, for a given cluster, category and outcome:
+   *
+   * Sum over data (<code>i = 0</code> to <code>n-1</code>) the posterior(for
+   * data <code>i</code> and a given cluster) multiplied by boolean (has the
+   * <code>i</code>th response for this category and outcome been observed)
+   *
+   * \f[
+   * \sum_{i=0}^{n-1} \theta^{(i)}_m \delta[y^{(i)}_{j}, k_j]
+   * \f]
+   *
+   * where \f$n\f$ is the number of data points, \f$j\f$ is the category,
+   * \f$k_j\f$ is an outcome in category \f$j\f$, \f$\theta^{(i)}_m\f$ is the
+   * posterior for data point \f$i\f$ and cluster \f$m\f$, \f$y^{(i)}_{j}\f$ is
+   * the response for the  \f$i\f$ th data point and \f$j\f$th category,
+   * \f$\delta\f$ is the Kronecker delta.
+   *
+   * This is done for all categories and outcomes for a given cluster
+   *
+   * This is used to estimate outcome probabilities later on
    *
    * @param cluster_index which cluster to consider
    */
@@ -469,8 +510,8 @@ class EmAlgorithm {
    * Normalise the weighted sum following WeightedSumProb()
    *
    * After calling WeightedSumProb(), call this to normalise the weighted sum so
-   * that the member variable estimated_prob_ contains estimated probabilities
-   * for each outcome for a given cluster.
+   * that the member variable EmAlgorithm::estimated_prob_ contains estimated
+   * probabilities for each outcome for a given cluster.
    *
    * Can be overridden as the sum of weights can be calculated differently.
    *
@@ -481,9 +522,9 @@ class EmAlgorithm {
   /**
    * Normalise the weighted sum following WeightedSumProb() given the normaliser
    *
-   * After calling WeightedSumProb(), call this to normalise the weighted sum by
-   * a provided normaliser. Each probability for a given cluster is divided by
-   * this normaliser.
+   * After calling WeightedSumProb(), call this to normalise the weighted sum in
+   * EmAlgorithm::estimated_prob_ by a provided normaliser. Each probability for
+   * a given cluster is divided by this normaliser.
    *
    * @param cluster_index which cluster to consider
    * @param normaliser the scale to divide the weighted sum by, should be the
@@ -508,9 +549,9 @@ class EmAlgorithm {
  * The prior (of the cluster) is given.
  *
  * It should be noted in the likelihood calculations, probabilities are
- * iteratively multiplied. However, to avoid underflow errors, a sum of log
- * probabilities is done instead if an underflow is detected. It should be
- * noted the sum of logs is slower.
+ * iteratively multiplied. To avoid underflow errors, a sum of log
+ * probabilities should be done instead, however it was noted that the sum of
+ * logs is slower.
  *
  * @tparam is_check_zero to check if the responses are zero or not, for
  * performance reason, use false when the responses do not contain zero values

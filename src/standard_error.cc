@@ -204,8 +204,7 @@ void polca_parallel::StandardError::CalcJacobianPrior(
 
     prior[cluster_index] = (*this->prior_)[cluster_index * this->n_data_];
   }
-  this->CalcJacobianBlock(std::span<const double>(prior.cbegin(), prior.size()),
-                          jacobian_prior);
+  this->CalcJacobianBlock(prior, jacobian_prior);
 }
 
 void polca_parallel::StandardError::CalcJacobianProbs(

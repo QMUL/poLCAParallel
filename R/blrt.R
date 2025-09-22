@@ -43,7 +43,7 @@ blrt <- function(model_null, model_alt, n_bootstrap,
 
   # extract other information, use the null model
   n_data <- model_null$N
-  n_outcomes <- apply(model_null$y, 2, max)
+  n_outcomes <- apply(model_null$y, 2, max, na.rm = TRUE)
 
   # random seed required to generate new initial values when needed
   seed <- sample.int(

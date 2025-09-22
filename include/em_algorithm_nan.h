@@ -32,10 +32,12 @@ namespace polca_parallel {
 /**
  * Template class for EmAlgorithmNan and EmAlgorithmNanRegress
  *
- * Template class class for EmAlgorithmNan and EmAlgorithmNanRegress, which are
- * subclasses of EmAlgorithm and EmAlgorithmRegress respectively. Methods are
- * overridden so that they can handle response values of zero, the encoding of
- * Nan
+ * This template class is a subclass of either EmAlgorithm and
+ * EmAlgorithmRegress and reimplement methods for NaN handling. Providing those
+ * classes to the template parameter correspond to the classes EmAlgorithmNan
+ * and EmAlgorithmNanRegress respectively.
+ *
+ * Missing values in the responses are encode with zeros
  *
  * @tparam Either EmAlgorithm or EmAlgorithmRegress
  */
@@ -47,7 +49,10 @@ class EmAlgorithmNanTemplate : public T {
 
  public:
   /**
-   * EM algorithm with NaN handling
+   * EM algorithm with NaN handling. NaN are encoded as zeros in reponses
+   *
+   * Please see and use EmAlgorithmNan and EmAlgorithmNanRegress rather than
+   * this template class instead
    *
    * @copydoc EmAlgorithm::EmAlgorithm
    */
@@ -74,6 +79,9 @@ class EmAlgorithmNanTemplate : public T {
   /**
    * Overridden to estimate probabilities using posterior_sum
    *
+   * Overridden to estimate probabilities using
+   * EmAlgorithmNanTemplate::posterior_sum
+   *
    * @copydoc EmAlgorithm::NormalWeightedSumProb
    */
   void NormalWeightedSumProb(const std::size_t cluster_index) override;
@@ -93,9 +101,16 @@ class EmAlgorithmNanTemplate : public T {
 class EmAlgorithmNan : public EmAlgorithmNanTemplate<EmAlgorithm> {
  public:
   /**
-   * EM algorithm with NaN handling
+   * EM algorithm with NaN handling. NaN are encoded as zeros in reponses
    *
-   * @copydoc EmAlgorithm::EmAlgorithm
+   * @copydoc EmAlgorithm::EmAlgorithm(std::span<const double> features,
+                 std::span<const int> responses,
+                 std::span<const double> initial_prob, std::size_t n_data,
+                 std::size_t n_feature, NOutcomes n_outcomes,
+                 std::size_t n_cluster, unsigned int max_iter, double tolerance,
+                 std::span<double> posterior, std::span<double> prior,
+                 std::span<double> estimated_prob,
+                 std::span<double> regress_coeff)
    */
   EmAlgorithmNan(std::span<const double> features,
                  std::span<const int> responses,
@@ -107,9 +122,14 @@ class EmAlgorithmNan : public EmAlgorithmNanTemplate<EmAlgorithm> {
                  std::span<double> regress_coeff);
 
   /**
-   * EM algorithm with NaN handling
+   * EM algorithm with NaN handling. NaN are encoded as zeros in reponses
    *
-   * @copydoc EmAlgorithm::EmAlgorithm
+   * @copydoc EmAlgorithm::EmAlgorithm(std::span<const int> responses,
+                 std::span<const double> initial_prob, std::size_t n_data,
+                 NOutcomes n_outcomes, std::size_t n_cluster,
+                 unsigned int max_iter, double tolerance,
+                 std::span<double> posterior, std::span<double> prior,
+                 std::span<double> estimated_prob)
    */
   EmAlgorithmNan(std::span<const int> responses,
                  std::span<const double> initial_prob, std::size_t n_data,
@@ -124,7 +144,7 @@ class EmAlgorithmNan : public EmAlgorithmNanTemplate<EmAlgorithm> {
 /**
  * EM algorithm for regression with NaN handling
  *
- * EM algorithm for regression  with NaN handling. NaN are encoded as zeros in
+ * EM algorithm for regression with NaN handling. NaN are encoded as zeros in
  * reponses. The methods responsible for probability estimation are overriden.
  *
  */
@@ -132,9 +152,9 @@ class EmAlgorithmNanRegress
     : public EmAlgorithmNanTemplate<EmAlgorithmRegress> {
  public:
   /**
-   * EM algorithm for regression with NaN handling
+   * EM algorithm for regression with NaN handling, encoded as zero in responses
    *
-   * @copydoc EmAlgorithm::EmAlgorithmRegress
+   * @copydoc EmAlgorithmRegress::EmAlgorithmRegress
    */
   EmAlgorithmNanRegress(std::span<const double> features,
                         std::span<const int> responses,
@@ -152,16 +172,16 @@ class EmAlgorithmNanRegress
 /**
  * Static version of NanWeightedSumProb()
  *
- * Static version of NanWeightedSumProb() and the Nan version of
+ * Static version of NanWeightedSumProb() and the N version of
  * WeightedSumProb(). Used to override EmAlgorithm::WeightedSumProb()
  *
  * Override so that is ignore response zero and do a cumulative sum of
  * posteriors for each category in posterior_sum
  *
  * @param cluster_index which cluster to consider
- * @param responses Design matrix TRANSPOSED of responses, matrix containing
- * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
- * has dimensions
+ * @param responses Design matrix <b>transposed</b> of responses, matrix
+ * containing outcomes/responses for each category as integers 1, 2, 3, .... The
+ * matrix has dimensions
  * <ul>
  *   <li>dim 0: for each category</li>
  *   <li>dim 1: for each data point</li>
@@ -195,8 +215,9 @@ void NanWeightedSumProb(const std::size_t cluster_index,
 /**
  * Static version of NanNormalWeightedSumProb()
  *
- * Static version of NanNormalWeightedSumProb() and the Nan version of
- * NormalWeightedSumProb() Used to override EmAlgorithm::NormalWeightedSumProb()
+ * Static version of NanNormalWeightedSumProb() and the NaN version of
+ * NormalWeightedSumProb(). Used to override
+ * EmAlgorithm::NormalWeightedSumProb()
  *
  * Override so that it estimate probabilities using posterior_sum
  *

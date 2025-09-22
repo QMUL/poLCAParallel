@@ -38,7 +38,18 @@ namespace polca_parallel {
  */
 class RegularisedError : public polca_parallel::StandardError {
  public:
-  /** @copydoc StandardError::StandardError */
+  /**
+   * Regularised error smooths the outcome probabilities
+   *
+   * @copydoc StandardError::StandardError(std::span<const double> features,
+                   std::span<const int> responses,
+                   std::span<const double> probs, std::span<const double> prior,
+                   std::span<const double> posterior, std::size_t n_data,
+                   std::size_t n_feature, NOutcomes n_outcomes,
+                   std::size_t n_cluster, std::span<double> prior_error,
+                   std::span<double> prob_error,
+                   std::span<double> regress_coeff_error)
+  */
   RegularisedError(std::span<const double> features,
                    std::span<const int> responses,
                    std::span<const double> probs, std::span<const double> prior,
@@ -48,7 +59,15 @@ class RegularisedError : public polca_parallel::StandardError {
                    std::span<double> prob_error,
                    std::span<double> regress_coeff_error);
 
-  /** @copydoc StandardError::StandardError */
+  /**
+   * Regularised error smooths the outcome probabilities
+   *
+   * @copydoc StandardError::StandardError(std::span<const int> responses,
+                   std::span<const double> probs, std::span<const double> prior,
+                   std::span<const double> posterior, std::size_t n_data,
+                   NOutcomes n_outcomes, std::size_t n_cluster,
+                   std::span<double> prior_error, std::span<double> prob_error)
+   */
   RegularisedError(std::span<const int> responses,
                    std::span<const double> probs, std::span<const double> prior,
                    std::span<const double> posterior, std::size_t n_data,
@@ -69,7 +88,11 @@ class RegularisedError : public polca_parallel::StandardError {
  */
 class RegularisedErrorRegress : public polca_parallel::StandardErrorRegress {
  public:
-  /** @copydoc StandardErrorRegress::StandardErrorRegress */
+  /**
+   * Regularised error smooths the outcome probabilities
+   *
+   * @copydoc StandardErrorRegress::StandardErrorRegress
+   * */
   RegularisedErrorRegress(std::span<const double> features,
                           std::span<const int> responses,
                           std::span<const double> probs,

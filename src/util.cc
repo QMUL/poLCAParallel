@@ -18,9 +18,6 @@
 #include "util.h"
 
 #include <cassert>
-#include <numeric>
-
-#include "arma.h"
 
 polca_parallel::NOutcomes::NOutcomes(const std::size_t* data, std::size_t size)
     : std::span<const std::size_t>(data, size),
@@ -60,29 +57,7 @@ void polca_parallel::Random(std::span<const double> prior,
   }
 }
 
-std::vector<int> polca_parallel::RandomMarginal(
-    std::size_t n_data, polca_parallel::NOutcomes n_outcomes,
-    std::mt19937_64& rng) {
-  std::vector<int> responses(n_data * n_outcomes.size());
-
-  auto response_iter = responses.begin();
-  for (std::size_t i_data = 0; i_data < n_data; ++i_data) {
-    for (auto n_outcome_i : n_outcomes) {
-      assert(response_iter < responses.end());
-
-      std::uniform_int_distribution<int> dist(1, n_outcome_i);
-      *response_iter = dist(rng);
-
-      assert(*response_iter > 0);
-      assert(*response_iter <= static_cast<int>(n_outcome_i));
-
-      std::advance(response_iter, 1);
-    }
-  }
-  return responses;
-}
-
-void polca_parallel::RandomProb(std::span<const size_t> n_outcomes,
+void polca_parallel::RandomProb(std::span<const std::size_t> n_outcomes,
                                 const std::size_t n_cluster,
                                 std::mt19937_64& rng, arma::Mat<double>& prob) {
   std::uniform_real_distribution<double> random_distribution(0.0, 1.0);
@@ -118,35 +93,4 @@ std::vector<double> polca_parallel::RandomInitialProb(
     std::advance(initial_prob_iter, n_outcomes.sum() * n_cluster);
   }
   return initial_prob;
-}
-
-void polca_parallel::SetMissingAtRandom(double missing_prob,
-                                        std::mt19937_64& rng,
-                                        std::span<int> responses) {
-  std::bernoulli_distribution missing_dist(missing_prob);
-  for (auto& response : responses) {
-    if (missing_dist(rng)) {
-      response = 0;
-    }
-    assert(response >= 0);
-  }
-}
-
-std::size_t polca_parallel::CalcNObs(std::span<const int> responses,
-                                     std::size_t n_data,
-                                     std::size_t n_category) {
-  std::size_t n_obs = 0;
-  auto response_i = responses.begin();
-  for (std::size_t i_data = 0; i_data < n_data; ++i_data) {
-    bool is_fully_observed = true;
-    for (std::size_t i_category = 0; i_category < n_category; ++i_category) {
-      assert(response_i < responses.end());
-      if (*response_i == 0) {
-        is_fully_observed = false;
-      }
-      std::advance(response_i, 1);
-    }
-    n_obs += is_fully_observed;
-  }
-  return n_obs;
 }

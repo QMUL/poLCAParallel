@@ -1,8 +1,9 @@
 PROJECT_NAME = "poLCAParallel"
-PROJECT_NUMBER = "v1.2.3"
+PROJECT_NUMBER = "v1.2.4"
 PROJECT_BRIEF = "C++ Implementation of poLCA (R package)"
-INPUT = src/ include/
+INPUT = src/ include/ tests/
 INPUT += README.md
 USE_MDFILE_AS_MAINPAGE = README.md
 EXTRACT_ALL = YES
 EXTRACT_PRIVATE = YES
+USE_MATHJAX = YES

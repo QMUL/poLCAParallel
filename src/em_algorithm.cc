@@ -139,7 +139,6 @@ void polca_parallel::EmAlgorithm::Fit() {
   this->FinalPrior();
 }
 
-// Set where to store initial probabilities (optional)
 void polca_parallel::EmAlgorithm::set_best_initial_prob(
     std::span<double> best_initial_prob) {
   this->best_initial_prob_ = best_initial_prob;

@@ -251,10 +251,8 @@ poLCA <- function(formula,
     nfeature <- ncol(features) # number of features
 
     # check probs.start and generate any additional probs if needed
-    probs.start <- generate_initial_probs(
-        probs.start, nrep, ncategory,
-        noutcomes, nclass
-    )
+    probs.start <- check_and_generate_initial_probs(
+        probs.start, nrep, noutcomes, nclass)
 
     # random seed required to generate new initial values when needed
     seed <- sample.int(
@@ -422,10 +420,11 @@ extract_data <- function(formula, data, na.rm) {
     return(list(x = x, y = y))
 }
 
-#' Generate initial probabilities
+#' Check and generate initial probabilities
 #'
 #' Checks the user provided probs.start and generate further initial
-#' probabilities for the EM algorithm
+#' probabilities for the EM algorithm. If probs.start is invalid, it will
+#' generate new initial probabilities
 #'
 #' @param probs.start A list of matrices of class-conditional response
 #' probabilities, see poLCA for further details
@@ -435,32 +434,31 @@ extract_data <- function(formula, data, na.rm) {
 #' @param noutcomes vector of int, number of outcomes for each category
 #' @param nclass int, number of classes or clusters
 #'
-#' @return list with attributes vector and ok
-#'  * vector contains all initial probabilites as a vector, or a flatten matrix
-#'    with the following dimensions
+#' @return list with attributes vector and ok, okay is true if probs.start is
+#' valid, other false and the providied probs.start is randomly generated and
+#' replaced
+#'  * the vector contains all initial probabilites as a vector, or a flatten
+#'    matrix with the following dimensions
 #'    * dim 0: for each outcome
 #'    * dim 1: for each category
 #'    * dim 2: for each cluster/class
 #'    * dim 3: for each repetition
 #'
 #' @noRd
-generate_initial_probs <- function(probs.start, nrep, ncategory,
-                                   noutcomes, nclass) {
-    probs.start.ok <- is_probs_start_ok(
-        probs.start, ncategory, noutcomes, nclass
-    )
+check_and_generate_initial_probs <- function(
+    probs.start, nrep, noutcomes, nclass) {
+    probs.start.ok <- is_probs_start_ok(probs.start, noutcomes, nclass)
 
     # perpare initial values
-    probs_list <- list()
     probs_vector <- c()
     irep <- 1
 
     # if can use user's provided probs.start
     if (probs.start.ok) {
-        probs_list[[1]] <- poLCAParallel.vectorize(probs.start)
+        probs_list_i <- poLCAParallel.vectorize(probs.start)
         probs_vector <- c(
             probs_vector,
-            probs_list[[1]]$vecprobs
+            probs_list_i$vecprobs
         )
         irep <- irep + 1
     }
@@ -469,18 +467,9 @@ generate_initial_probs <- function(probs.start, nrep, ncategory,
     # generate random probabilities
     if (nrep > 1 || irep == 1) {
         for (repl in irep:nrep) {
-            probs <- list()
-            for (j in 1:ncategory) {
-                probs[[j]] <- matrix(
-                    runif(nclass * noutcomes[j]),
-                    nrow = nclass, ncol = noutcomes[j]
-                )
-                probs[[j]] <- probs[[j]] / rowSums(probs[[j]])
-            }
-            probs_list[[repl]] <- poLCAParallel.vectorize(probs)
             probs_vector <- c(
                 probs_vector,
-                probs_list[[repl]]$vecprobs
+                random_vectorized_probs(noutcomes, nclass)
             )
         }
     }
@@ -488,18 +477,42 @@ generate_initial_probs <- function(probs.start, nrep, ncategory,
     return(list(vector = probs_vector, ok = probs.start.ok))
 }
 
+#' Generate random initial probabilities
+#'
+#' @param noutcomes vector of int, number of outcomes for each category
+#' @param nclass int, number of classes or clusters
+#'
+#' @return vector of outcome probabilities, a flattened list of matrices
+#'     * dim 0: for each outcome
+#'     * dim 1: for each category
+#'     * dim 2: for each cluster
+#'     * in other words, imagine a nested loop, from outer to inner:
+#'         * for each cluster, for each category, for each outcome
+random_vectorized_probs <- function(noutcomes, nclass) {
+    probs <- list()
+    for (j in seq_len((length(noutcomes)))) {
+        probs[[j]] <- matrix(
+            runif(nclass * noutcomes[j]),
+            nrow = nclass, ncol = noutcomes[j]
+        )
+        probs[[j]] <- probs[[j]] / rowSums(probs[[j]])
+    }
+    probs_list_i <- poLCAParallel.vectorize(probs)
+    return(probs_list_i$vecprobs)
+}
+
 # Check if the user's provided probs.start is valid
 #'
 #' @param probs.start A list of matrices of class-conditional response
 #' probabilities, see poLCA for further detailsr
-#' @param ncategory int, number of categories
 #' @param noutcomes vector of int, number of outcomes for each category
 #' @param nclass int, number of classes or clusters
 #'
 #' @return boolean, true if probs.start is valid
 #'
 #' @noRd
-is_probs_start_ok <- function(probs.start, ncategory, noutcomes, nclass) {
+is_probs_start_ok <- function(probs.start, noutcomes, nclass) {
+    ncategory = length(noutcomes)
     if (is.null(probs.start)) {
         return(FALSE)
     }
