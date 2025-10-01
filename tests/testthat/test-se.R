@@ -14,7 +14,7 @@
 test_non_regression_se <- function(n_data, n_outcomes, n_cluster,
                                    prob_na, is_smooth) {
   features <- matrix(0, nrow = n_data, ncol = 1)
-  responses <- as.data.frame(random_response(n_data, n_outcomes, prob_na))
+  responses <- random_response(n_data, n_outcomes, prob_na)
 
   probs <- random_unvectorized_probs(n_outcomes, n_cluster)
 
@@ -57,7 +57,7 @@ test_regression_se <- function(n_data, n_feature, n_outcomes, n_cluster,
     nrow = n_data, ncol = n_feature
   )
 
-  responses <- as.data.frame(random_response(n_data, n_outcomes, prob_na))
+  responses <- random_response(n_data, n_outcomes, prob_na)
 
   probs <- random_unvectorized_probs(n_outcomes, n_cluster)
 

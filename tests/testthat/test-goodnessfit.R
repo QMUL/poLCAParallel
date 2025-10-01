@@ -10,7 +10,7 @@
 #' @param prob_na Probability of missing data
 test_goodnessfit <- function(n_data, n_outcomes, n_cluster,
                              prob_na) {
-  responses <- as.data.frame(random_response(n_data, n_outcomes, prob_na))
+  responses <- random_response(n_data, n_outcomes, prob_na)
   probs <- random_unvectorized_probs(n_outcomes, n_cluster)
 
   prior <- runif(n_cluster)

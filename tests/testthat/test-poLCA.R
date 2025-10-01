@@ -53,11 +53,11 @@ test_polca_em_algorithm <- function(polca, n_data, n_outcomes, n_cluster, n_rep,
 #'
 #' @param polca The poLCA object to test
 #' @param n_data Number of data points
-#' @param n_features Number of features
+#' @param n_feature Number of features
 #' @param n_outcomes Vector of integers, number of outcomes for each category
 #' @param n_cluster Number of clusters fitted
 #' @param na_rm Logical, if to remove NA responses
-test_polca_other <- function(polca, n_data, n_features, n_outcomes, n_cluster,
+test_polca_other <- function(polca, n_data, n_feature, n_outcomes, n_cluster,
                              na_rm) {
   # if remove NA responses, use Nobs, number of fully observed data
   if (na_rm) {
@@ -67,7 +67,7 @@ test_polca_other <- function(polca, n_data, n_features, n_outcomes, n_cluster,
 
   # test design matrix of features
   expect_identical(nrow(polca$x), as.integer(n_data))
-  expect_identical(ncol(polca$x), as.integer(n_features + 1))
+  expect_identical(ncol(polca$x), as.integer(n_feature + 1))
   expect_identical(all(polca$x[, 1] == 1), TRUE)
 
   # test design matrix of responses
@@ -105,10 +105,8 @@ test_polca_other <- function(polca, n_data, n_features, n_outcomes, n_cluster,
 #' @param prob_na Probability of missing data
 test_non_regression <- function(n_data, n_outcomes, n_cluster, n_rep, na_rm,
                                 n_thread, maxiter, tol, prob_na) {
-  responses <- as.data.frame(random_response(n_data, n_outcomes, prob_na, NaN))
-  formula <- formula(
-    paste0("cbind(", paste(colnames(responses), collapse = ","), ")~1")
-  )
+  responses <- random_response(n_data, n_outcomes, prob_na, NaN)
+  formula <- get_non_regression_formula(responses)
   polca <- poLCAParallel::poLCA(formula, responses, n_cluster,
     maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
     verbose = FALSE, n.thread = n_thread
@@ -128,7 +126,7 @@ test_non_regression <- function(n_data, n_outcomes, n_cluster, n_rep, na_rm,
 #' then tested
 #'
 #' @param n_data Number of data points
-#' @param n_features Number of features
+#' @param n_feature Number of features
 #' @param n_outcomes Vector of integers, number of outcomes for each category
 #' @param n_cluster Number of clusters fitted
 #' @param n_rep Number of different initial values to try
@@ -137,28 +135,13 @@ test_non_regression <- function(n_data, n_outcomes, n_cluster, n_rep, na_rm,
 #' @param maxiter Number of iterations used in the EM algorithm
 #' @param tol Tolerance used in the EM algorithm
 #' @param prob_na Probability of missing data
-test_regression <- function(n_data, n_features, n_outcomes, n_cluster, n_rep,
+test_regression <- function(n_data, n_feature, n_outcomes, n_cluster, n_rep,
                             na_rm, n_thread, maxiter, tol, prob_na) {
-  # random features
-  features <- as.data.frame(matrix(rnorm(n_data * n_features),
-    nrow = n_data, ncol = n_features
-  ))
-  # column names to have prefix U, this ensures the column names are different
-  # from responses
-  colnames(features) <- paste0(rep("U", n_features), paste(seq_len(n_features)))
-
-  # random responses
-  responses <- as.data.frame(random_response(n_data, n_outcomes, prob_na, NaN))
-
+  features <- random_features(n_data, n_feature)
+  responses <- random_response(n_data, n_outcomes, prob_na, NaN)
+  formula <- get_regression_formula(responses, features)
   data <- cbind(responses, features)
 
-  formula <- formula(
-    paste0(
-      "cbind(", paste(colnames(responses), collapse = ","), ")~",
-      paste0(colnames(features), collapse = "+"),
-      ""
-    )
-  )
   polca <- poLCAParallel::poLCA(formula, data, n_cluster,
     maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
     verbose = FALSE, n.thread = n_thread
@@ -167,7 +150,7 @@ test_regression <- function(n_data, n_features, n_outcomes, n_cluster, n_rep,
   test_polca_em_algorithm(
     polca, n_data, n_outcomes, n_cluster, n_rep, na_rm, maxiter
   )
-  test_polca_other(polca, n_data, n_features, n_outcomes, n_cluster, na_rm)
+  test_polca_other(polca, n_data, n_feature, n_outcomes, n_cluster, na_rm)
   test_polca_goodnessfit(polca, n_outcomes)
   test_standard_error(polca, n_outcomes, n_cluster)
 
@@ -175,7 +158,7 @@ test_regression <- function(n_data, n_features, n_outcomes, n_cluster, n_rep,
   # one extra feature as poLCA adds an intercept term
   # one less cluster as only need (n_cluster - 1) probabilities to work out the
   # remaining one
-  expect_identical(nrow(polca$coeff), as.integer(n_features + 1))
+  expect_identical(nrow(polca$coeff), as.integer(n_feature + 1))
   expect_identical(ncol(polca$coeff), as.integer(n_cluster - 1))
 }
 
@@ -204,10 +187,8 @@ test_reproduce_non_regression <- function(n_data, n_outcomes, n_cluster, n_rep,
                                           prob_na, seed) {
   equal_tol <- 1e1 * sqrt(.Machine$double.eps)
 
-  responses <- as.data.frame(random_response(n_data, n_outcomes, prob_na, NaN))
-  formula <- formula(
-    paste0("cbind(", paste(colnames(responses), collapse = ","), ")~1")
-  )
+  responses <- random_response(n_data, n_outcomes, prob_na, NaN)
+  formula <- get_non_regression_formula(responses)
 
   set.seed(seed)
   polca_og <- poLCA::poLCA(formula, responses, n_cluster,
