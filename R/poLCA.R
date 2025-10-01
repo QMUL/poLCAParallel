@@ -394,21 +394,21 @@ poLCA <- function(formula,
 #'
 #' @noRd
 extract_data <- function(formula, data, na.rm) {
-    mframe <- model.frame(formula, data, na.action = NULL)
-    mf <- model.response(mframe)
+    mframe <- stats::model.frame(formula, data, na.action = NULL)
+    mf <- stats::model.response(mframe)
     if (any(mf < 1, na.rm = TRUE) || any(round(mf) != mf, na.rm = TRUE)) {
         stop("\n ALERT: some manifest variables contain values that are not
               positive integers. For poLCA to run, please recode categorical
               outcome variables to increment from 1 to the maximum number of
               outcome categories for each variable. \n\n")
     }
-    data <- data[rowSums(is.na(model.matrix(formula, mframe))) == 0, ]
+    data <- data[rowSums(is.na(stats::model.matrix(formula, mframe))) == 0, ]
     if (na.rm) {
-        mframe <- model.frame(formula, data)
-        y <- model.response(mframe)
+        mframe <- stats::model.frame(formula, data)
+        y <- stats::model.response(mframe)
     } else {
-        mframe <- model.frame(formula, data, na.action = NULL)
-        y <- model.response(mframe)
+        mframe <- stats::model.frame(formula, data, na.action = NULL)
+        y <- stats::model.response(mframe)
         y[is.na(y)] <- 0
     }
     if (any(sapply(lapply(as.data.frame(y), table), length) == 1)) {
@@ -416,7 +416,7 @@ extract_data <- function(formula, data, na.rm) {
         cat("\n ALERT: at least one manifest variable contained only one
              outcome category, and has been removed from the analysis. \n\n")
     }
-    x <- model.matrix(formula, mframe)
+    x <- stats::model.matrix(formula, mframe)
     return(list(x = x, y = y))
 }
 
@@ -492,7 +492,7 @@ random_vectorized_probs <- function(noutcomes, nclass) {
     probs <- list()
     for (j in seq_len((length(noutcomes)))) {
         probs[[j]] <- matrix(
-            runif(nclass * noutcomes[j]),
+            stats::runif(nclass * noutcomes[j]),
             nrow = nclass, ncol = noutcomes[j]
         )
         probs[[j]] <- probs[[j]] / rowSums(probs[[j]])

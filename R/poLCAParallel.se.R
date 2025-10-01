@@ -24,8 +24,8 @@ poLCAParallel.se <- function(polca, is_smooth = FALSE) {
   formula <- formula(
     paste0("cbind(", paste(colnames(y), collapse = ","), ")~1")
   )
-  mframe <- model.frame(formula, y, na.action = NULL)
-  responses <- model.response(mframe)
+  mframe <- stats::model.frame(formula, y, na.action = NULL)
+  responses <- stats::model.response(mframe)
   responses[is.na(responses)] <- 0
 
   features <- as.matrix(polca$x)

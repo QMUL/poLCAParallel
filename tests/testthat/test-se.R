@@ -21,7 +21,7 @@ test_non_regression_se <- function(n_data, n_outcomes, n_cluster,
   # random prior
   # the prior is the same for each data point in the non-regression problem
   # so use rep()
-  prior <- runif(n_cluster)
+  prior <- stats::runif(n_cluster)
   prior <- prior / sum(prior)
   prior <- matrix(rep(prior, each = n_data), nrow = n_data, ncol = n_cluster)
 
@@ -53,7 +53,7 @@ test_non_regression_se <- function(n_data, n_outcomes, n_cluster,
 #' standard errors
 test_regression_se <- function(n_data, n_feature, n_outcomes, n_cluster,
                                prob_na, is_smooth) {
-  features <- matrix(rnorm(n_data * n_feature),
+  features <- matrix(stats::rnorm(n_data * n_feature),
     nrow = n_data, ncol = n_feature
   )
 

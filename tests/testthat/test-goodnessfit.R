@@ -13,7 +13,7 @@ test_goodnessfit <- function(n_data, n_outcomes, n_cluster,
   responses <- random_response(n_data, n_outcomes, prob_na)
   probs <- random_unvectorized_probs(n_outcomes, n_cluster)
 
-  prior <- runif(n_cluster)
+  prior <- stats::runif(n_cluster)
   prior <- prior / sum(prior)
 
   polca <- list(

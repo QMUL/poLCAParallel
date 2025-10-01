@@ -15,7 +15,7 @@ function(x, ...) {
             disp <- data.frame(coeff=round(x$coeff[,(r-1)],5),
                                se=round(x$coeff.se[,(r-1)],5),
                                tval=round(x$coeff[,(r-1)]/x$coeff.se[,(r-1)],3),
-                               pr=round(1-(2*abs(pt(x$coeff[,(r-1)]/x$coeff.se[,(r-1)],x$resid.df)-0.5)),3))
+                               pr=round(1-(2*abs(stats::pt(x$coeff[,(r-1)]/x$coeff.se[,(r-1)],x$resid.df)-0.5)),3))
             colnames(disp) <- c("Coefficient"," Std. error"," t value"," Pr(>|t|)")
             print(disp)
             cat("========================================================= \n")
@@ -35,6 +35,6 @@ function(x, ...) {
     if (x$npar>x$N) cat("ALERT: number of parameters estimated (",x$npar,") exceeds number of observations (",x$N,") \n \n")
     if (x$resid.df<0) cat("ALERT: negative degrees of freedom; respecify model \n \n")
     if (x$eflag) cat("ALERT: estimation algorithm automatically restarted with new initial values \n \n")
-    flush.console()
+    utils::flush.console()
     invisible(x)
 }

@@ -1,13 +1,13 @@
 poLCA.simdata <-
 function(N=5000,probs=NULL,nclass=2,ndv=4,nresp=NULL,x=NULL,niv=0,b=NULL,P=NULL,missval=FALSE,pctmiss=NULL) {
     if (is.null(probs)) {
-        if (is.null(nresp)) { nresp <- ceiling(runif(ndv,min=1,max=5)) }
+        if (is.null(nresp)) { nresp <- ceiling(stats::runif(ndv,min=1,max=5)) }
         if (!is.null(P))  { nclass <- length(P) }
         if (!is.null(b)) { nclass <- ncol(b)+1 }
         ndv <- length(nresp)
         probs <- list()
         for(i in 1:ndv) {
-            probs[[i]] <- matrix(runif(nclass*nresp[i]),nrow=nclass,ncol=nresp[i])
+            probs[[i]] <- matrix(stats::runif(nclass*nresp[i]),nrow=nclass,ncol=nresp[i])
             probs[[i]] <- probs[[i]]/rowSums(probs[[i]])
         }
     } else {
@@ -15,7 +15,7 @@ function(N=5000,probs=NULL,nclass=2,ndv=4,nresp=NULL,x=NULL,niv=0,b=NULL,P=NULL,
         nclass <- nrow(probs[[1]])
         nresp <- sapply(probs,ncol)
     }
-    if (nclass==1) { 
+    if (nclass==1) {
         niv <- 0
         b <- NULL
         P <- 1
@@ -34,13 +34,13 @@ function(N=5000,probs=NULL,nclass=2,ndv=4,nresp=NULL,x=NULL,niv=0,b=NULL,P=NULL,
         }
         if (!is.null(b)) { niv <- nrow(b)-1 }
         if (niv > 0) {
-            if (is.null(x)) { x <- matrix(rnorm(N*niv),nrow=N,ncol=niv) }
+            if (is.null(x)) { x <- matrix(stats::rnorm(N*niv),nrow=N,ncol=niv) }
             colnames(x) <- paste("X",c(1:niv),sep="")
-            if (is.null(b)) { b <- matrix(round(runif(((nclass-1)*(niv+1)),min=-2,max=2)),nrow=(niv+1)) }
+            if (is.null(b)) { b <- matrix(round(stats::runif(((nclass-1)*(niv+1)),min=-2,max=2)),nrow=(niv+1)) }
             prior <- poLCA.updatePrior(c(b),cbind(1,x),nclass)
         } else {
             if (nrow(probs[[1]]) != length(P)) {
-                P <- runif(nclass)
+                P <- stats::runif(nclass)
                 P <- P/sum(P)
             }
             prior <- matrix(P,byrow=TRUE,nrow=N,ncol=nclass)
@@ -52,8 +52,8 @@ function(N=5000,probs=NULL,nclass=2,ndv=4,nresp=NULL,x=NULL,niv=0,b=NULL,P=NULL,
     colnames(y) <- paste("Y",c(1:ndv),sep="")
     if (niv > 0) { P <- colMeans(poLCA.postClass.C(prior,poLCA.vectorize(probs),y)) }
     if (missval) {
-        if (is.null(pctmiss)) pctmiss <- runif(1,min=0.05,max=0.4)
-        make.na <- cbind(ceiling(runif(round(pctmiss*N*ndv),min=0,max=N)),ceiling(runif(round(pctmiss*N*ndv),min=0,max=ndv)))
+        if (is.null(pctmiss)) pctmiss <- stats::runif(1,min=0.05,max=0.4)
+        make.na <- cbind(ceiling(stats::runif(round(pctmiss*N*ndv),min=0,max=N)),ceiling(stats::runif(round(pctmiss*N*ndv),min=0,max=ndv)))
         y[make.na] <- NA
     }
     ret <- list()

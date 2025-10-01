@@ -13,7 +13,7 @@ random_response <- function(n_data, n_outcomes, prob_na = 0, na_encode = 0) {
     responses[, i] <- sample(n_outcomes[i], n_data, replace = TRUE)
   }
 
-  rand <- runif(n_data * length(n_outcomes))
+  rand <- stats::runif(n_data * length(n_outcomes))
   rand <- matrix(rand, nrow = n_data, ncol = length(n_outcomes))
   responses[rand < prob_na] <- na_encode
   responses <- as.data.frame(responses)
@@ -33,7 +33,7 @@ random_response <- function(n_data, n_outcomes, prob_na = 0, na_encode = 0) {
 #' @return Data frame of features, dim 1 for each data point, dim 2 for each
 #' feature
 random_features <- function(n_data, n_feature) {
-  features <- as.data.frame(matrix(rnorm(n_data * n_feature),
+  features <- as.data.frame(matrix(stats::rnorm(n_data * n_feature),
     nrow = n_data, ncol = n_feature
   ))
   colnames(features) <- paste0(rep("U", n_feature), paste(seq_len(n_feature)))
@@ -110,7 +110,7 @@ random_unvectorized_probs <- function(n_outcomes, n_cluster) {
 #' @return Matrix of cluster probabilities, dim 1 for each data point, dim 2 for
 #' each cluster
 random_cluster_probs <- function(n_data, n_cluster) {
-  probs <- runif(n_data * n_cluster)
+  probs <- stats::runif(n_data * n_cluster)
   probs <- matrix(probs, nrow = n_data, ncol = n_cluster)
   probs <- probs / matrix(
     rep(rowSums(probs), n_cluster),

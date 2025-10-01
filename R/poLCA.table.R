@@ -1,7 +1,7 @@
 poLCA.table <-
 function (formula, condition=NULL, lc) {
     y <- lc$y
-    mf <- as.data.frame(mapply(as.numeric,model.frame(formula, y, na.action=NULL)))
+    mf <- as.data.frame(mapply(as.numeric,stats::model.frame(formula, y, na.action=NULL)))
     ret <- NULL
     trap <- FALSE
     if (any(condition <= 0) | any(condition > apply(y[names(condition)], 2, max, na.rm = T))) {
@@ -38,7 +38,7 @@ function (formula, condition=NULL, lc) {
                 pc.col <- NULL
                 for (i1 in 1:max(mf[, 3 - ord],na.rm=T)) {
                   for (i2 in 1:max(mf[, ord],na.rm=T)) {
-                    pc.col <- c(pc.col, sum(predcell[yc[, which(names(y) %in% names(mf)[3 - ord])] == i1 & 
+                    pc.col <- c(pc.col, sum(predcell[yc[, which(names(y) %in% names(mf)[3 - ord])] == i1 &
                                                      yc[, which(names(y) %in% names(mf)[ord])] == i2]))
                   }
                 }
