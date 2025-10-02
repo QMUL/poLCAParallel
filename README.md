@@ -64,32 +64,23 @@ poLCA uses expectation-maximization and Newton-Raphson algorithms to find
 maximum likelihood estimates of the parameters of the latent class and latent
 class regression models.
 
-## Recommended Prerequisites
-
-The following prerequisites are recommended to be installed:
-
-* R packages for installing and compiling:
-  * [devtools](https://cran.r-project.org/web/packages/devtools/index.html)
-  * [Rcpp](https://cran.r-project.org/web/packages/Rcpp)
-  * [RcppArmadillo](https://cran.r-project.org/web/packages/RcppArmadillo)
-  * [roxygen2](https://cran.r-project.org/web/packages/roxygen2/index.html)
-* Dependent R packages:
-  * [MASS](https://cran.r-project.org/web/packages/MASS/index.html)
-  * [parallel](https://www.rdocumentation.org/packages/parallel/)
-  * [poLCA](https://cran.r-project.org/web/packages/poLCA/index.html)
-  * [scatterplot3d](https://cran.r-project.org/web/packages/scatterplot3d/)
-
 ## Recommended Installation Instructions
 
 The easiest way to install poLCAParallel is to use R with
-[devtools](https://cran.r-project.org/web/packages/devtools/index.html).
+[remotes](https://cran.r-project.org/web/packages/remotes/index.html).
 
 ### Install From GitHub
 
-Run the following in R
+Run the following in R to install the latest version
 
 ```r
-devtools::install_github("QMUL/poLCAParallel@package")
+remotes::install_github("QMUL/poLCAParallel@package")
+```
+
+or for a previous version, for example,
+
+```r
+remotes::install_github("QMUL/poLCAParallel@v1.2.4")
 ```
 
 ### Install From Releases
@@ -97,7 +88,7 @@ devtools::install_github("QMUL/poLCAParallel@package")
 Download the `.zip` or `.tar.gz` file from the releases. Install it in R using
 
 ```r
-devtools::install_local(<PATH TO .zip OR .tar.gz FILE>)
+remotes::install_local(<PATH TO .zip OR .tar.gz FILE>)
 ```
 
 ## User's Notes
@@ -185,14 +176,14 @@ An example use of a bootstrap likelihood ratio test is shown in `exec/3_blrt.R`.
 ### Installing as a Developer
 
 The following installation instructions are useful if you wish to develop the
-code and install a locally modified version of the package. The instructions do
-not require the R package devtools.
+code and install a locally modified version of the package.
 
-Requires the R packages for compiling:
+Requires the R packages for compiling and testing:
 
 * [Rcpp](https://cran.r-project.org/web/packages/Rcpp)
 * [RcppArmadillo](https://cran.r-project.org/web/packages/RcppArmadillo)
 * [roxygen2](https://cran.r-project.org/web/packages/roxygen2/index.html)
+* [testthat](https://cran.r-project.org/web/packages/testthat/index.html)
 
 Requires the dependent R packages:
 
@@ -315,7 +306,7 @@ R -e "roxygen2::roxygenize('poLCAParallel')"
 
 shall not be included in the `master` branch. Instead, they shall be in the
 `package` branch so that this package can be installed using
-`devtools::install_github("QMUL/poLCAParallel@package")`. This is to avoid
+`remotes::install_github("QMUL/poLCAParallel@package")`. This is to avoid
 having duplicate documentation and generated code on the `master` branch.
 
 Semantic versioning is used and tagged. Tags on the `master` branch shall have

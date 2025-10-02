@@ -2,7 +2,7 @@ Bootstrap: docker
 From: ubuntu:24.04
 
 %environment
-    export LC_ALL=C
+    export LC_ALL=C.UTF-8
     export R_LIBS_USER=""
     export DEBIAN_FRONTEND="noninteractive"
     export DEBCONF_NONINTERACTIVE_SEEN=true
