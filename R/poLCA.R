@@ -118,7 +118,7 @@
 #' @param verbose Logical, indicating whether `poLCA` should output to the
 #'     screen the results of the model. If `FALSE`, no output is produced.
 #'     The default is `TRUE`.
-#' @param cal.se Logical, indicating whether `poLCA` should calculate the
+#' @param calc.se Logical, indicating whether `poLCA` should calculate the
 #'     standard errors of the estimated class-conditional response probabilities
 #'     and mixing proportions. default is `TRUE`.
 #' @param calc.chisq Logical, indicate whether to calculate the goodness of fit
