@@ -21,6 +21,9 @@ From: ubuntu:24.04
     # R and dependent packages
     apt install -y r-base=4.3.3-2build2
 
+    # required for R CMD check
+    apt install -y texlive-full
+
     # 'MASS' version 7.3-60.2 is in the repositories but depends on R (>= 4.4.0)
     # 'MASS' version 7.3-60.2 is in the repositories but depends on R (>= 4.5)
     cd /tmp
@@ -75,6 +78,9 @@ From: ubuntu:24.04
     ./test_polca_parallel
     cd ..
     R -e "testthat::test_local()"
+    cd /tmp
+    R CMD build /usr/src/poLCAParallel
+    R CMD check poLCAParallel_*.tar.gz
 
 %runscript
     R "$@"
