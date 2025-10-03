@@ -10,7 +10,7 @@ The data set also includes potential covariates \code{VOTE3}, the respondent's 2
 \code{VOTE3} is coded as (1) Gore; (2) Bush; (3) Other.
 
 \code{EDUC} is coded as (1) 8 grades or less; (2) 9-11 grades, no further schooling; (3) High school diploma or equivalency; (4) More than 12 years of schooling, no higher degree; (5) Junior or community college level degree; (6) BA level degrees, no advanced degree; (7) Advanced degree.
-   
+
 \code{GENDER} is coded as (1) Male; (2) Female.
 
 \code{PARTY} is coded as (1) Strong Democrat; (2) Weak Democrat; (3) Independent-Democrat; (4) Independent-Independent; (5) Independent-Republican; (6) Weak Republican; (7) Strong Republican.
@@ -30,7 +30,7 @@ nes3 <- poLCA(f,election,nclass=3)  # log-likelihood: -16714.66
 # Three-class model with a single covariate (party)
 f2a <- cbind(MORALG,CARESG,KNOWG,LEADG,DISHONG,INTELG,
              MORALB,CARESB,KNOWB,LEADB,DISHONB,INTELB)~PARTY
-nes2a <- poLCA(f2a,election,nclass=3,nrep=5)    # log-likelihood: -16222.32 
+nes2a <- poLCA(f2a,election,nclass=3,nrep=5)    # log-likelihood: -16222.32
 pidmat <- cbind(1,c(1:7))
 exb <- exp(pidmat \%*\% nes2a$coeff)
 matplot(c(1:7),(cbind(1,exb)/(1+rowSums(exb))),ylim=c(0,1),type="l",

@@ -18,5 +18,7 @@ RoxygenNote: 7.3.2
 Encoding: UTF-8
 Suggests:
     testthat (>= 3.0.0),
-    roxygen2
+    roxygen2,
+    usethis
+Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3

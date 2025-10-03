@@ -1,3 +1,4 @@
+#' @export
 plot.poLCA <-
 function(x, ...) {
     K.j <- sapply(x$probs,ncol)

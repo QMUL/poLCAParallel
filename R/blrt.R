@@ -35,11 +35,11 @@ blrt <- function(model_null, model_alt, n_bootstrap,
 
   # extract fitted variables from the null model
   prior_null <- model_null$P
-  prob_null <- poLCAParallel::poLCAParallel.vectorize(model_null$probs)$vecprobs
+  prob_null <- poLCAParallel.vectorize(model_null$probs)$vecprobs
 
   # extract fitted variables from the alt model
   prior_alt <- model_alt$P
-  prob_alt <- poLCAParallel::poLCAParallel.vectorize(model_alt$probs)$vecprobs
+  prob_alt <- poLCAParallel.vectorize(model_alt$probs)$vecprobs
 
   # extract other information, use the null model
   n_data <- model_null$N

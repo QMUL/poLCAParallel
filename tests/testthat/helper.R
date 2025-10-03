@@ -95,10 +95,10 @@ get_regression_formula <- function(responses, features) {
 #'   * classes: integer, number of classes (or clusters)
 random_unvectorized_probs <- function(n_outcomes, n_cluster) {
   probs <- list(
-    vecprobs = random_vectorized_probs(n_outcomes, n_cluster),
+    vecprobs = poLCAParallel:::random_vectorized_probs(n_outcomes, n_cluster),
     numChoices = n_outcomes, classes = n_cluster
   )
-  probs <- poLCAParallel.unvectorize(probs)
+  probs <- poLCAParallel:::poLCAParallel.unvectorize(probs)
   return(probs)
 }
 

@@ -14,7 +14,7 @@ Goodman, Leo A. 2002. "Latent Class Analysis; The Empirical Study of Latent Type
 }
 \examples{
 ##
-## Replication of latent class models in Goodman (2002), 
+## Replication of latent class models in Goodman (2002),
 ## Tables 5b, 5c, and 6.
 ##
 data(values)

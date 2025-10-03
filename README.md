@@ -184,6 +184,7 @@ Requires the R packages for compiling and testing:
 * [RcppArmadillo](https://cran.r-project.org/web/packages/RcppArmadillo)
 * [roxygen2](https://cran.r-project.org/web/packages/roxygen2/index.html)
 * [testthat](https://cran.r-project.org/web/packages/testthat/index.html)
+* [usethis](https://cloud.r-project.org/web/packages/usethis/index.html)
 
 Requires the dependent R packages:
 
@@ -198,18 +199,25 @@ Git clone this repository
 git clone https://github.com/QMUL/poLCAParallel.git
 ```
 
-Run the following to generate additional code and documentation so that the
-package can be compiled correctly
+and change directory into it
 
 ```bash
-R -e "Rcpp::compileAttributes('poLCAParallel')"
-R -e "roxygen2::roxygenize('poLCAParallel')"
+cd poLCAParallel
+```
+
+From there, in the repository root, run the following to generate additional
+code and documentation so that the package can be compiled correctly
+
+```bash
+R -e "usethis::use_namespace()"
+R -e "Rcpp::compileAttributes()"
+R -e "roxygen2::roxygenize()"
 ```
 
 Install the package using
 
 ```bash
-R CMD INSTALL --preclean --no-multiarch poLCAParallel
+R CMD INSTALL --preclean --no-multiarch .
 ```
 
 ### Testing

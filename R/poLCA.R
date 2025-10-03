@@ -203,7 +203,7 @@
 #'              MORALB,CARESB,KNOWB,LEADB,DISHONB,INTELB)~PARTY
 #' nes2a <- poLCA(f2a,election,nclass=3,nrep=5)    # log-likelihood: -16222.32
 #' pidmat <- cbind(1,c(1:7))
-#' exb <- exp(pidmat \%*\% nes2a$coeff)
+#' exb <- exp(pidmat %*% nes2a$coeff)
 #' matplot(c(1:7),(cbind(1,exb)/(1+rowSums(exb))),ylim=c(0,1),type="l",
 #'     main="Party ID as a predictor of candidate affinity class",
 #'     xlab="Party ID: strong Democratic (1) to strong Republican (7)",
@@ -488,6 +488,8 @@ check_and_generate_initial_probs <- function(
 #'     * dim 2: for each cluster
 #'     * in other words, imagine a nested loop, from outer to inner:
 #'         * for each cluster, for each category, for each outcome
+#'
+#' @noRd
 random_vectorized_probs <- function(noutcomes, nclass) {
     probs <- list()
     for (j in seq_len((length(noutcomes)))) {
@@ -549,7 +551,7 @@ is_probs_start_ok <- function(probs.start, noutcomes, nclass) {
 #' @param nclass int, number of classes or clusters
 #'
 #' @return list of length n_category. For the ith entry, it contains a
-#' matrix of outcome probabilities with dimensions n_class x n_outcomes[i]
+#' matrix of outcome probabilities with dimensions n_class x n_outcomes\[i\]
 #'
 #' @noRd
 unvectorize_probs <- function(probs_vec, noutcomes, nclass) {

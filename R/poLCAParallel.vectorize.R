@@ -5,7 +5,7 @@
 #' the dimensions swapped to improve cache efficiency in the C++ code.
 #'
 #' @param probs list of length n_category. For the ith entry, it contains a
-#' matrix of outcome probabilities with dimensions n_class x n_outcomes[i]
+#' matrix of outcome probabilities with dimensions n_class x n_outcomes\[i\]
 #' @return a list containing:
 #'   * vecprobs: vector of outcome probabilities, a flattened list of matrices
 #'     * dim 0: for each outcome

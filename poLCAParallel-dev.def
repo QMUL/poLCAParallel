@@ -24,6 +24,10 @@ From: ubuntu:24.04
     # required for R CMD check
     apt install -y texlive-full
 
+    # required for usethis
+    apt install -y libssl-dev
+    apt install -y libcurl4-openssl-dev
+
     # 'MASS' version 7.3-60.2 is in the repositories but depends on R (>= 4.4.0)
     # 'MASS' version 7.3-60.2 is in the repositories but depends on R (>= 4.5)
     cd /tmp
@@ -36,18 +40,20 @@ From: ubuntu:24.04
     R -e "remotes::install_version('poLCA', version='1.6.0.1')"
     R -e "remotes::install_version('scatterplot3d', version='0.3-44')"
     R -e "remotes::install_version('testthat', version='3.2.3')"
+    R -e "remotes::install_version('usethis', version='3.2.1')"
 
     R CMD INSTALL MASS*.tar.gz
 
     # poLCAParallel
     cd /usr/src/
     git clone https://github.com/QMUL/poLCAParallel.git
-
-    R -e "Rcpp::compileAttributes('poLCAParallel')"
-    R -e "roxygen2::roxygenize('poLCAParallel')"
-    R CMD INSTALL --preclean --no-multiarch poLCAParallel
-
     cd poLCAParallel
+
+    R -e "usethis::use_namespace()"
+    R -e "Rcpp::compileAttributes()"
+    R -e "roxygen2::roxygenize()"
+    R CMD INSTALL --preclean --no-multiarch .
+
     doxygen
 
     # Catch2

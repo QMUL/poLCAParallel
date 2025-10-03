@@ -1,3 +1,4 @@
+#' @export
 print.poLCA <-
 function(x, ...) {
     R <- length(x$P)
