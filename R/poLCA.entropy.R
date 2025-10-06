@@ -24,8 +24,8 @@
 #' @examples
 #' data(carcinoma)
 #' f <- cbind(A, B, C, D, E, F, G) ~ 1
-#' lca2 <- poLCA(f, carcinoma, nclass = 2)  # log-likelihood: -317.2568
-#' lca3 <- poLCA(f, carcinoma, nclass = 3)  # log-likelihood: -293.705
+#' lca2 <- poLCA(f, carcinoma, nclass = 2) # log-likelihood: -317.2568
+#' lca3 <- poLCA(f, carcinoma, nclass = 3) # log-likelihood: -293.705
 #' # log-likelihood: -289.2858
 #' lca4 <- poLCA(f, carcinoma, nclass = 4, nrep = 10, maxiter = 5000)
 #'
@@ -33,9 +33,9 @@
 #' log(prod(sapply(lca2$probs, ncol)))
 #'
 #' # Sample entropy ("plug-in" estimator, or MLE)
-#' p.hat <- lca2$predcell$observed/lca2$N
+#' p.hat <- lca2$predcell$observed / lca2$N
 #' H.hat <- -sum(p.hat * log(p.hat))
-#' H.hat   # 2.42
+#' H.hat # 2.42
 #'
 #' # Entropy of fitted latent class models
 #' poLCA.entropy(lca2)
@@ -43,11 +43,9 @@
 #' poLCA.entropy(lca4)
 #'
 #' @export
-
-poLCA.entropy <-
-function(lc) {
-    K.j <- sapply(lc$probs,ncol)
-    fullcell <- expand.grid(lapply(K.j,seq,from=1))
-    P.c <- poLCA.predcell(lc,fullcell)
-    return(-sum(P.c * log(P.c),na.rm=TRUE))
+poLCA.entropy <- function(lc) {
+  K.j <- sapply(lc$probs, ncol)
+  fullcell <- expand.grid(lapply(K.j, seq, from = 1))
+  P.c <- poLCA.predcell(lc, fullcell)
+  return(-sum(P.c * log(P.c), na.rm = TRUE))
 }

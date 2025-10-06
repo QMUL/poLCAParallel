@@ -23,7 +23,7 @@
 #' `probs`, giving the desired reordering of the latent classes.
 #'
 #' @returns A list of matrices containing the rearranged (by row)
-#'     class-conditional response probabilities.
+#'   class-conditional response probabilities.
 #'
 #' @examples
 #' ##
@@ -35,14 +35,15 @@
 #' data(cheating)
 #' f2 <- cbind(LIEEXAM, LIEPAPER, FRAUD, COPYEXAM) ~ GPA
 #' lc.ch <- poLCA(f2, cheating, nclass = 2, verbose = FALSE)
-#' probs.start.new <- poLCA.reorder(lc.ch$probs.start,
-#'                                  order(lc.ch$P, decreasing = TRUE))
+#' probs.start.new <- poLCA.reorder(
+#'   lc.ch$probs.start,
+#'   order(lc.ch$P, decreasing = TRUE)
+#' )
 #' lc.ch <- poLCA(f2, cheating, nclass = 2, probs.start = probs.start.new)
 #'
 #' @export
-poLCA.reorder <-
-function(probs,o.new) {
-    J <- length(probs)
-    for (j in 1:J) probs[[j]] <- probs[[j]][o.new,]
-    return(probs)
+poLCA.reorder <- function(probs, o.new) {
+  J <- length(probs)
+  for (j in 1:J) probs[[j]] <- probs[[j]][o.new, ]
+  return(probs)
 }
