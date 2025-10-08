@@ -86,8 +86,8 @@ class EmAlgorithmNanTemplate : public T {
    */
   void NormalWeightedSumProb(const std::size_t cluster_index) override;
 
-  [[nodiscard]] double PosteriorUnnormalize(
-      std::span<const int> responses_i, double prior,
+  [[nodiscard]] double Likelihood(
+      std::span<const int> responses_i,
       const arma::Col<double>& estimated_prob) const override;
 };
 

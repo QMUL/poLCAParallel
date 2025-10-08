@@ -100,9 +100,10 @@ void polca_parallel::GoodnessOfFit::CalcExpected(
       assert(m < outcome_prob_arma.n_cols);
       assert(m < prior.size());
       auto outcome_prob_col = outcome_prob_arma.unsafe_col(m);
-      // polca_parallel::PosteriorUnnormalize is located in em_algorithm
-      total_p += polca_parallel::PosteriorUnnormalize(
-          response_i_span, n_outcomes, outcome_prob_col, prior[m]);
+      // polca_parallel::Likelihood is located in em_algorithm
+      total_p += polca_parallel::Likelihood(response_i_span, n_outcomes,
+                                            outcome_prob_col) *
+                 prior[m];
     }
 
     iter->second.expected = total_p * static_cast<double>(this->n_obs_);

@@ -424,14 +424,12 @@ class EmAlgorithm {
   void EStep();
 
   /**
-   * Calculates the unnormalize posterior and set it to EmAlgorithm::posterior_
+   * Calculates the likelihood
    *
-   * Calculates the unnormalize posterior for a given cluster and assign it to
-   * EmAlgorithm::posterior_. See polca_parallel::PosteriorUnnormalize() for
-   * further information
+   * Calculates the likelihood. See polca_parallel::Likelihood() for further
+   * information
    *
    * @param responses_i vector of responses for a given cluster
-   * @param prior prior for a given cluster
    * @param estimated_prob the corresponding cluster's column view of
    * EmAlgorithm::estimated_prob_. A flattened list in the following order
    * <ul>
@@ -439,8 +437,8 @@ class EmAlgorithm {
    *   <li>dim 1: for each category</li>
    * </ul>
    */
-  [[nodiscard]] virtual double PosteriorUnnormalize(
-      std::span<const int> responses_i, double prior,
+  [[nodiscard]] virtual double Likelihood(
+      std::span<const int> responses_i,
       const arma::Col<double>& estimated_prob) const;
 
   /**
@@ -535,18 +533,10 @@ class EmAlgorithm {
 };
 
 /**
- * Calculates the unnormalize posterior, that is likelihood multiplied by
- * prior
- *
- * Calculates the unnormalize posterior, that is likelihood multiplied by
- * prior for a given data point and cluster. This corresponds to the
- * probability that this data point belongs to a given cluster given the
- * responses and outcome probabilities, up to a constant.
+ * Calculates the likelihood
  *
  * The likelihood is the product of outcome probabilities (or estimated in the
  * EM algorithm) which corresponds to the outcome responses.
- *
- * The prior (of the cluster) is given.
  *
  * It should be noted in the likelihood calculations, probabilities are
  * iteratively multiplied. To avoid underflow errors, a sum of log
@@ -563,13 +553,12 @@ class EmAlgorithm {
  *   <li>dim 0: for each outcome</li>
  *   <li>dim 1: for each category</li>
  * </ul>
- * @param prior the prior for this data point and cluster
- * @return the unnormalised posterior for this data point and cluster
+ * @return the likelihood
  */
 template <bool is_check_zero = false>
-[[nodiscard]] double PosteriorUnnormalize(
-    std::span<const int> responses_i, std::span<const std::size_t> n_outcomes,
-    const arma::Col<double>& estimated_prob, double prior);
+[[nodiscard]] double Likelihood(std::span<const int> responses_i,
+                                std::span<const std::size_t> n_outcomes,
+                                const arma::Col<double>& estimated_prob);
 
 }  // namespace polca_parallel
 

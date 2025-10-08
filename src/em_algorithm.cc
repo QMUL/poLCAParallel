@@ -210,13 +210,15 @@ void polca_parallel::EmAlgorithm::EStep() {
         i_data * this->n_outcomes_.size(), this->n_outcomes_.size());
     for (std::size_t i_cluster = 0; i_cluster < this->n_cluster_; ++i_cluster) {
       // access to posterior_ in this manner should result in cache misses
-      // however PosteriorUnnormalize() is designed for cache efficiency
+      // however Likelihood() is designed for cache efficiency
       double prior = this->GetPrior(i_data, i_cluster);
       std::size_t posterior_index = i_cluster * this->n_data_ + i_data;
       assert(posterior_index < this->posterior_.n_elem);
       assert(this->estimated_prob_.n_cols > i_cluster);
-      this->posterior_[posterior_index] = this->PosteriorUnnormalize(
-          responses_i, prior, this->estimated_prob_.unsafe_col(i_cluster));
+      this->posterior_[posterior_index] =
+          this->Likelihood(responses_i,
+                           this->estimated_prob_.unsafe_col(i_cluster)) *
+          prior;
     }
   }
 
@@ -225,11 +227,11 @@ void polca_parallel::EmAlgorithm::EStep() {
   this->ln_l_array_ = arma::log(this->ln_l_array_);  // log likelihood
 }
 
-double polca_parallel::EmAlgorithm::PosteriorUnnormalize(
-    std::span<const int> responses_i, double prior,
+double polca_parallel::EmAlgorithm::Likelihood(
+    std::span<const int> responses_i,
     const arma::Col<double>& estimated_prob) const {
-  return polca_parallel::PosteriorUnnormalize(responses_i, this->n_outcomes_,
-                                              estimated_prob, prior);
+  return polca_parallel::Likelihood(responses_i, this->n_outcomes_,
+                                    estimated_prob);
 }
 
 bool polca_parallel::EmAlgorithm::IsInvalidLikelihood(
@@ -310,18 +312,18 @@ void polca_parallel::EmAlgorithm::NormalWeightedSumProb(
   this->estimated_prob_.unsafe_col(cluster_index) /= normaliser;
 }
 
-template double polca_parallel::PosteriorUnnormalize<false>(
+template double polca_parallel::Likelihood<false>(
     std::span<const int> responses_i, std::span<const std::size_t> n_outcomes,
-    const arma::Col<double>& estimated_prob, double prior);
+    const arma::Col<double>& estimated_prob);
 
-template double polca_parallel::PosteriorUnnormalize<true>(
+template double polca_parallel::Likelihood<true>(
     std::span<const int> responses_i, std::span<const std::size_t> n_outcomes,
-    const arma::Col<double>& estimated_prob, double prior);
+    const arma::Col<double>& estimated_prob);
 
 template <bool is_check_zero>
-double polca_parallel::PosteriorUnnormalize(
-    std::span<const int> responses_i, std::span<const std::size_t> n_outcomes,
-    const arma::Col<double>& estimated_prob, double prior) {
+double polca_parallel::Likelihood(std::span<const int> responses_i,
+                                  std::span<const std::size_t> n_outcomes,
+                                  const arma::Col<double>& estimated_prob) {
   // designed for cache efficiency here
   // calculating the posterior probability up to a constant
   // P(cluster m | Y^{(i)})
@@ -359,5 +361,5 @@ double polca_parallel::PosteriorUnnormalize(
     // increment to point to the next category
     std::advance(estimated_prob_it, n_outcome);
   }
-  return likelihood * prior;
+  return likelihood;
 }
