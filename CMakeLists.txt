@@ -7,7 +7,7 @@ set(CMAKE_CXX_EXTENSIONS ON)
 include_directories(include)
 
 file(GLOB ALL_SRC_FILES CONFIGURE_DEPENDS src/*.cc)
-file(GLOB TEST_SOURCES CONFIGURE_DEPENDS tests/*.cc)
+file(GLOB TEST_SOURCES CONFIGURE_DEPENDS tests/Catch2/*.cc)
 list(FILTER ALL_SRC_FILES EXCLUDE REGEX ".*_rcpp\\.cc$")
 
 find_package(Armadillo REQUIRED)
@@ -22,4 +22,4 @@ add_executable(test_polca_parallel
   ${TEST_SOURCES}
 )
 target_link_libraries(test_polca_parallel PRIVATE armadillo LAPACK::LAPACK BLAS::BLAS Catch2::Catch2WithMain)
-target_include_directories(test_polca_parallel PRIVATE tests/)
+target_include_directories(test_polca_parallel PRIVATE tests/Catch2/)
