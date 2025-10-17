@@ -203,22 +203,24 @@ double polca_parallel::EmAlgorithm::GetPrior(
 }
 
 void polca_parallel::EmAlgorithm::EStep() {
-  for (std::size_t i_data = 0; i_data < this->n_data_; ++i_data) {
-    assert((i_data + 1) * this->n_outcomes_.size() <= this->responses_.size());
-
-    std::span<const int> responses_i = this->responses_.subspan(
-        i_data * this->n_outcomes_.size(), this->n_outcomes_.size());
-    for (std::size_t i_cluster = 0; i_cluster < this->n_cluster_; ++i_cluster) {
-      // access to posterior_ in this manner should result in cache misses
-      // however Likelihood() is designed for cache efficiency
-      double prior = this->GetPrior(i_data, i_cluster);
-      std::size_t posterior_index = i_cluster * this->n_data_ + i_data;
-      assert(posterior_index < this->posterior_.n_elem);
+  auto posterior = this->posterior_.begin();
+  for (std::size_t i_cluster = 0; i_cluster < this->n_cluster_; ++i_cluster) {
+    for (std::size_t i_data = 0; i_data < this->n_data_; ++i_data) {
+      assert((i_data + 1) * this->n_outcomes_.size() <=
+             this->responses_.size());
+      assert(posterior < this->posterior_.end());
       assert(this->estimated_prob_.n_cols > i_cluster);
-      this->posterior_[posterior_index] =
+
+      std::span<const int> responses_i = this->responses_.subspan(
+          i_data * this->n_outcomes_.size(), this->n_outcomes_.size());
+
+      double prior = this->GetPrior(i_data, i_cluster);
+
+      *posterior =
           this->Likelihood(responses_i,
                            this->estimated_prob_.unsafe_col(i_cluster)) *
           prior;
+      std::advance(posterior, 1);
     }
   }
 
