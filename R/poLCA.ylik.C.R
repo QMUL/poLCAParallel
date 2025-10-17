@@ -1,3 +1,4 @@
+#' \deprecated
 #' @noRd
 poLCA.ylik.C <- function(vp, y) {
   lik <- ylik(

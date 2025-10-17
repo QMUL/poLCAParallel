@@ -168,10 +168,11 @@ poLCA.simdata <- function(N = 5000, probs = NULL, nclass = 2, ndv = 4,
       }
       colnames(x) <- paste("X", c(1:niv), sep = "")
       if (is.null(b)) {
-        b <- matrix(round(stats::runif(((nclass - 1) * (niv + 1)),
-          min = -2, max = 2
-        )),
-        nrow = (niv + 1)
+        b <- matrix(
+          round(stats::runif(((nclass - 1) * (niv + 1)),
+            min = -2, max = 2
+          )),
+          nrow = (niv + 1)
         )
       }
       prior <- poLCA.updatePrior(c(b), cbind(1, x), nclass)
@@ -190,7 +191,14 @@ poLCA.simdata <- function(N = 5000, probs = NULL, nclass = 2, ndv = 4,
   }
   colnames(y) <- paste("Y", c(1:ndv), sep = "")
   if (niv > 0) {
-    P <- colMeans(poLCA.postClass.C(prior, poLCA.vectorize(probs), y))
+    probs_vectorized <- poLCAParallel.vectorize(probs)
+
+    posterior <- PosteriorRcpp(
+      t(y), probs_vectorized$vecprobs, probs_vectorized$numChoices, prior,
+      dim(y)[1], probs_vectorized$classes
+    )
+
+    P <- colMeans(posterior)
   }
   if (missval) {
     if (is.null(pctmiss)) pctmiss <- stats::runif(1, min = 0.05, max = 0.4)

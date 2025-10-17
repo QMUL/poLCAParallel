@@ -1,3 +1,4 @@
+#' \deprecated
 #' @noRd
 poLCA.unvectorize <- function(vp) {
   probs <- list()

@@ -1,3 +1,4 @@
+#' \deprecated
 #' @noRd
 poLCA.postClass.C <- function(prior, vp, y) {
   posterior <- double(dim(y)[1] * vp$classes)

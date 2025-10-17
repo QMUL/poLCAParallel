@@ -2,10 +2,12 @@
 
 #define MAX_CLASSES 500  // Maximum number of latent classes
 
+// @deprecated
 // function: hello
 //    A little test
 void hello(void) { Rprintf("Hello World\n"); }
 
+// @deprecated
 // Function: ylik
 //       A function to find the likelihood of an observation
 //       given a vector of responses and a set of
@@ -46,6 +48,7 @@ void ylik(double *probs, int *y, int *obs, int *items, int *numChoices,
   }
 }
 
+// @deprecated
 // Function: postclass
 //
 //           A function to find the posterior distribution over the

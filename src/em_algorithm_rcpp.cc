@@ -148,6 +148,7 @@ Rcpp::List EmAlgorithmRcpp(Rcpp::NumericMatrix features,
 
 // Original author's likelihood
 // (for some reason, cannot get the original C code to be recognised by R)
+// @deprecated
 // [[Rcpp::export]]
 Rcpp::NumericVector ylik(Rcpp::NumericVector probs, Rcpp::IntegerVector y,
                          int obs, int items, Rcpp::IntegerVector numChoices,
@@ -160,6 +161,7 @@ Rcpp::NumericVector ylik(Rcpp::NumericVector probs, Rcpp::IntegerVector y,
 
 // Original author's posterior
 // (for some reason, cannot get the original C code to be recognised by R)
+// @deprecated
 // [[Rcpp::export]]
 void postclass(Rcpp::NumericVector prior, Rcpp::NumericVector probs,
                Rcpp::IntegerVector y, int items, int obs,

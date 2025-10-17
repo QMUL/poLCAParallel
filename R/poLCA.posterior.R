@@ -90,6 +90,13 @@ poLCA.posterior <- function(lc, y, x = NULL) {
   } else {
     prior <- matrix(lc$P, nrow = nrow(y), ncol = length(lc$P), byrow = T)
   }
-  ret <- poLCA.postClass.C(prior, poLCA.vectorize(lc$probs), y)
+
+  probs <- poLCAParallel.vectorize(lc$probs)
+
+  ret <- PosteriorRcpp(
+    t(y), probs$vecprobs, probs$numChoices, prior, dim(y)[1],
+    probs$classes
+  )
+
   return(ret)
 }

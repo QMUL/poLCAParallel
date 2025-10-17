@@ -1,3 +1,4 @@
+#' \deprecated
 #' @noRd
 poLCA.vectorize <- function(probs) {
   classes <- nrow(probs[[1]])
