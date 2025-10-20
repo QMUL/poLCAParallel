@@ -233,7 +233,6 @@ poLCA <- function(formula,
                   calc.chisq = TRUE,
                   n.thread = parallel::detectCores(),
                   se.smooth = FALSE) {
-
   # nclass == 1 will use original code
   # poLCAParallel edits the original code for the nclass > 1 case
   if (nclass == 1) {
@@ -257,6 +256,7 @@ poLCA <- function(formula,
   nfeature <- ncol(features) # number of features
 
   # check probs.start and generate any additional probs if needed
+  # keep track if the user has provided probabilities or not
   probs.start <- check_and_generate_initial_probs(
     probs.start, nrep, noutcomes, nclass
   )
@@ -429,11 +429,11 @@ extract_data <- function(formula, data, na.rm) {
 
 #' Check and generate initial probabilities
 #'
-#' Checks the user provided probs.start and generate further initial
-#' probabilities for the EM algorithm. If probs.start is invalid, it will
+#' Checks the user provided `probs_start` and generate further initial
+#' probabilities for the EM algorithm. If `probs_start` is invalid, it will
 #' generate new initial probabilities
 #'
-#' @param probs.start A list of matrices of class-conditional response
+#' @param probs_start A list of matrices of class-conditional response
 #' probabilities, see poLCA for further details
 #' @param nrep int, number of repetitions (or initial values) requested by the
 #' user
@@ -441,35 +441,40 @@ extract_data <- function(formula, data, na.rm) {
 #' @param noutcomes vector of int, number of outcomes for each category
 #' @param nclass int, number of classes or clusters
 #'
-#' @return list with attributes vector and ok, okay is true if probs.start is
-#' valid, other false and the providied probs.start is randomly generated and
-#' replaced
-#'  * the vector contains all initial probabilites as a vector, or a flatten
-#'    matrix with the following dimensions
-#'    * dim 0: for each outcome
-#'    * dim 1: for each category
-#'    * dim 2: for each cluster/class
-#'    * dim 3: for each repetition
+#' @return list with attributes `vector` and `ok`
+#'  - `vector`: Vector contains `probs_start` (or replaced with new
+#'    probabilities if invalid or not provided) and further probabilities for
+#'    each repetition. It is a flatten matrix with the following dimensions
+#'    - dim 0: for each outcome
+#'    - dim 1: for each category
+#'    - dim 2: for each cluster/class
+#'    - dim 3: for each repetition
+#'  - `ok`: boolean, `TRUE` if `probs_start` is valid or default (NULL)
 #'
 #' @noRd
-check_and_generate_initial_probs <- function(probs.start,
+check_and_generate_initial_probs <- function(probs_start,
                                              nrep, noutcomes, nclass) {
-  probs.start.ok <- is_probs_start_ok(probs.start, noutcomes, nclass)
+  # keep track if the user has not provide probs
+  # if the user has not provide probs, probs_start is NULL
+  # then set the return value of `ok` to TRUE
+  has_provide_probs <- is.null(probs_start)
+
+  is_probs_valid <- check_probs(probs_start, noutcomes, nclass)
 
   # perpare initial values
   probs_vector <- c()
   irep <- 1
 
-  # if can use user's provided probs.start
-  if (probs.start.ok) {
-    probs_list_i <- poLCAParallel.vectorize(probs.start)
+  # if can use user's provided probs_start
+  if (is_probs_valid) {
+    probs_list_i <- poLCAParallel.vectorize(probs_start)
     probs_vector <- c(
       probs_vector,
       probs_list_i$vecprobs
     )
     irep <- irep + 1
   }
-  # if cannot use the user's provided probs.start, generate a new one
+  # if cannot use the user's provided probs_start, generate a new one
 
   # generate random probabilities
   if (nrep > 1 || irep == 1) {
@@ -481,7 +486,21 @@ check_and_generate_initial_probs <- function(probs.start,
     }
   }
 
-  return(list(vector = probs_vector, ok = probs.start.ok))
+  # if the user has not provided probs, set `is_probs_valid` to `TRUE`, this is
+  # used further down and set the attribute `probs.start.ok` later on, see
+  # `print.poLCA.R` where this is used
+  #
+  # Setting `is_probs_valid = FALSE` assumes the user has provided probs in the
+  # warning message in print.poLCA.R()
+  #
+  # Setting `is_probs_valid = TRUE` when the user has not provided probs is done
+  # to not alert the user when they have not provided probs. The alert is only
+  # needed if the user provided invalid probabilities
+  if (has_provide_probs) {
+    is_probs_valid <- TRUE
+  }
+
+  return(list(vector = probs_vector, ok = is_probs_valid))
 }
 
 #' Generate random initial probabilities
@@ -510,34 +529,34 @@ random_vectorized_probs <- function(noutcomes, nclass) {
   return(probs_list_i$vecprobs)
 }
 
-# Check if the user's provided probs.start is valid
+# Check if the user's provided probs_start is valid
 #'
-#' @param probs.start A list of matrices of class-conditional response
+#' @param probs_start A list of matrices of class-conditional response
 #' probabilities, see poLCA for further detailsr
 #' @param noutcomes vector of int, number of outcomes for each category
 #' @param nclass int, number of classes or clusters
 #'
-#' @return boolean, true if probs.start is valid
+#' @return boolean, true if probs_start is valid
 #'
 #' @noRd
-is_probs_start_ok <- function(probs.start, noutcomes, nclass) {
+check_probs <- function(probs_start, noutcomes, nclass) {
   ncategory <- length(noutcomes)
-  if (is.null(probs.start)) {
+  if (is.null(probs_start)) {
     return(FALSE)
   }
-  if (length(probs.start) != ncategory) {
+  if (length(probs_start) != ncategory) {
     return(FALSE)
   }
-  if (!is.list(probs.start)) {
+  if (!is.list(probs_start)) {
     return(FALSE)
   }
-  if (sum(sapply(probs.start, dim)[1, ] == nclass) != ncategory) {
+  if (sum(sapply(probs_start, dim)[1, ] == nclass) != ncategory) {
     return(FALSE)
   }
-  if (sum(sapply(probs.start, dim)[2, ] == noutcomes) != ncategory) {
+  if (sum(sapply(probs_start, dim)[2, ] == noutcomes) != ncategory) {
     return(FALSE)
   }
-  if (sum(round(sapply(probs.start, rowSums), 4) == 1) !=
+  if (sum(round(sapply(probs_start, rowSums), 4) == 1) !=
     (nclass * ncategory)) {
     return(FALSE)
   }
