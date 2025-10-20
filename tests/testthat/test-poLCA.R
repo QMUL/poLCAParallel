@@ -44,10 +44,10 @@ test_polca_em_algorithm <- function(polca, n_data, n_outcomes, n_cluster, n_rep,
 
 #' Test the other contents of a poLCA object
 #'
-#' Test thecpp outputted contents of a poLCA object not tested in
+#' Test the outputted contents of a poLCA object not tested in
 #' test_polca_em_algorithm(). It tests the R outputs (not Rcpp) created on
 #' poLCA() such as the features, responses, number of data points and time
-#' taken
+#' taken... etc
 #'
 #' Provide the poLCA object and parameters which are used to test the object
 #'
@@ -85,6 +85,8 @@ test_polca_other <- function(polca, n_data, n_feature, n_outcomes, n_cluster,
     )
   }
 
+  # test the types of attributes
+  is.logical(polca$probs.start.ok)
   inherits(polca$time, "difftime")
 }
 
@@ -162,6 +164,44 @@ test_regression <- function(n_data, n_feature, n_outcomes, n_cluster, n_rep,
   expect_identical(ncol(polca$coeff), as.integer(n_cluster - 1))
 }
 
+#' Test if the results fitted model is the same as the original code
+#'
+#' Test if the results fitted models, using poLCA and poLCAParallel, are the
+#' same. It tests attributes of the fitted models
+#'
+#' @param model_parallel poLCAParallel fitted model
+#' @param model_polca poLCA fitted model
+#' @param is_regression boolean, if the problem is a regression problem
+test_equal <- function(model_parallel, model_polca, is_regression) {
+  equal_tol <- 1e1 * sqrt(.Machine$double.eps)
+
+  # test if all attributes in the og code is in our code
+  for (attribute_i in names(model_polca)) {
+    expect_identical(attribute_i %in% names(model_parallel), TRUE)
+  }
+
+  if (!is_regression) {
+    # test if results are the same
+    expect_equal(model_parallel$llik, model_polca$llik)
+    expect_equal(model_parallel$aic, model_polca$aic)
+    expect_equal(model_parallel$bic, model_polca$bic)
+    expect_equal(model_parallel$Nobs, model_polca$Nobs)
+
+    expect_equal(model_parallel$Chisq, model_polca$Chisq, tolerance = equal_tol)
+    expect_equal(model_parallel$Gsq, model_polca$Gsq, tolerance = equal_tol)
+
+    # in predcell, the og code rounds the expected frequency
+    pred_cell_rounded <- model_parallel$predcell
+    pred_cell_rounded$expected <- round(model_parallel$predcell$expected, 3)
+    expect_identical(all.equal(pred_cell_rounded, model_polca$predcell), TRUE)
+  }
+
+  expect_equal(model_parallel$probs.start.ok, model_polca$probs.start.ok)
+  expect_equal(model_parallel$npar, model_polca$npar)
+  expect_identical(all.equal(model_parallel$y, model_polca$y), TRUE)
+  expect_identical(all.equal(model_parallel$x, model_polca$x), TRUE)
+}
+
 #' Test if results are the same as original poLCA code
 #'
 #' Test if results are the same, or at least similar, as the original poLCA code
@@ -185,44 +225,68 @@ test_regression <- function(n_data, n_feature, n_outcomes, n_cluster, n_rep,
 test_reproduce_non_regression <- function(n_data, n_outcomes, n_cluster, n_rep,
                                           na_rm, n_thread, maxiter, tol,
                                           prob_na, seed) {
-  equal_tol <- 1e1 * sqrt(.Machine$double.eps)
-
   responses <- random_response(n_data, n_outcomes, prob_na, NaN)
   formula <- get_non_regression_formula(responses)
 
   set.seed(seed)
-  polca_og <- poLCA::poLCA(formula, responses, n_cluster,
+  model_polca <- poLCA::poLCA(formula, responses, n_cluster,
     maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
     verbose = FALSE
   )
 
   set.seed(seed)
-  polca <- poLCAParallel::poLCA(formula, responses, n_cluster,
+  model_parallel <- poLCAParallel::poLCA(formula, responses, n_cluster,
     maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
     verbose = FALSE
   )
 
-  # test if all attributes in the og code is in our code
-  for (attribute_i in names(polca_og)) {
-    expect_identical(attribute_i %in% names(polca), TRUE)
-  }
+  # test if results are the same
+  test_equal(model_parallel, model_polca, FALSE)
+}
+
+#' Test if results are the same as original poLCA code
+#'
+#' Test if results are the same, or at least similar, as the original poLCA code
+#' for the regression problem. Generate data and pass it to poLCA::poLCA()
+#' and poLCAParallel::poLCA() and compare results
+#'
+#' The EM algorithm does depend on the initial values and how many different
+#' initials were tried. A failed test could be fixed by either using a high
+#' repetition count or ensure the initial values are the same
+#'
+#' @param n_data Number of data points
+#' @param n_feature Number of features
+#' @param n_outcomes Vector of integers, number of outcomes for each category
+#' @param n_cluster Number of clusters fitted
+#' @param n_rep Number of different initial values to try
+#' @param na_rm Logical, if to remove NA responses
+#' @param n_thread Number of threads to use
+#' @param maxiter Number of iterations used in the EM algorithm
+#' @param tol Tolerance used in the EM algorithm
+#' @param prob_na Probability of missing data
+#' @param seed Seed to generate random data and seed poLCA
+test_reproduce_regression <- function(n_data, n_feature, n_outcomes, n_cluster,
+                                      n_rep, na_rm, n_thread, maxiter, tol,
+                                      prob_na, seed) {
+  features <- random_features(n_data, n_feature)
+  responses <- random_response(n_data, n_outcomes, prob_na, NaN)
+  formula <- get_regression_formula(responses, features)
+  data <- cbind(responses, features)
+
+  set.seed(seed)
+  model_polca <- poLCA::poLCA(formula, data, n_cluster,
+    maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
+    verbose = FALSE
+  )
+
+  set.seed(seed)
+  model_parallel <- poLCAParallel::poLCA(formula, data, n_cluster,
+    maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
+    verbose = FALSE
+  )
 
   # test if results are the same
-  expect_equal(polca$llik, polca_og$llik)
-  expect_equal(polca$aic, polca_og$aic)
-  expect_equal(polca$bic, polca_og$bic)
-  expect_equal(polca$Nobs, polca_og$Nobs)
-
-  expect_equal(polca$Chisq, polca_og$Chisq, tolerance = equal_tol)
-  expect_equal(polca$Gsq, polca_og$Gsq, tolerance = equal_tol)
-
-  # in predcell, the og code rounds the expected frequency
-  pred_cell_rounded <- polca$predcell
-  pred_cell_rounded$expected <- round(polca$predcell$expected, 3)
-  expect_identical(all.equal(pred_cell_rounded, polca_og$predcell), TRUE)
-
-  expect_identical(all.equal(polca$y, polca_og$y), TRUE)
-  expect_identical(all.equal(polca$x, polca_og$x), TRUE)
+  test_equal(model_parallel, model_polca, TRUE)
 }
 
 test_that("non-regression-full-data", {
@@ -399,5 +463,66 @@ test_that("reproduce-non-regression-missing-data", {
     1e-10,
     0.1,
     799350486
+  ))
+})
+
+
+test_that("reproduce-regression-full-data", {
+  expect_no_error(test_reproduce_regression(
+    100,
+    4,
+    c(2, 3, 5, 2, 2),
+    3,
+    1,
+    TRUE,
+    4,
+    1000,
+    1e-10,
+    0,
+    -425222977
+  ))
+
+  expect_no_error(test_reproduce_regression(
+    100,
+    4,
+    c(2, 3, 5, 2, 2),
+    3,
+    1,
+    FALSE,
+    4,
+    1000,
+    1e-10,
+    0,
+    -257866430
+  ))
+})
+
+test_that("reproduce-regression-missing-data", {
+  expect_no_error(test_reproduce_regression(
+    100,
+    4,
+    c(2, 3, 5, 2, 2),
+    3,
+    1,
+    TRUE,
+    4,
+    1000,
+    1e-10,
+    0.1,
+    1117500770
+  ))
+
+  expect_no_error(test_reproduce_regression(
+    100,
+    4,
+    c(2, 3, 5, 2, 2),
+    3,
+    1,
+    FALSE,
+    4,
+    1000,
+    1e-10,
+    0.1,
+    1405265156
   ))
 })
