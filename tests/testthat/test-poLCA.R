@@ -167,13 +167,14 @@ test_regression <- function(n_data, n_feature, n_outcomes, n_cluster, n_rep,
 #' Test if the results fitted model is the same as the original code
 #'
 #' Test if the results fitted models, using poLCA and poLCAParallel, are the
-#' same. It tests attributes of the fitted models
+#' same. It tests the attributes of the fitted models
 #'
 #' @param model_parallel poLCAParallel fitted model
 #' @param model_polca poLCA fitted model
 #' @param is_regression boolean, if the problem is a regression problem
 test_equal <- function(model_parallel, model_polca, is_regression) {
-  equal_tol <- 1e1 * sqrt(.Machine$double.eps)
+  equal_tol_gof <- 1e2 * sqrt(.Machine$double.eps)
+  equal_tol_prob <- 1e3 * sqrt(.Machine$double.eps)
 
   # test if all attributes in the og code is in our code
   for (attribute_i in names(model_polca)) {
@@ -187,8 +188,22 @@ test_equal <- function(model_parallel, model_polca, is_regression) {
     expect_equal(model_parallel$bic, model_polca$bic)
     expect_equal(model_parallel$Nobs, model_polca$Nobs)
 
-    expect_equal(model_parallel$Chisq, model_polca$Chisq, tolerance = equal_tol)
-    expect_equal(model_parallel$Gsq, model_polca$Gsq, tolerance = equal_tol)
+    expect_equal(model_parallel$Chisq, model_polca$Chisq,
+      tolerance = equal_tol_gof
+    )
+    expect_equal(model_parallel$Gsq, model_polca$Gsq,
+      tolerance = equal_tol_gof
+    )
+
+    expect_equal(model_parallel$probs, model_polca$probs,
+      tolerance = equal_tol_prob
+    )
+    expect_equal(model_parallel$P, model_polca$P,
+      tolerance = equal_tol_prob
+    )
+    expect_equal(model_parallel$posterior, model_polca$posterior,
+      tolerance = equal_tol_prob
+    )
 
     # in predcell, the og code rounds the expected frequency
     pred_cell_rounded <- model_parallel$predcell
@@ -205,38 +220,42 @@ test_equal <- function(model_parallel, model_polca, is_regression) {
 #' Test if results are the same as original poLCA code
 #'
 #' Test if results are the same, or at least similar, as the original poLCA code
-#' for the non-regression problem. Generate data and pass it to poLCA::poLCA()
-#' and poLCAParallel::poLCA() and compare results
+#' for the non-regression problem. Generate data and pass it to `poLCA::poLCA()`
+#' and `poLCAParallel::poLCA()` and compare results
 #'
-#' The EM algorithm does depend on the initial values and how many different
-#' initials were tried. A failed test could be fixed by either using a high
-#' repetition count or ensure the initial values are the same
+#' This test sets `nrep` to `1` so that each call of `poLCA()` uses the same
+#' initial probabilities
 #'
 #' @param n_data Number of data points
 #' @param n_outcomes Vector of integers, number of outcomes for each category
 #' @param n_cluster Number of clusters fitted
-#' @param n_rep Number of different initial values to try
 #' @param na_rm Logical, if to remove NA responses
 #' @param n_thread Number of threads to use
 #' @param maxiter Number of iterations used in the EM algorithm
 #' @param tol Tolerance used in the EM algorithm
 #' @param prob_na Probability of missing data
 #' @param seed Seed to generate random data and seed poLCA
-test_reproduce_non_regression <- function(n_data, n_outcomes, n_cluster, n_rep,
+test_reproduce_non_regression <- function(n_data, n_outcomes, n_cluster,
                                           na_rm, n_thread, maxiter, tol,
                                           prob_na, seed) {
+  set.seed(seed)
   responses <- random_response(n_data, n_outcomes, prob_na, NaN)
   formula <- get_non_regression_formula(responses)
 
+  # set the seed before each poLCA() call so that they generate the same initial
+  # random probabilities within the function call
+  # THIS ASSUMES THE IMPLEMENTATION OF GENERATING INITIAL RANDOM PROBABILITES
+  # IS THE SAME AS THE ORIGINAL CODE
+
   set.seed(seed)
   model_polca <- poLCA::poLCA(formula, responses, n_cluster,
-    maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
+    maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = 1,
     verbose = FALSE
   )
 
   set.seed(seed)
   model_parallel <- poLCAParallel::poLCA(formula, responses, n_cluster,
-    maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
+    maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = 1,
     verbose = FALSE, n.thread = n_thread
   )
 
@@ -268,10 +287,14 @@ test_reproduce_non_regression <- function(n_data, n_outcomes, n_cluster, n_rep,
 test_reproduce_regression <- function(n_data, n_feature, n_outcomes, n_cluster,
                                       n_rep, na_rm, n_thread, maxiter, tol,
                                       prob_na, seed) {
+  set.seed(seed)
   features <- random_features(n_data, n_feature)
   responses <- random_response(n_data, n_outcomes, prob_na, NaN)
   formula <- get_regression_formula(responses, features)
   data <- cbind(responses, features)
+
+  # set the seed before each poLCA() call so that they generate the same initial
+  # random probabilities within the function call
 
   set.seed(seed)
   model_polca <- poLCA::poLCA(formula, data, n_cluster,
@@ -287,6 +310,50 @@ test_reproduce_regression <- function(n_data, n_feature, n_outcomes, n_cluster,
 
   # test if results are the same
   test_equal(model_parallel, model_polca, TRUE)
+}
+
+#' Test if results are the same as original poLCA code (provide initial probs)
+#'
+#' Test if results are the same, or at least similar, as the original poLCA code
+#' for the non-regression problem. Generate data and initial probabilities
+#' before hand. These are passed to `poLCA::poLCA()` and
+#' `poLCAParallel::poLCA()` and the results are compared
+#'
+#' This test sets `nrep` to `1` so that each call of `poLCA()` uses the same
+#' initial probabilities
+#'
+#' @param n_data Number of data points
+#' @param n_outcomes Vector of integers, number of outcomes for each category
+#' @param n_cluster Number of clusters fitted
+#' @param na_rm Logical, if to remove NA responses
+#' @param n_thread Number of threads to use
+#' @param maxiter Number of iterations used in the EM algorithm
+#' @param tol Tolerance used in the EM algorithm
+#' @param prob_na Probability of missing data
+test_probs_start_non_regression <- function(n_data, n_outcomes, n_cluster,
+                                            na_rm, n_thread, maxiter,
+                                            tol, prob_na) {
+  responses <- random_response(n_data, n_outcomes, prob_na, NaN)
+  formula <- get_non_regression_formula(responses)
+
+  probs_start <- random_unvectorized_probs(n_outcomes, n_cluster)
+
+  # do not set seed here
+  # this tests if the same results can be reproduced by using the provided
+  # initial probabilities
+
+  model_polca <- poLCA::poLCA(formula, responses, n_cluster,
+    maxiter = maxiter, tol = tol, na.rm = na_rm, probs.start = probs_start,
+    nrep = 1, verbose = FALSE
+  )
+
+  model_parallel <- poLCAParallel::poLCA(formula, responses, n_cluster,
+    maxiter = maxiter, tol = tol, na.rm = na_rm, probs.start = probs_start,
+    nrep = 1, verbose = FALSE, n.thread = n_thread
+  )
+
+  # test if results are the same
+  test_equal(model_parallel, model_polca, FALSE)
 }
 
 test_that("non-regression-full-data", {
@@ -415,7 +482,6 @@ test_that("reproduce-non-regression-full-data", {
     100,
     c(2, 3, 5, 2, 2),
     3,
-    1,
     TRUE,
     4,
     1000,
@@ -428,13 +494,36 @@ test_that("reproduce-non-regression-full-data", {
     100,
     c(2, 3, 5, 2, 2),
     3,
-    1,
     FALSE,
     4,
     1000,
     1e-10,
     0,
     -1855018758
+  ))
+
+  set.seed(980213281)
+  expect_no_error(test_probs_start_non_regression(
+    100,
+    c(2, 3, 5, 2, 2),
+    3,
+    TRUE,
+    4,
+    1000,
+    1e-10,
+    0
+  ))
+
+  set.seed(1619464396)
+  expect_no_error(test_probs_start_non_regression(
+    100,
+    c(2, 3, 5, 2, 2),
+    3,
+    FALSE,
+    4,
+    1000,
+    1e-10,
+    0
   ))
 })
 
@@ -443,7 +532,6 @@ test_that("reproduce-non-regression-missing-data", {
     100,
     c(2, 3, 5, 2, 2),
     3,
-    1,
     TRUE,
     4,
     1000,
@@ -456,13 +544,37 @@ test_that("reproduce-non-regression-missing-data", {
     100,
     c(2, 3, 5, 2, 2),
     3,
-    1,
     FALSE,
     4,
     1000,
     1e-10,
     0.1,
     799350486
+  ))
+
+
+  set.seed(-1158272799)
+  expect_no_error(test_probs_start_non_regression(
+    100,
+    c(2, 3, 5, 2, 2),
+    3,
+    TRUE,
+    4,
+    1000,
+    1e-10,
+    0.1
+  ))
+
+  set.seed(16136553)
+  expect_no_error(test_probs_start_non_regression(
+    100,
+    c(2, 3, 5, 2, 2),
+    3,
+    FALSE,
+    4,
+    1000,
+    1e-10,
+    0.1
   ))
 })
 
