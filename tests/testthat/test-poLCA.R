@@ -237,7 +237,7 @@ test_reproduce_non_regression <- function(n_data, n_outcomes, n_cluster, n_rep,
   set.seed(seed)
   model_parallel <- poLCAParallel::poLCA(formula, responses, n_cluster,
     maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
-    verbose = FALSE
+    verbose = FALSE, n.thread = n_thread
   )
 
   # test if results are the same
@@ -282,7 +282,7 @@ test_reproduce_regression <- function(n_data, n_feature, n_outcomes, n_cluster,
   set.seed(seed)
   model_parallel <- poLCAParallel::poLCA(formula, data, n_cluster,
     maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
-    verbose = FALSE
+    verbose = FALSE, n.thread = n_thread
   )
 
   # test if results are the same
