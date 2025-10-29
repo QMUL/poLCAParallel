@@ -32,7 +32,7 @@ samples}
 stopping condition}
 }
 \value{
-List containing the following:
+List containing the following:\if{html}{\out{
 <ul>
   <li>fitted_log_ratio: log likelihood ratio comparing the null and alt
 model</li>
@@ -41,6 +41,7 @@ likelihood ratio comparing the null and alt model</li>
   <li>p_value<: the porportion of bootstrap samples with log likelihood
 ratios greater than the fitted log likelihood ratio/li>
 </ul>
+}}
 }
 \description{
 Does the bootstrap likelihood ratio test. Provide two fitted models, the

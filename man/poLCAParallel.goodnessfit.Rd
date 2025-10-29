@@ -11,10 +11,12 @@ poLCAParallel.goodnessfit(results)
 }
 \value{
 list with 3 items:
-  * predcell: dataframe of unique responses with their observed and expected
-    frequencies
-  * Gsq: log likelihood ratio
-  * Chisq: chi squared statistic
+\itemize{
+\item predcell: dataframe of unique responses with their observed and expected
+frequencies
+\item Gsq: log likelihood ratio
+\item Chisq: chi squared statistic
+}
 }
 \description{
 Wrapper function around the C++ function GoodnessFitRcpp(). Finds unique

@@ -72,6 +72,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// postclass
+void postclass(Rcpp::NumericVector prior, Rcpp::NumericVector probs, Rcpp::IntegerVector y, int items, int obs, Rcpp::IntegerVector numChoices, int classes, Rcpp::NumericVector posterior);
+RcppExport SEXP _poLCAParallel_postclass(SEXP priorSEXP, SEXP probsSEXP, SEXP ySEXP, SEXP itemsSEXP, SEXP obsSEXP, SEXP numChoicesSEXP, SEXP classesSEXP, SEXP posteriorSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type prior(priorSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type probs(probsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< int >::type items(itemsSEXP);
+    Rcpp::traits::input_parameter< int >::type obs(obsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type numChoices(numChoicesSEXP);
+    Rcpp::traits::input_parameter< int >::type classes(classesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type posterior(posteriorSEXP);
+    postclass(prior, probs, y, items, obs, numChoices, classes, posterior);
+    return R_NilValue;
+END_RCPP
+}
 // GoodnessFitRcpp
 Rcpp::List GoodnessFitRcpp(Rcpp::IntegerMatrix responses, Rcpp::NumericVector prior, Rcpp::NumericVector outcome_prob, std::size_t n_data, Rcpp::IntegerVector n_outcomes_int, std ::size_t n_cluster);
 RcppExport SEXP _poLCAParallel_GoodnessFitRcpp(SEXP responsesSEXP, SEXP priorSEXP, SEXP outcome_probSEXP, SEXP n_dataSEXP, SEXP n_outcomes_intSEXP, SEXP n_clusterSEXP) {
@@ -85,6 +102,37 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type n_outcomes_int(n_outcomes_intSEXP);
     Rcpp::traits::input_parameter< std ::size_t >::type n_cluster(n_clusterSEXP);
     rcpp_result_gen = Rcpp::wrap(GoodnessFitRcpp(responses, prior, outcome_prob, n_data, n_outcomes_int, n_cluster));
+    return rcpp_result_gen;
+END_RCPP
+}
+// PosteriorRcpp
+Rcpp::NumericMatrix PosteriorRcpp(Rcpp::IntegerVector responses, Rcpp::NumericVector probs, Rcpp::IntegerVector n_outcomes_int, Rcpp::NumericVector prior, std::size_t n_data, std::size_t n_cluster);
+RcppExport SEXP _poLCAParallel_PosteriorRcpp(SEXP responsesSEXP, SEXP probsSEXP, SEXP n_outcomes_intSEXP, SEXP priorSEXP, SEXP n_dataSEXP, SEXP n_clusterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type responses(responsesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type probs(probsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type n_outcomes_int(n_outcomes_intSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type prior(priorSEXP);
+    Rcpp::traits::input_parameter< std::size_t >::type n_data(n_dataSEXP);
+    Rcpp::traits::input_parameter< std::size_t >::type n_cluster(n_clusterSEXP);
+    rcpp_result_gen = Rcpp::wrap(PosteriorRcpp(responses, probs, n_outcomes_int, prior, n_data, n_cluster));
+    return rcpp_result_gen;
+END_RCPP
+}
+// LikelihoodRcpp
+Rcpp::NumericMatrix LikelihoodRcpp(Rcpp::IntegerVector responses, Rcpp::NumericVector probs, Rcpp::IntegerVector n_outcomes_int, std::size_t n_data, std::size_t n_cluster);
+RcppExport SEXP _poLCAParallel_LikelihoodRcpp(SEXP responsesSEXP, SEXP probsSEXP, SEXP n_outcomes_intSEXP, SEXP n_dataSEXP, SEXP n_clusterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type responses(responsesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type probs(probsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type n_outcomes_int(n_outcomes_intSEXP);
+    Rcpp::traits::input_parameter< std::size_t >::type n_data(n_dataSEXP);
+    Rcpp::traits::input_parameter< std::size_t >::type n_cluster(n_clusterSEXP);
+    rcpp_result_gen = Rcpp::wrap(LikelihoodRcpp(responses, probs, n_outcomes_int, n_data, n_cluster));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -110,17 +158,18 @@ END_RCPP
 }
 
 RcppExport void d2lldbeta2(void *, void *, void *, void *, void *, void *, void *, void *);
-RcppExport void postclass(void *, void *, void *, void *, void *, void *, void *, void *);
 RcppExport void probhat(void *, void *, void *, void *, void *, void *, void *);
 
 static const R_CallMethodDef CallEntries[] = {
     {"_poLCAParallel_BlrtRcpp", (DL_FUNC) &_poLCAParallel_BlrtRcpp, 12},
     {"_poLCAParallel_EmAlgorithmRcpp", (DL_FUNC) &_poLCAParallel_EmAlgorithmRcpp, 13},
     {"_poLCAParallel_ylik", (DL_FUNC) &_poLCAParallel_ylik, 6},
+    {"_poLCAParallel_postclass", (DL_FUNC) &_poLCAParallel_postclass, 8},
     {"_poLCAParallel_GoodnessFitRcpp", (DL_FUNC) &_poLCAParallel_GoodnessFitRcpp, 6},
+    {"_poLCAParallel_PosteriorRcpp", (DL_FUNC) &_poLCAParallel_PosteriorRcpp, 6},
+    {"_poLCAParallel_LikelihoodRcpp", (DL_FUNC) &_poLCAParallel_LikelihoodRcpp, 5},
     {"_poLCAParallel_StandardErrorRcpp", (DL_FUNC) &_poLCAParallel_StandardErrorRcpp, 10},
     {"d2lldbeta2", (DL_FUNC) &d2lldbeta2, 8},
-    {"postclass",  (DL_FUNC) &postclass,  8},
     {"probhat",    (DL_FUNC) &probhat,    7},
     {NULL, NULL, 0}
 };
