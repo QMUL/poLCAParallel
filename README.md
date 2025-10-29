@@ -8,13 +8,13 @@ Sherman E. Lo, Queen Mary, University of London
 
 A reimplementation of poLCA
 \[[CRAN](https://cran.r-project.org/web/packages/poLCA/index.html),
-[GitHub](https://github.com/dlinzer/poLCA)\] in C++. It tries to reproduce
-results and be as similar as possible to the original code but runs faster,
-especially with multiple repetitions by using multiple threads.
+[GitHub](https://github.com/dlinzer/poLCA)\] in C++. It attempts to reproduce
+results and be as similar as possible to the original code, while running
+faster, especially with multiple repetitions, by utilising multiple threads.
 
 ## About poLCAParallel
 
-The package poLCAParallel reimplements poLCA fitting, standard error
+The package poLCAParallel reimplements the poLCA fitting, standard error
 calculations, goodness of fit tests and the bootstrap log-likelihood ratio test
 in C++. This was done using [Rcpp](https://cran.r-project.org/web/packages/Rcpp)
 and [RcppArmadillo](https://cran.r-project.org/web/packages/RcppArmadillo) which
@@ -33,7 +33,7 @@ allows R to run fast C++ code. Additional notes include:
 * Use of [`std::map`](https://en.cppreference.com/w/cpp/container/map) for the
   chi-squared calculations to improve performance
 
-Further reading is available on a
+Further reading is available on the
 [QMUL ITS Research Blog](https://blog.hpc.qmul.ac.uk/speeding_up_r_packages.html).
 
 ## About poLCA
@@ -150,7 +150,7 @@ An example use of a bootstrap likelihood ratio test is shown in `exec/3_blrt.R`.
     tests or not.
   * `se.smooth` is provided if you wish to use Laplace smoothing on the response
     probabilities in the standard error calculations.
-* The prior probabilites is a return value, accessible with `$prior`.
+* The prior probabilities are a return value, accessible with `$prior`.
 * The stopping condition of the EM algorithm has changed slightly. If the
   log-likelihood change after an iteration of EM is too small, the stopping
   condition is evaluated after the E step rather than the M step. This is so
@@ -171,7 +171,7 @@ An example use of a bootstrap likelihood ratio test is shown in `exec/3_blrt.R`.
 * Any errors in the input data will call `stop()` rather than return a `NULL`.
 * No rounding in the return value `predcell`.
 
-## Developer's Notes
+## Developer's and Maintainer's Notes
 
 ### Installing as a Developer
 
@@ -189,7 +189,6 @@ Requires the R packages for compiling and testing:
 Requires the dependent R packages:
 
 * [MASS](https://cran.r-project.org/web/packages/MASS/index.html)
-* [parallel](https://www.rdocumentation.org/packages/parallel/)
 * [poLCA](https://cran.r-project.org/web/packages/poLCA/index.html)
 * [scatterplot3d](https://cran.r-project.org/web/packages/scatterplot3d/)
 
@@ -226,6 +225,8 @@ The testing of the C++ code is done using
 [Catch2](https://github.com/catchorg/Catch2) and the R code using
 [testthat](https://testthat.r-lib.org/). All test codes are in `tests/`.
 
+#### C++ with Catch2
+
 The tests for the C++ code are done by compiling the test code, isolated from
 any R ecosystem, and running a compiled executable. It requires cmake, Catch2
 and [armadillo](https://arma.sourceforge.net/). To compile the code, from the
@@ -240,6 +241,8 @@ cmake --build .
 
 This will compile an executable called `test_polca_parallel`. Execute it to run
 the tests. Pass names or tags to run specific tests, see `tests/*.cc`.
+
+#### R with testthat
 
 To test the R code, run the following at the repository root
 
@@ -269,36 +272,7 @@ Within the container, the package is located in `/usr/src/poLCAParallel`. When
 using the definition file `poLCAParallel-dev.def`, the C++ doxygen documentation
 is located in `/usr/src/poLCAParallel/html`.
 
-### Development Notes
-
-* It's possible that likelihood underflow occurs if the number of categories is
-  too large, more than ~300. This is because in the calculation of the
-  log-likelihood, the probabilities from each category are multiplied by each
-  other. If there are $J$ categories, then there are $J$ probabilities to
-  multiply together. This is addressed in commit 85ee419 but reverted. Consider
-  investigating further in future releases.
-* In the standard error calculations, the score matrix is typically
-  ill-conditioned. Consider pre-conditioning the matrix.
-* In the poLCA regression model, consider using multiple Newton steps instead
-  of one single step in the EM algorithm.
-
-### Actions For The Next Major Version
-
-The following should be actioned in the next major version:
-
-* The R package MASS is not required as a prerequisite.
-* The default value for `n.thread` should be `1`
-
-The following R functions (and their corresponding C functions if available) are
-marked as deprecated and should be deleted in the next major version
-
-* `poLCA.se()` - no longer needed, reimplemented in `poLCAParallel.se()`
-* `poLCA.dLL2dBeta.C()` - no longer needed, reimplemented in
-    `em_algorithm_regress.cc`
-* `poLCA.probHat.C` - no longer needed, the goodness of fit test is
-    reimplemented in `goodness_fit.cc`
-
-### Code Style
+### Git/GitHub Workflow Guide
 
 All generated documents and codes, eg from
 
@@ -321,11 +295,57 @@ Semantic versioning is used and tagged. Tags on the `master` branch shall have
 `v` prepended and `-master` appended, eg. `v1.1.0-master`. The corresponding
 tag on the `package` branch shall only have `v` prepended, eg. `v1.1.0`.
 
+### Development Notes
+
+* The likelihood calculation is done by iteratively multiplying probabilities
+  together. In the commit `85ee419`, the multiplication starts from
+  `DOUBLE_XMAX` to avoid underflows but was reverted. Consider investigating
+  further in future releases.
+* In the standard error calculations, the score matrix is typically
+  ill-conditioned. Consider pre-conditioning the matrix.
+* In the poLCA regression model, consider using multiple Newton steps instead
+  of one single step in the EM algorithm.
+
+### Actions for the Next Minor Version(s)
+
+* Add a feature where the likelihood calculation can be optionally done by
+  summing the log probabilities rather than multiplying probabilities together.
+  This should avoid underflows, especially when there are a large number of
+  manifest variables (aka categories) or very small probabilities. Though it
+  should be noted that working in log space is slower.
+
+### Actions for the Next Major Version
+
+* The R package MASS is not required as a prerequisite.
+* The default value for `n.thread` should be `1` instead of
+  `parallel::detectCores()`
+
+The following R functions, many of which are internal, are marked as deprecated
+and should be deleted
+
+* `poLCA.se()` and `poLCA.dLL2dBeta.C()` - no longer needed because the standard
+  error calculations are reimplemented in `poLCAParallel.se()`
+* `poLCA.probHat.C` - no longer needed because the goodness of fit test is
+    reimplemented in `goodness_fit.cc`
+* `poLCA.postClass.C()` and `poLCA.ylik.C()` - no longer needed and
+  reimplemented in `polca_rcpp.cc`
+* `poLCA.vectorize()` and `poLCA.unvectorize()` - no longer needed and
+  reimplemented in `poLCAParallel.vectorize()` and `poLCAParallel.unvectorize()`
+  respectively
+
+All C code in `poLCA.C` is deprecated because they are reimplemented in C++.
+
+The R code should follow the Tidyverse style guide. In particular, variables,
+functions and parameters should be in snake case. This will result in
+
+* Removing the `poLCA.` and `poLCAParallel.` prefix in function and file names
+* Using a underscore instead of a dot in variable and parameter names, for
+  example, `na.rm` should be called `na_rm`
+
+### C++ Style Guide
+
 There was an attempt to use the
 [Google C++ style guide](https://google.github.io/styleguide/cppguide.html).
-
-Armadillo objects are used sparingly, preferring the use of `double*` when
-passing vectors and matrices.
 
 ### C++ Source Code Documentation
 
