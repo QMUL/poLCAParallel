@@ -50,11 +50,11 @@ void polca_parallel::EmAlgorithmNanTemplate<T>::NormalWeightedSumProb(
 }
 
 template <typename T>
-double polca_parallel::EmAlgorithmNanTemplate<T>::PosteriorUnnormalize(
-    std::span<const int> responses_i, double prior,
+double polca_parallel::EmAlgorithmNanTemplate<T>::Likelihood(
+    std::span<const int> responses_i,
     const arma::Col<double>& estimated_prob) const {
-  return polca_parallel::PosteriorUnnormalize<true>(
-      responses_i, this->n_outcomes_, estimated_prob, prior);
+  return polca_parallel::Likelihood<true>(responses_i, this->n_outcomes_,
+                                          estimated_prob);
 }
 
 polca_parallel::EmAlgorithmNan::EmAlgorithmNan(

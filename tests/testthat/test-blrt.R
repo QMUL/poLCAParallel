@@ -21,10 +21,8 @@
 #' @param n_bootstrap Number of bootstrap samples
 test_blrt <- function(n_data, n_outcomes, n_cluster, n_rep, na_rm,
                       n_thread, maxiter, tol, prob_na, n_bootstrap) {
-  responses <- as.data.frame(random_response(n_data, n_outcomes, prob_na, NaN))
-  formula <- formula(
-    paste0("cbind(", paste(colnames(responses), collapse = ","), ")~1")
-  )
+  responses <- random_response(n_data, n_outcomes, prob_na, NaN)
+  formula <- get_non_regression_formula(responses)
   null_model <- poLCAParallel::poLCA(formula, responses, n_cluster,
     maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
     verbose = FALSE, n.thread = n_thread

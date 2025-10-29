@@ -13,3 +13,4 @@ latex/
 build/
 *.sif
 .vscode/
+NAMESPACE

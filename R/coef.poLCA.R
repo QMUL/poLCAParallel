@@ -1,4 +1,4 @@
-coef.poLCA <-
-function(object, ...) {
-    return(object$coeff)
+#' @export
+coef.poLCA <- function(object, ...) {
+  return(object$coeff)
 }

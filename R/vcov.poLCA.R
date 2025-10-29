@@ -1,4 +1,4 @@
-vcov.poLCA <-
-function(object, ...) {
-    return(object$coeff.V)
+#' @export
+vcov.poLCA <- function(object, ...) {
+  return(object$coeff.V)
 }

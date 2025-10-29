@@ -11,8 +11,8 @@
 #'
 #' @param polca the resulting poLCA object from calling poLCA()
 #' @param is_smooth Logical, experimental, for calculating the standard errors,
-#'     whether to smooth the outcome probabilities to produce more numerical
-#'     stable results as a cost of bias.
+#'   whether to smooth the outcome probabilities to produce more numerical
+#'   stable results as a cost of bias.
 #'
 #' @return the poLCA object with the attributes $P.se, $probs.se, $coeff.se and
 #' $coeff.V modified or added
@@ -24,8 +24,8 @@ poLCAParallel.se <- function(polca, is_smooth = FALSE) {
   formula <- formula(
     paste0("cbind(", paste(colnames(y), collapse = ","), ")~1")
   )
-  mframe <- model.frame(formula, y, na.action = NULL)
-  responses <- model.response(mframe)
+  mframe <- stats::model.frame(formula, y, na.action = NULL)
+  responses <- stats::model.response(mframe)
   responses[is.na(responses)] <- 0
 
   features <- as.matrix(polca$x)

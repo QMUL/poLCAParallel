@@ -5,7 +5,7 @@
 #' @param prob_na Probability of missing data
 #' @param na_encode Value to use for missing data
 #'
-#' @return Matrix of responses, dim 1 for each data point, dim 2 for each
+#' @return Data frame of responses, dim 1 for each data point, dim 2 for each
 #' category
 random_response <- function(n_data, n_outcomes, prob_na = 0, na_encode = 0) {
   responses <- matrix(0, nrow = n_data, ncol = length(n_outcomes))
@@ -13,25 +13,68 @@ random_response <- function(n_data, n_outcomes, prob_na = 0, na_encode = 0) {
     responses[, i] <- sample(n_outcomes[i], n_data, replace = TRUE)
   }
 
-  rand <- runif(n_data * length(n_outcomes))
+  rand <- stats::runif(n_data * length(n_outcomes))
   rand <- matrix(rand, nrow = n_data, ncol = length(n_outcomes))
   responses[rand < prob_na] <- na_encode
+  responses <- as.data.frame(responses)
 
   return(responses)
 }
 
 #' Generate random features
 #'
-#' Generate random Normally distributed random features
+#' Generate random Normally distributed random features. Column names of the
+#' data frame have prefix U, this ensures the column names are different
+#' enough from the responses returned by the function random_response()
 #'
 #' @param n_data Number of data points
-#' @param n_features Number of features
+#' @param n_feature Number of features
 #'
-#' @return Matrix of features, dim 1 for each data point, dim 2 for each feature
-random_features <- function(n_data, n_features) {
-  features <- runif(n_data * n_features)
-  features <- matrix(features, nrow = n_data, ncol = n_features)
+#' @return Data frame of features, dim 1 for each data point, dim 2 for each
+#' feature
+random_features <- function(n_data, n_feature) {
+  features <- as.data.frame(matrix(stats::rnorm(n_data * n_feature),
+    nrow = n_data, ncol = n_feature
+  ))
+  colnames(features) <- paste0(rep("U", n_feature), paste(seq_len(n_feature)))
   return(features)
+}
+
+#' Generate the non-regression formula to pass to poLCA()
+#'
+#' Generate the non-regression formula to pass to poLCA(). The formula uses
+#' all columns in the passed parameter responses
+#'
+#' @param responses Data frame of responses, dim 1 for each data point, dim 2
+#' for each category
+#'
+#' @return formula to pass to poLCA()
+get_non_regression_formula <- function(responses) {
+  f <- formula(
+    paste0("cbind(", paste(colnames(responses), collapse = ","), ")~1")
+  )
+  return(f)
+}
+
+#' Generate the regression formula to pass to poLCA()
+#'
+#' Generate the regression formula to pass to poLCA(). The formula uses all
+#' columns in the passed parameters responses and features. A linear
+#' relationship is used
+#'
+#' @param responses Data frame of responses, dim 1 for each data point, dim 2
+#' for each category
+#'
+#' @return formula to pass to poLCA()
+get_regression_formula <- function(responses, features) {
+  f <- formula(
+    paste0(
+      "cbind(", paste(colnames(responses), collapse = ","), ")~",
+      paste0(colnames(features), collapse = "+"),
+      ""
+    )
+  )
+  return(f)
 }
 
 #' Generate random outcome probabilities
@@ -52,10 +95,10 @@ random_features <- function(n_data, n_features) {
 #'   * classes: integer, number of classes (or clusters)
 random_unvectorized_probs <- function(n_outcomes, n_cluster) {
   probs <- list(
-    vecprobs = random_vectorized_probs(n_outcomes, n_cluster),
+    vecprobs = poLCAParallel:::random_vectorized_probs(n_outcomes, n_cluster),
     numChoices = n_outcomes, classes = n_cluster
   )
-  probs <- poLCAParallel.unvectorize(probs)
+  probs <- poLCAParallel:::poLCAParallel.unvectorize(probs)
   return(probs)
 }
 
@@ -67,7 +110,7 @@ random_unvectorized_probs <- function(n_outcomes, n_cluster) {
 #' @return Matrix of cluster probabilities, dim 1 for each data point, dim 2 for
 #' each cluster
 random_cluster_probs <- function(n_data, n_cluster) {
-  probs <- runif(n_data * n_cluster)
+  probs <- stats::runif(n_data * n_cluster)
   probs <- matrix(probs, nrow = n_data, ncol = n_cluster)
   probs <- probs / matrix(
     rep(rowSums(probs), n_cluster),

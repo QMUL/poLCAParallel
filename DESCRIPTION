@@ -1,7 +1,7 @@
 Package: poLCAParallel
 Type: Package
 Title: Polytomous variable Latent Class Analysis Parallel
-Version: 1.2.4
+Version: 1.2.5
 Author: Sherman Lo <s.lo@qmul.ac.uk>,
         Drew Linzer <drew@votamatic.org>,
         Jeffrey Lewis <jblewis@ucla.edu>.
@@ -17,5 +17,8 @@ NeedsCompilation: yes
 RoxygenNote: 7.3.2
 Encoding: UTF-8
 Suggests:
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    roxygen2,
+    usethis
+Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3
