@@ -1,15 +1,14 @@
-#' Random draws from a multinomial distributionintegers
+#' Random draws from a multinomial distribution
 #'
 #' One random draw from a multinomial distribution or list of multinomial
 #' distributions.
 #'
 #' @keywords methods
 #'
-#' @param p matrix of dimension `n` by `r` containing probabilities,
-#' for each row, of drawing each of `r` outcomes. `p` may also be
-#' entered as a vector, in which case `rmulti` treats it as a matrix of
-#' dimension `n=1` by `r`. Each row of matrix `p` must sum to 1
-#' or `rmulti` will not work properly.
+#' @param p matrix of dimension `n` by `r` containing probabilities, for each
+#' row, of drawing each of `r` outcomes. `p` may also be entered as a vector, in
+#' which case `rmulti` treats it as a matrix of dimension `n=1` by `r`. Each row
+#' of matrix `p` must sum to 1 or `rmulti` will not work properly.
 #'
 #' @returns A vector of length `n`. Each item represents one draw from the
 #' multinomial distribution parameterized by the outcome probabilities in each

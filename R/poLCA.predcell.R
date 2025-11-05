@@ -14,9 +14,9 @@
 #'
 #' @param lc A model object estimated using the `poLCA` function.
 #' @param y A vector or matrix containing series of responses on the manifest
-#'   variables in `lc`.
+#' variables in `lc`.
 #' @returns A vector containing cell percentages corresponding to the specified
-#'   sets of responses `y`, based on the estimated latent class model `lc`.
+#' sets of responses `y`, based on the estimated latent class model `lc`.
 #'
 #' @examples
 #' data(carcinoma)

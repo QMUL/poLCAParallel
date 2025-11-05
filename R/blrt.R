@@ -1,33 +1,30 @@
-#' Bootstrap likelihood ratio test (no regression only)
+#' Bootstrap likelihood ratio test (non-regression only)
 #'
-#' Does the bootstrap likelihood ratio test. Provide two fitted models, the
-#' null model and the alt model which fits a different number of clusters.
-#' Bootstrap samples are generated using the null model. The null model and alt
-#' model are refitted on the bootstrap samples to investigate the log likelihood
-#' ratio of the two models.
+#' Does the bootstrap likelihood ratio test. Provide two fitted models, the null
+#' model and the alt model fitted with a different number of clusters/latent
+#' classes. Bootstrap samples are generated using the null model. The null model
+#' and the alt model are refitted on the bootstrap samples to investigate the
+#' log likelihood ratio of the two models.
 #'
 #' Runs in parallel for each bootstrap sample, potentially high memory if the
 #' data is large
 #'
-#' @param model_null Fitted poLCA object, the null model
-#' @param model_alt Fitted poLCA object, the alt model
+#' @param model_null Fitted `poLCA` object, the null model
+#' @param model_alt Fitted `poLCA` object, the alt model
 #' @param n_bootstrap Number of bootstrap samples
 #' @param n_thread Number of threads
 #' @param n_rep Number of initial values to try when fitting on the bootstrap
 #' samples
 #' @param max_iter Maximum number of iterations for EM algorithm
-#' @param tol Tolerance for difference in log likelihood, used for
-#' stopping condition
+#' @param tol Tolerance for difference in log likelihood, used for stopping
+#' condition
 #'
 #' @return List containing the following:
-#' <ul>
-#'   <li>fitted_log_ratio: log likelihood ratio comparing the null and alt
-#' model</li>
-#'   <li>bootstrap_log_ratio: vector of length n_bootstrap, bootstrapped log
-#' likelihood ratio comparing the null and alt model</li>
-#'   <li>p_value<: the porportion of bootstrap samples with log likelihood
-#' ratios greater than the fitted log likelihood ratio/li>
-#' </ul>
+#' * `fitted_log_ratio`: log likelihood ratio comparing the null and alt models
+#' * `bootstrap_log_ratio`: vector of length `n_bootstrap`, bootstrapped log
+#'   likelihood ratio comparing the null and alt models
+#' * `p_value`: the proportion of bootstrap samples with log likelihood ratios
+#'   greater than the fitted log likelihood ratio
 #' @export
 blrt <- function(model_null, model_alt, n_bootstrap,
                  n_thread = parallel::detectCores(), n_rep = 1, max_iter = 1000,

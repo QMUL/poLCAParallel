@@ -164,7 +164,7 @@ An example use of a bootstrap likelihood ratio test is shown in `exec/3_blrt.R`.
 * The output `eflag` is set to `TRUE` if *any* repetition has to be restarted,
   rather than the repetition which achieves maximum log-likelihood.
 * The standard error is not calculated if `calc.se` is set to `FALSE` even in
-  poLCA regression. Previously, the standard error is calculated regardless of
+  poLCA regression. Previously, the standard error was calculated regardless of
   `calc.se` in poLCA regression.
 * In the standard error calculations, an SVD is done on the score matrix,
   rather than inverting the information matrix.
@@ -318,20 +318,20 @@ is located in `/usr/src/poLCAParallel/html`.
 All generated documents and codes, eg from
 
 ```bash
-R -e "Rcpp::compileAttributes('poLCAParallel')"
+R -e "Rcpp::compileAttributes()"
 ```
 
 and
 
 ```bash
-R -e "roxygen2::roxygenize('poLCAParallel')"
+R -e "roxygen2::roxygenize()"
 ```
 
 shall not be included in the `master` branch. Instead, they shall be in the
 `package` branch so that this package can be installed using
 `remotes::install_github("QMUL/poLCAParallel@package")`. This is to avoid having
 duplicate documentation and generated code on the `master` branch. *The
-expection to this rule is `renv.lock` which is produced by
+exception to this rule is `renv.lock` which is produced by
 `renv::snapshot(dev=TRUE)`.*
 
 Semantic versioning is used and tagged. Tags on the `master` branch shall have
@@ -348,6 +348,10 @@ tag on the `package` branch shall only have `v` prepended, eg. `v1.1.0`.
   ill-conditioned. Consider pre-conditioning the matrix.
 * In the poLCA regression model, consider using multiple Newton steps instead
   of one single step in the EM algorithm.
+* The vocabulary used may differ, for example:
+  * *Latent classes* may be called *clusters*
+  * *Covariates* or *predictors* may be called *features*
+  * *Manifest variables* may be called *categories*
 
 ### Actions for the Next Minor Version(s)
 
@@ -362,6 +366,13 @@ tag on the `package` branch shall only have `v` prepended, eg. `v1.1.0`.
 * The R package MASS is not required as a prerequisite.
 * The default value for `n.thread` should be `1` instead of
   `parallel::detectCores()`
+
+The R code should follow the Tidyverse style guide. In particular, variables,
+functions and parameters should be in snake case. This will result in
+
+* Removing the `poLCA.` and `poLCAParallel.` prefix in function and file names
+* Using an underscore instead of a dot in variable and parameter names, for
+  example, `na.rm` should be called `na_rm`
 
 The following R functions, many of which are internal, are marked as deprecated
 and should be deleted
@@ -378,12 +389,16 @@ and should be deleted
 
 All C code in `poLCA.C` is deprecated because they are reimplemented in C++.
 
-The R code should follow the Tidyverse style guide. In particular, variables,
-functions and parameters should be in snake case. This will result in
+The parameters:
 
-* Removing the `poLCA.` and `poLCAParallel.` prefix in function and file names
-* Using a underscore instead of a dot in variable and parameter names, for
-  example, `na.rm` should be called `na_rm`
+* `results` in `poLCAParallel.goodnessfit()`
+* `polca` in `poLCAParallel.se()`
+
+should be renamed to `lc` to be consistent with other functions with a parameter
+also named `lc`.
+
+Similarly, the parameters `model_null` and `model_alt` in `blrt()` should be
+renamed to `lc_null` and `lc_alt` respectively.
 
 ### C++ Style Guide
 

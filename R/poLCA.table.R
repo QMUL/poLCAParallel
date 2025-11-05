@@ -5,20 +5,20 @@
 #'
 #' This function outputs predicted cell counts for user-specified combinations
 #' of the manifest variables, based on a latent class model estimated by the
-#' `poLCA` function.  The `predcell` table outputted automatically by `poLCA`
+#' `poLCA` function. The `predcell` table outputted automatically by `poLCA`
 #' also contains predicted cell frequencies, but only for cells containing at
-#' least one observation.  In contrast, `poLCA.table` will calculate
-#' predicted cell counts for all cells, including those with zero observations.
+#' least one observation. In contrast, `poLCA.table` will calculate predicted
+#' cell counts for all cells, including those with zero observations.
 #'
 #' @keywords methods
 #' @seealso `poLCA`
 #'
 #' @param formula A formula expression of the form `variable ~ 1` for a one-way
-#'   frequency distribution, or `row ~ column` for two way-tables.
+#' frequency distribution, or `row ~ column` for two way-tables.
 #' @param condition A list containing the values of the manifest variables to
-#'   hold fixed when creating the table specified by the `formula` argument.
-#'   Setting this to an empty list, `condition=list()`, conditions on none of
-#'   the other manifest variables, producing the marginal frequencies.
+#' hold fixed when creating the table specified by the `formula` argument.
+#' Setting this to an empty list, `condition=list()`, conditions on none of the
+#' other manifest variables, producing the marginal frequencies.
 #' @param lc A model object previously estimated using the `poLCA` function.
 #' @return A vector or table containing the specified frequency distribution.
 #'
