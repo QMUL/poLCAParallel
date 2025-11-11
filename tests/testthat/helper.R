@@ -84,15 +84,17 @@ get_regression_formula <- function(responses, features) {
 #' @param n_outcomes Vector of integers, number of outcomes for each category
 #' @param n_cluster Number of clusters fitted
 #'
-#' @return List of three items (vecprobs, numChoices, classes) where
-#'   * vecprobs: vector of outcome probabilities, a flattened list of matrices
-#'      * dim 0: for each outcome
-#'      * dim 1: for each category
-#'      * dim 2: for each cluster
-#'      * in other words, imagine a nested loop, from outer to inner:
-#'         * for each cluster, for each category, for each outcome
-#'   * numChoices: integer vector, number of outcomes for each category
-#'   * classes: integer, number of classes (or clusters)
+#' @return list of three items (`vecprobs`, `numChoices`, `classes`) where
+#' * `vecprobs`: vector of outcome probabilities conditioned on the
+#'   manifest/category and the class/cluster. Imagine a nested loop, from inner
+#'   to outer, or a flatten column-major matrix, the probabilities are arranged
+#'   in the following order:
+#'   * dim 1: for each outcome
+#'   * dim 2: for each manifest/category
+#'   * dim 3: for each class/cluster
+#' * `numChoices`: integer vector, number of outcomes for each category/manifest
+#'   variable
+#' * `classes`: integer, number of latent classes (or clusters)
 random_unvectorized_probs <- function(n_outcomes, n_cluster) {
   probs <- list(
     vecprobs = poLCAParallel:::random_vectorized_probs(n_outcomes, n_cluster),
@@ -126,7 +128,7 @@ random_cluster_probs <- function(n_data, n_cluster) {
 #' matrix of probabilities, they are in [0, 1] and sum to 1
 #'
 #' @param probs Matrix of cluster probabilities, can be prior or posterior, dim
-#' 1 for each data point,dim 2 for each cluster
+#' 1 for each data point, dim 2 for each cluster
 #' @param n_data Number of data points
 #' @param n_cluster Number of clusters fitted
 test_cluster_probs <- function(probs, n_data, n_cluster) {
@@ -145,8 +147,9 @@ test_cluster_probs <- function(probs, n_data, n_cluster) {
 #' Test the outcome probabilities, they have the correct shape, are in [0, 1]
 #' and sum to 1
 #'
-#' @param probs list of length n_category. For the ith entry, it contains a
-#' matrix of outcome probabilities with dimensions n_cluster x n_outcomes[i]
+#' @param probs list for each category/manifest variable. For the `i`th entry,
+#' it contains a matrix of outcome probabilities with dimensions `n_class` x
+#' `n_outcomes[i]`
 #' @param n_outcomes Vector of integers, number of outcomes for each category
 #' @param n_cluster Number of clusters fitted
 test_outcome_probs <- function(probs, n_outcomes, n_cluster) {
@@ -170,63 +173,66 @@ test_outcome_probs <- function(probs, n_outcomes, n_cluster) {
   }
 }
 
-#' Test the poLCA object's standard error
+#' Test the fitted model's standard error
 #'
-#' Test the poLCA object's (or a list which mocks it) standard error for the
+#' Test the fitted model's (or a list which mocks it) standard error for the
 #' prior probabilities and outcome probabilities
 #'
-#' @param polca The poLCA object to test (or a list which mocks it)
+#' @param lc A model object estimated using the `poLCA` function (or a list
+#'   which mocks it)
 #' @param n_outcomes Vector of integers, number of outcomes for each category
 #' @param n_cluster Number of clusters fitted
-test_standard_error <- function(polca, n_outcomes, n_cluster) {
-  expect_identical("P.se" %in% names(polca), TRUE)
-  expect_identical("probs.se" %in% names(polca), TRUE)
+test_standard_error <- function(lc, n_outcomes, n_cluster) {
+  expect_identical("P.se" %in% names(lc), TRUE)
+  expect_identical("probs.se" %in% names(lc), TRUE)
 
-  expect_identical(length(polca$P.se), as.integer(n_cluster))
-  expect_identical(all(polca$P.se >= 0), TRUE)
+  expect_identical(length(lc$P.se), as.integer(n_cluster))
+  expect_identical(all(lc$P.se >= 0), TRUE)
 
-  expect_identical(length(polca$probs.se), as.integer(length(n_outcomes)))
+  expect_identical(length(lc$probs.se), as.integer(length(n_outcomes)))
   for (i in seq_len(length(n_outcomes))) {
-    expect_identical(nrow(polca$probs.se[[i]]), as.integer(n_cluster))
-    expect_identical(ncol(polca$probs.se[[i]]), as.integer(n_outcomes[i]))
-    expect_identical(all(polca$probs.se[[i]] >= 0), TRUE)
+    expect_identical(nrow(lc$probs.se[[i]]), as.integer(n_cluster))
+    expect_identical(ncol(lc$probs.se[[i]]), as.integer(n_outcomes[i]))
+    expect_identical(all(lc$probs.se[[i]] >= 0), TRUE)
   }
 }
 
-#' Test the poLCA object's regression coefficient standard error
+#' Test the fitted model's regression coefficient standard error
 #'
-#' Test the poLCA object's (or a list which mocks it) regression coefficient
+#' Test the fitted model's (or a list which mocks it) regression coefficient
 #' standard error
 #'
-#' @param polca The poLCA object to test (or a list which mocks it)
+#' @param lc A model object estimated using the `poLCA` function (or a list
+#'   which mocks it)
 #' @param n_feature Number of features
 #' @param n_cluster Number of clusters fitted
-test_standard_coeff_error <- function(polca, n_feature, n_cluster) {
+test_standard_coeff_error <- function(lc, n_feature, n_cluster) {
   n_parameter <- n_feature * (n_cluster - 1)
-  expect_identical(ncol(polca$coeff.V), as.integer(n_parameter))
-  expect_identical(nrow(polca$coeff.V), as.integer(n_parameter))
+  expect_identical(ncol(lc$coeff.V), as.integer(n_parameter))
+  expect_identical(nrow(lc$coeff.V), as.integer(n_parameter))
 }
 
-#' Test the poLCA object's goodness of fit
+#' Test the fitted model's goodness of fit
 #'
-#' Test the poLCA object's (or a list which mocks it) goodness of fit outputs
+#' Test the fitted model's (or a list which mocks it) goodness of fit outputs
 #' such as the table of expected and observed frequencies (predcell) and
 #' statistics such as Gsq and Chisq
 #'
-#' @param polca The poLCA object to test (or a list which mocks it)
+#' @param lc A model object estimated using the `poLCA` function (or a list
+#'   which mocks it)
 #' @param n_outcomes Vector of integers, number of outcomes for each category
-test_polca_goodnessfit <- function(polca, n_outcomes) {
-  expect_identical("predcell" %in% names(polca), TRUE)
-  expect_identical("Gsq" %in% names(polca), TRUE)
-  expect_identical("Chisq" %in% names(polca), TRUE)
+test_polca_goodnessfit <- function(lc, n_outcomes) {
+  expect_identical("predcell" %in% names(lc), TRUE)
+  expect_identical("Gsq" %in% names(lc), TRUE)
+  expect_identical("Chisq" %in% names(lc), TRUE)
 
-  unique_responses <- as.matrix(polca$predcell)[, seq_len(length(n_outcomes))]
+  unique_responses <- as.matrix(lc$predcell)[, seq_len(length(n_outcomes))]
   expect_identical(all(unique_responses > 0), TRUE)
   for (i in seq_len(length(n_outcomes))) {
     expect_identical(all(unique_responses[, i] <= n_outcomes[i]), TRUE)
   }
 
-  expect_identical(sum(as.integer(polca$predcell$observed)), polca$Nobs)
+  expect_identical(sum(as.integer(lc$predcell$observed)), lc$Nobs)
 
-  expect_lte(sum(polca$expected), polca$Nobs)
+  expect_lte(sum(lc$expected), lc$Nobs)
 }

@@ -16,8 +16,9 @@ prob_in_condition <- 0.5
 #'
 #' @param columns Vector of strings, names of the columns of the responses
 #' @param n_outcomes Vector of integers, number of outcomes for each category
-#' @param model Fitted poLCA model
-test_table_given_model <- function(columns, n_outcomes, model) {
+#' @param lc A model object estimated using the `poLCA` function (or a list
+#'   which mocks it)
+test_table_given_model <- function(columns, n_outcomes, lc) {
   # for every pair category
   for (i_category in seq_len(length(n_outcomes))) {
     for (j_category in seq_len(length(n_outcomes))) {
@@ -47,10 +48,9 @@ test_table_given_model <- function(columns, n_outcomes, model) {
         }
 
         # test function here
-        table_polca <- poLCA::poLCA.table(formula_, condition, model)
+        table_polca <- poLCA::poLCA.table(formula_, condition, lc)
         table_polcaparallel <- poLCAParallel::poLCA.table(
-          formula_, condition,
-          model
+          formula_, condition, lc
         )
         expect_equal(table_polcaparallel, table_polca)
       }
@@ -85,12 +85,12 @@ test_non_regress_table <- function(n_data, n_outcomes, n_cluster, n_rep,
     random_response(n_data, n_outcomes, prob_na_train, NaN)
   )
   formula_ <- get_non_regression_formula(responses)
-  model <- poLCAParallel::poLCA(formula_, responses, n_cluster,
+  lc <- poLCAParallel::poLCA(formula_, responses, n_cluster,
     maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
     verbose = FALSE, n.thread = n_thread
   )
 
-  test_table_given_model(colnames(responses), n_outcomes, model)
+  test_table_given_model(colnames(responses), n_outcomes, lc)
 }
 
 #' Test the function poLCA.table() for the non-regression problem

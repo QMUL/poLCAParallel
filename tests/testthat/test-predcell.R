@@ -27,20 +27,20 @@ test_non_regress_predcell <- function(n_data, n_outcomes, n_cluster, n_rep,
     random_response(n_data, n_outcomes, prob_na_train, NaN)
   )
   formula <- get_non_regression_formula(responses)
-  polca <- poLCAParallel::poLCA(formula, responses, n_cluster,
+  lc <- poLCAParallel::poLCA(formula, responses, n_cluster,
     maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
     verbose = FALSE, n.thread = n_thread
   )
 
   # using training data
-  predcell_polca <- poLCA::poLCA.predcell(polca, polca$y)
-  predcell_polcaparallel <- poLCAParallel::poLCA.predcell(polca, polca$y)
+  predcell_polca <- poLCA::poLCA.predcell(lc, lc$y)
+  predcell_polcaparallel <- poLCAParallel::poLCA.predcell(lc, lc$y)
   expect_equal(predcell_polcaparallel, predcell_polca)
 
   # fully observed data
   responses <- random_response(n_data_test, n_outcomes, 0, NaN)
-  predcell_polca <- poLCA::poLCA.predcell(polca, responses)
-  predcell_polcaparallel <- poLCAParallel::poLCA.predcell(polca, responses)
+  predcell_polca <- poLCA::poLCA.predcell(lc, responses)
+  predcell_polcaparallel <- poLCAParallel::poLCA.predcell(lc, responses)
   expect_equal(predcell_polcaparallel, predcell_polca)
 
   # partially observed data not supported
@@ -75,20 +75,20 @@ test_regress_predcell <- function(n_data, n_feature, n_outcomes, n_cluster,
   formula <- get_regression_formula(responses, features)
   data <- cbind(responses, features)
 
-  polca <- poLCAParallel::poLCA(formula, data, n_cluster,
+  lc <- poLCAParallel::poLCA(formula, data, n_cluster,
     maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
     verbose = FALSE, n.thread = n_thread
   )
 
   # using training data
-  predcell_polca <- poLCA::poLCA.predcell(polca, polca$y)
-  predcell_polcaparallel <- poLCAParallel::poLCA.predcell(polca, polca$y)
+  predcell_polca <- poLCA::poLCA.predcell(lc, lc$y)
+  predcell_polcaparallel <- poLCAParallel::poLCA.predcell(lc, lc$y)
   expect_equal(predcell_polcaparallel, predcell_polca)
 
   # fully observed data
   responses <- random_response(n_data_test, n_outcomes, 0, NaN)
-  predcell_polca <- poLCA::poLCA.predcell(polca, responses)
-  predcell_polcaparallel <- poLCAParallel::poLCA.predcell(polca, responses)
+  predcell_polca <- poLCA::poLCA.predcell(lc, responses)
+  predcell_polcaparallel <- poLCAParallel::poLCA.predcell(lc, responses)
   expect_equal(predcell_polcaparallel, predcell_polca)
 
   # partially observed data not supported

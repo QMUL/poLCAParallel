@@ -23,17 +23,17 @@ test_blrt <- function(n_data, n_outcomes, n_cluster, n_rep, na_rm,
                       n_thread, maxiter, tol, prob_na, n_bootstrap) {
   responses <- random_response(n_data, n_outcomes, prob_na, NaN)
   formula <- get_non_regression_formula(responses)
-  null_model <- poLCAParallel::poLCA(formula, responses, n_cluster,
+  lc_null <- poLCAParallel::poLCA(formula, responses, n_cluster,
     maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
     verbose = FALSE, n.thread = n_thread
   )
-  alt_model <- poLCAParallel::poLCA(formula, responses, n_cluster + 1,
+  lc_alt <- poLCAParallel::poLCA(formula, responses, n_cluster + 1,
     maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
     verbose = FALSE, n.thread = n_thread
   )
 
   bootstrap_results <- poLCAParallel::blrt(
-    null_model, alt_model, n_bootstrap,
+    lc_null, lc_alt, n_bootstrap,
     n_thread = n_thread, n_rep = n_rep
   )
   expect_identical(

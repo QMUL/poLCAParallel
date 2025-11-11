@@ -42,28 +42,28 @@ test_reuse <- function(n_data, n_outcomes, n_cluster, n_rep,
   responses <- random_response(n_data, n_outcomes, prob_na, NaN)
   formula <- get_non_regression_formula(responses)
 
-  model_parallel <- poLCAParallel::poLCA(formula, responses, n_cluster,
+  lc <- poLCAParallel::poLCA(formula, responses, n_cluster,
     maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
     verbose = FALSE, n.thread = n_thread
   )
 
   probs_reorder <- poLCAParallel::poLCA.reorder(
-    model_parallel$probs.start,
-    order(model_parallel$P, decreasing = TRUE)
+    lc$probs.start,
+    order(lc$P, decreasing = TRUE)
   )
 
   # one repetition as the purpose is to use the reordered probabilities only
-  model_parallel <- poLCAParallel::poLCA(formula, responses, n_cluster,
+  lc <- poLCAParallel::poLCA(formula, responses, n_cluster,
     maxiter = maxiter, tol = tol, na.rm = na_rm, probs.start = probs_reorder,
     nrep = 1, verbose = FALSE, n.thread = n_thread
   )
 
   probs_reorder <- poLCAParallel::poLCA.reorder(
-    model_parallel$probs, order(model_parallel$P, decreasing = TRUE)
+    lc$probs, order(lc$P, decreasing = TRUE)
   )
 
   # one repetition as the purpose is to use the reordered probabilities only
-  model_parallel <- poLCAParallel::poLCA(formula, responses, n_cluster,
+  lc <- poLCAParallel::poLCA(formula, responses, n_cluster,
     maxiter = maxiter, tol = tol, na.rm = na_rm, probs.start = probs_reorder,
     nrep = 1, verbose = FALSE, n.thread = n_thread
   )

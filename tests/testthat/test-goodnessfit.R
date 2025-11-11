@@ -16,16 +16,16 @@ test_goodnessfit <- function(n_data, n_outcomes, n_cluster,
   prior <- stats::runif(n_cluster)
   prior <- prior / sum(prior)
 
-  polca <- list(
+  lc <- list(
     y = responses,
     P = prior,
     N = n_data,
     probs = probs,
     Nobs = sum(rowSums(responses == 0) == 0)
   )
-  polca <- poLCAParallel.goodnessfit(polca)
+  lc <- poLCAParallel.goodnessfit(lc)
 
-  test_polca_goodnessfit(polca, n_outcomes)
+  test_polca_goodnessfit(lc, n_outcomes)
 }
 
 test_that("full-data", {

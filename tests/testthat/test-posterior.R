@@ -24,26 +24,26 @@ test_non_regress_posterior <- function(n_data, n_outcomes, n_cluster, n_rep,
     random_response(n_data, n_outcomes, prob_na_train, NaN)
   )
   formula <- get_non_regression_formula(responses)
-  polca <- poLCAParallel::poLCA(formula, responses, n_cluster,
+  lc <- poLCAParallel::poLCA(formula, responses, n_cluster,
     maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
     verbose = FALSE, n.thread = n_thread
   )
 
   # using training data
-  posterior_polca <- poLCA::poLCA.posterior(polca, polca$y)
-  posterior_polcaparallel <- poLCAParallel::poLCA.posterior(polca, polca$y)
+  posterior_polca <- poLCA::poLCA.posterior(lc, lc$y)
+  posterior_polcaparallel <- poLCAParallel::poLCA.posterior(lc, lc$y)
   expect_equal(posterior_polcaparallel, posterior_polca)
 
   # fully observed data
   responses <- random_response(n_data_test, n_outcomes, 0, NaN)
-  posterior_polca <- poLCA::poLCA.posterior(polca, responses)
-  posterior_polcaparallel <- poLCAParallel::poLCA.posterior(polca, responses)
+  posterior_polca <- poLCA::poLCA.posterior(lc, responses)
+  posterior_polcaparallel <- poLCAParallel::poLCA.posterior(lc, responses)
   expect_equal(posterior_polcaparallel, posterior_polca)
 
   # partially observed data
   responses <- random_response(n_data_test, n_outcomes, prob_na_test, NaN)
-  posterior_polca <- poLCA::poLCA.posterior(polca, responses)
-  posterior_polcaparallel <- poLCAParallel::poLCA.posterior(polca, responses)
+  posterior_polca <- poLCA::poLCA.posterior(lc, responses)
+  posterior_polcaparallel <- poLCAParallel::poLCA.posterior(lc, responses)
   expect_equal(posterior_polcaparallel, posterior_polca)
 }
 
@@ -74,23 +74,23 @@ test_regress_posterior <- function(n_data, n_feature, n_outcomes, n_cluster,
   formula <- get_regression_formula(responses, features)
   data <- cbind(responses, features)
 
-  polca <- poLCAParallel::poLCA(formula, data, n_cluster,
+  lc <- poLCAParallel::poLCA(formula, data, n_cluster,
     maxiter = maxiter, tol = tol, na.rm = na_rm, nrep = n_rep,
     verbose = FALSE, n.thread = n_thread
   )
 
-  posterior_polca <- poLCA::poLCA.posterior(polca, polca$y)
-  posterior_polcaparallel <- poLCAParallel::poLCA.posterior(polca, polca$y)
+  posterior_polca <- poLCA::poLCA.posterior(lc, lc$y)
+  posterior_polcaparallel <- poLCAParallel::poLCA.posterior(lc, lc$y)
   expect_equal(posterior_polcaparallel, posterior_polca)
 
   responses <- random_response(n_data_test, n_outcomes, 0, NaN)
-  posterior_polca <- poLCA::poLCA.posterior(polca, responses)
-  posterior_polcaparallel <- poLCAParallel::poLCA.posterior(polca, responses)
+  posterior_polca <- poLCA::poLCA.posterior(lc, responses)
+  posterior_polcaparallel <- poLCAParallel::poLCA.posterior(lc, responses)
   expect_equal(posterior_polcaparallel, posterior_polca)
 
   responses <- random_response(n_data_test, n_outcomes, prob_na_test, NaN)
-  posterior_polca <- poLCA::poLCA.posterior(polca, responses)
-  posterior_polcaparallel <- poLCAParallel::poLCA.posterior(polca, responses)
+  posterior_polca <- poLCA::poLCA.posterior(lc, responses)
+  posterior_polcaparallel <- poLCAParallel::poLCA.posterior(lc, responses)
   expect_equal(posterior_polcaparallel, posterior_polca)
 }
 

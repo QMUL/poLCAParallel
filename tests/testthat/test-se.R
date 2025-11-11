@@ -28,13 +28,13 @@ test_non_regression_se <- function(n_data, n_outcomes, n_cluster,
   # random posterior
   posterior <- random_cluster_probs(n_data, n_cluster)
 
-  results <- list(
+  lc <- list(
     x = features, y = responses, probs = probs, prior = prior,
     posterior = posterior
   )
-  results <- poLCAParallel::poLCAParallel.se(results, is_smooth)
+  lc <- poLCAParallel::poLCAParallel.se(lc, is_smooth)
 
-  test_standard_error(results, n_outcomes, n_cluster)
+  test_standard_error(lc, n_outcomes, n_cluster)
 }
 
 #' Test poLCAParallel.se() for the regression problem
@@ -65,15 +65,15 @@ test_regression_se <- function(n_data, n_feature, n_outcomes, n_cluster,
 
   posterior <- random_cluster_probs(n_data, n_cluster)
 
-  results <- list(
+  lc <- list(
     x = features, y = responses, probs = probs, prior = prior,
     posterior = posterior
   )
-  results <- poLCAParallel::poLCAParallel.se(results, is_smooth)
+  lc <- poLCAParallel::poLCAParallel.se(lc, is_smooth)
 
-  test_standard_error(results, n_outcomes, n_cluster)
+  test_standard_error(lc, n_outcomes, n_cluster)
 
-  test_standard_coeff_error(results, n_feature, n_cluster)
+  test_standard_coeff_error(lc, n_feature, n_cluster)
 }
 
 # tests vary if have missing data, non-regression or regression problem and if
