@@ -60,14 +60,14 @@ class StandardErrorRegress : public polca_parallel::StandardError {
    *   <li>dim 1: for each feature</li>
    * </ul>
    * @param responses Design matrix of responses, matrix containing
-   * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
-   * has dimensions
+   * outcomes/responses for each category as integers 1, 2, 3, .... Missing
+   * values may be encoded as 0. The matrix has dimensions
    * <ul>
    *   <li>dim 0: for each data point</li>
    *   <li>dim 1: for each category</li>
    * </ul>
-   * @param probs Vector of probabilities for each outcome, for each category,
-   * for each cluster flatten list of matrices
+   * @param probs Vector of response probabilities for each outcome, conditioned
+   * on the category and cluster. Flatten list in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -92,18 +92,19 @@ class StandardErrorRegress : public polca_parallel::StandardError {
    * @param n_outcomes Array of number of outcomes, for each category, and its
    * sum
    * @param n_cluster Number of clusters fitted
-   * @param prior_error Vector to contain the standard error for the prior
-   * probabilities for each cluster, modified after calling Calc()
-   * @param prob_error Vector to contain the standard error for the outcome
-   * probabilities category and cluster, modified after calling Calc()
-   * flatten list of matrices
+   * @param prior_error <b>Modified</b> Vector to contain the standard error for
+   * the prior probabilities for each cluster, modified after calling Calc()
+   * @param prob_error <b>Modified</b> Vector to contain the standard error for
+   * the outcome probabilities, conditioned on category and cluster, modified
+   * after calling Calc(). Flatten list of matrices
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
    *   <li>dim 2: for each cluster</li>
    * </ul>
-   * @param regress_coeff_error Matrix to contain the covariance matrix of the
-   * regression coefficient, modified after calling Calc()
+   * @param regress_coeff_error <b>Modified</b>  Matrix to contain the
+   * covariance matrix of the regression coefficient, modified after calling
+   * Calc()
    */
   StandardErrorRegress(std::span<const double> features,
                        std::span<const int> responses,

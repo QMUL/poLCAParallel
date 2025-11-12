@@ -30,7 +30,9 @@
 namespace polca_parallel {
 
 /**
- * For storing the observed and expected frequency, used for chi-squared test
+ * For storing the observed and expected frequency to a vector of
+ * responses/outcomes. This is used to create a table used for the goodness of
+ * fit tests and statistics such as the chi-squared test
  */
 struct Frequency {
   std::size_t observed;
@@ -78,7 +80,6 @@ class GoodnessOfFit {
   std::size_t n_obs_ = 0;
 
  public:
-  /** Construct a GoodnessOfFit object */
   GoodnessOfFit();
 
   virtual ~GoodnessOfFit() = default;
@@ -104,8 +105,9 @@ class GoodnessOfFit {
    * <ul>
    *   <li>dim 0: for each cluster</li>
    * </ul>
-   * @param outcome_prob The outcome probabilities, conditioned on the
-   * cluster and category. A flatten list in the following order
+   * @param outcome_prob Vector of response probabilities for each outcome,
+   * conditioned on the category and cluster. Flatten list in the following
+   * order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -127,7 +129,7 @@ class GoodnessOfFit {
   [[nodiscard]] std::map<std::vector<int>, Frequency>& GetFrequencyMap();
 
   /**
-   * Get chi-squared and log-likelihood ratio statistics
+   * Get the chi-squared and log-likelihood ratio statistics
    *
    * Calculate and return the chi-squared statistics and log-likelihood ratio
    *
@@ -146,7 +148,7 @@ class GoodnessOfFit {
    *
    * @param responses Design matrix <b>transposed</b> of responses, matrix
    * containing outcomes/responses for each category as integers 1, 2, 3, ....
-   * The matrix has dimensions
+   * Missing values may be encoded as 0. The matrix has dimensions
    * <ul>
    *   <li>dim 0: for each category</li>
    *   <li>dim 1: for each data point</li>
@@ -166,8 +168,9 @@ class GoodnessOfFit {
    *
    * @param prior Vector of prior probabilities (probability in a cluster),
    * length <code>n_cluster</code>
-   * @param outcome_prob Vector of response probabilities, conditioned on
-   * cluster and category. A flattened list in the following order
+   * @param outcome_prob Vector of response probabilities for each outcome,
+   * conditioned on the category and cluster. Flatten list in the following
+   * order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>

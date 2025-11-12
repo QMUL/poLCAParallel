@@ -35,15 +35,13 @@ namespace polca_parallel {
  * regression problem, prior probabilities are obatined from the softmax
  * functions of the features.
  *
- * Provide initial outcome probabilities to initalise the EM algorithm
- *
  * How to use:
  * <ul>
  *   <li>
  *     Pass the data, initial probabilities and other parameters to the
- *     constructor. Also in the constructor, pass an array to store the
- *     posterior and prior probabilities (for each cluster), estimated
- *     outcome probabilities and the regression coefficients
+ *     constructor to initalise. Also in the constructor, pass an array to store
+ *     the resulting posterior and prior probabilities (for each cluster),
+ *     estimated outcome probabilities and the regression coefficients
  *   </li>
  *   <li>
  *     Call optional methods such as set_best_initial_prob(), set_seed()
@@ -51,8 +49,9 @@ namespace polca_parallel {
  *   </li>
  *   <li>
  *      Call Fit() to fit using the EM algorithm, results are stored in the
- *      provided arrays. The EM algorithm restarts with random initial values
- *      should it fail for some reason (more commonly in the regression model)
+ *      user-provided arrays. The EM algorithm restarts with random initial
+ *      values should it fail for some reason (more commonly in the regression
+ *      model)
  *   </li>
  *   <li>
  *     Extract optional results using the methods get_ln_l(), get_n_iter()
@@ -125,13 +124,15 @@ class EmAlgorithmRegress : public polca_parallel::EmAlgorithm {
    * </ul>
    * @param responses Design matrix <b>transposed</b> of responses, matrix
    * containing outcomes/responses for each category as integers 1, 2, 3, ....
-   * The matrix has dimensions
+   * If supported, 0 can be used to indicate a missing value. The matrix has
+   * dimensions
    * <ul>
    *   <li>dim 0: for each category</li>
    *   <li>dim 1: for each data point</li>
    * </ul>
-   * @param initial_prob Vector of initial probabilities for each category and
-   * outcome, flatten list in the following order
+   * @param initial_prob Vector of initial response probabilities for each
+   * outcome, conditioned on the category and cluster. Flatten list in the
+   * following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -145,32 +146,32 @@ class EmAlgorithmRegress : public polca_parallel::EmAlgorithm {
    * @param max_iter Maximum number of iterations for EM algorithm
    * @param tolerance Tolerance for difference in log likelihood, used for
    * stopping condition
-   * @param posterior Modified to contain the resulting posterior probabilities
-   * after calling Fit(). Design matrix of posterior probabilities (also called
-   * responsibility). It's the probability a data point is in cluster m given
-   * responses. The matrix has the following dimensions
+   * @param posterior <b>Modified</b> To contain the resulting posterior
+   * probabilities after calling Fit(). Design matrix of posterior probabilities
+   * (also called responsibility). It's the probability a data point is in
+   * cluster m given responses. The matrix has the following dimensions
    * <ul>
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
    * </ul>
-   * @param prior Modified to contain the resulting prior probabilities after
-   * calling Fit(). Design matrix of prior probabilities. It's the probability a
-   * data point is in cluster m <b>not</b> given responses after calculations.
-   * The matrix has the following dimensions
+   * @param prior <b>Modified</b> To contain the resulting prior probabilities
+   * after calling Fit(). Design matrix of prior probabilities. It's the
+   * probability a data point is in cluster m <b>not</b> given responses after
+   * calculations. The matrix has the following dimensions
    * <ul>
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
    * </ul>
-   * @param estimated_prob Modified to contain the resulting outcome
-   * probabilities after calling Fit(). Vector of estimated response
-   * probabilities, conditioned on cluster, for each category. A flatten list in
-   * the following order
+   * @param estimated_prob <b>Modified</b> To contain the resulting outcome
+   * probabilities after calling Fit(). Vector of response probabilities for
+   * each outcome, conditioned on the category and cluster. Flatten list in the
+   * following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
    *   <li>dim 2: for each cluster</li>
    * </ul>
-   * @param regress_coeff Modified to contain the resulting matrix of
+   * @param regress_coeff <b>Modified</b> To contain the resulting matrix of
    * coefficients. To be multiplied to the features and linked to the prior
    * using softmax. The dimensions are of size
    * <ul>
@@ -216,11 +217,10 @@ class EmAlgorithmRegress : public polca_parallel::EmAlgorithm {
   /**
    * Do M step
    *
-   * Update the regression coefficient, prior probabilities and
-   * estimated response probabilities given the posterior probabilities.
-   * Modifies the member variables EmAlgorithmRegress::regress_coeff_,
+   * Update and modify the member variables EmAlgorithmRegress::regress_coeff_,
    * EmAlgorithmRegress::gradient_, EmAlgorithmRegress::hessian_,
-   * EmAlgorithmRegress::prior_ and EmAlgorithm::estimated_prob_
+   * EmAlgorithmRegress::prior_ and EmAlgorithm::estimated_prob_ given the
+   * posterior probabilities from the EStep()
    *
    * @return <code>true</code> if the solver cannot find a solution,
    * <code>false</code> if successful
@@ -255,28 +255,34 @@ class EmAlgorithmRegress : public polca_parallel::EmAlgorithm {
    * (EmAlgorithmRegress::n_cluster_ - 1) blocks, each corresponding to cluster
    * 1, 2, 3, ..., EmAlgorithmRegress::n_cluster_ - 1
    *
-   * @param cluster_index_0 row index of which block to work on
+   * @param cluster_index_0 Row index of which block to work on,
    * can take values of 0, 1, 2, ..., EmAlgorithmRegress::n_cluster_ - 2
-   * @param cluster_index_1 column index of which block to work on
+   * @param cluster_index_1 Column index of which block to work on,
    * can take values of 0, 1, 2, ..., EmAlgorithmRegress::n_cluster_ - 2
    */
   void CalcHessSubBlock(std::size_t cluster_index_0,
                         std::size_t cluster_index_1);
 
   /**
-   * Calculate element of a block from the Hessian
+   * Calculate an element of a block from the Hessian
    *
-   * @param feature_index_0 column index
-   * @param feature_index_1 column index
+   * Calculate an element of a block from the Hessian for a given pair of
+   * features and pair of clusters
+   *
+   * @param feature_index_0 Column index of one of the features
+   * @param feature_index_1 Column index of one of the features
    * @param prior_post_inter Vector of length EmAlgorithm::n_data_, dependent on
-   * pair of clusters. For cluster \f$m\f$, let \f$r_m\f$ be a vector of
-   * posteriors and \f$\pi_m\f$ be a vector of priors for cluster \f$m\f$. For
-   * a cluster pair \f$u\f$ and \f$v\f$, the argument should be:
+   * pair of clusters. For cluster \f$u=1,2,\cdots,\texttt{n_cluster}\f$, let
+   * \f$r_u\f$ be a vector of posteriors, for every data point, and \f$\pi_u\f$
+   * be a vector of priors, for every data point. Thus vectors \f$r_u\f$ and
+   * \f$\pi_u\f$ are of length EmAlgorithm::n_data_.
+   * For a cluster pair \f$u\f$ and \f$v\f$, the argument should be:
    * <ul>
    *   <li>For \f$u=v\f$: \f$r_u(1-r_u) - \pi_u(1-\pi_u)\f$</li>
    *   <li>Otherwise: \f$\pi_u \pi_v - r_u r_v\f$</li>
    * </ul>
-   * @return double value of an element of the Hessian
+   * where multiplication is an elementwise multiplication
+   * @return double Value of an element of the Hessian
    */
   [[nodiscard]] double CalcHessElement(
       std::size_t feature_index_0, std::size_t feature_index_1,
@@ -287,14 +293,14 @@ class EmAlgorithmRegress : public polca_parallel::EmAlgorithm {
    *
    * Hessian is a block matrix, each rows/columns of block matrices correspond
    * to a cluster, and then each row/column of the block matrix correspond
-   * to a feature. Use this method to assign a specific element of the hessian
-   * matrix
+   * to a feature. Use this method to assign a specific element of
+   * EmAlgorithmRegress::hessian_
    *
-   * @param hess_element value of an entry of the Hessian
-   * @param cluster_index_0 row index of block matrices
-   * @param cluster_index_1 column index of block matrices
-   * @param feature_index_0 row index within block matrix
-   * @param feature_index_1 column index within block matrix
+   * @param hess_element Value of an entry of the Hessian
+   * @param cluster_index_0 Row index of block matrices
+   * @param cluster_index_1 Column index of block matrices
+   * @param feature_index_0 Row index within block matrix
+   * @param feature_index_1 Column index within block matrix
    */
   void AssignHessianAt(double hess_element, std::size_t cluster_index_0,
                        std::size_t cluster_index_1, std::size_t feature_index_0,

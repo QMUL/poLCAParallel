@@ -37,7 +37,7 @@
  * data is large
  *
  * @param prior_null Null model, vector of prior probabilities for the null
- * model, probability data point is in cluster m NOT given responses
+ * model, probability data point is in cluster m <b>not</b> given responses
  * <ul>
  *   <li>dim 0: for each cluster</li>
  * </ul>
@@ -50,7 +50,7 @@
  *   <li>dim 2: for each category</li>
  * </ul>
  * @param prior_alt Alt model, vector of prior probabilities for the null
- * model, probability data point is in cluster m NOT given responses
+ * model, probability data point is in cluster m <b>not</b> given responses
  * <ul>
  *   <li>dim 0: for each cluster</li>
  * </ul>
@@ -72,7 +72,7 @@
  * @param max_iter Maximum number of iterations for EM algorithm
  * @param tolerance Tolerance for difference in log likelihood, used for
  * stopping condition
- * @param seed array of integers to seed rng
+ * @param seed Array of integers to seed rng
  * @return Rcpp::NumericVector array of bootstrap log likelihood ratios
  */
 // [[Rcpp::export]]

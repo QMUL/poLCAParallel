@@ -32,19 +32,20 @@ namespace polca_parallel {
 /**
  * Template class for EmAlgorithmNan and EmAlgorithmNanRegress
  *
- * This template class is a subclass of either EmAlgorithm and
- * EmAlgorithmRegress and reimplement methods for NaN handling. Providing those
- * classes to the template parameter correspond to the classes EmAlgorithmNan
- * and EmAlgorithmNanRegress respectively.
+ * This template class is a direct subclass of either EmAlgorithm and
+ * EmAlgorithmRegress and reimplement methods for NaN handling. Provide either
+ * of the superclasses EmAlgorithm and EmAlgorithmRegress via the template
+ * parameter
  *
- * Missing values in the responses are encode with zeros
+ * For NaN handling, those values (also known as missing values) in the
+ * responses are encoded as zeros
  *
  * @tparam Either EmAlgorithm or EmAlgorithmRegress
  */
 template <typename T>
 class EmAlgorithmNanTemplate : public T {
  protected:
-  /** Temporary variable for summing posteriors for each category */
+  /** Temporary variable for summing posteriors over categories */
   std::vector<double> posterior_sum_;
 
  public:
@@ -70,17 +71,20 @@ class EmAlgorithmNanTemplate : public T {
 
  protected:
   /**
-   * Overridden to handle and ignore reponse zero and modify posterior_sum
+   * Overridden to handle and ignore reponse zero
+   *
+   * Overridden to handle and ignore reponse zero and modifies the member
+   * variable EmAlgorithmNanTemplate::posterior_sum_
    *
    * @copydoc EmAlgorithm::WeightedSumProb
    */
   void WeightedSumProb(const std::size_t cluster_index) override;
 
   /**
-   * Overridden to estimate probabilities using posterior_sum
+   * Overridden to estimate probabilities using <code>posterior_sum</code>
    *
    * Overridden to estimate probabilities using
-   * EmAlgorithmNanTemplate::posterior_sum
+   * EmAlgorithmNanTemplate::posterior_sum_
    *
    * @copydoc EmAlgorithm::NormalWeightedSumProb
    */
@@ -170,18 +174,20 @@ class EmAlgorithmNanRegress
 };
 
 /**
- * Static version of NanWeightedSumProb()
+ * Static version EmAlgorithmNanTemplate::WeightedSumProb()
  *
- * Static version of NanWeightedSumProb() and the N version of
- * WeightedSumProb(). Used to override EmAlgorithm::WeightedSumProb()
+ * Static version EmAlgorithmNanTemplate::WeightedSumProb() and the NaN version
+ * of EmAlgorithm::WeightedSumProb(). This is then used to override
+ * EmAlgorithm::WeightedSumProb() in EmAlgorithmNanTemplate::WeightedSumProb()
  *
- * Override so that is ignore response zero and do a cumulative sum of
- * posteriors for each category in posterior_sum
+ * It ignores response zero in the cumulative sum of posteriors over categories
+ * when calculating the <code>posterior_sum</code>. This is used for
+ * EmAlgorithmNanTemplate::posterior_sum_
  *
- * @param cluster_index which cluster to consider
+ * @param cluster_index Which cluster to consider
  * @param responses Design matrix <b>transposed</b> of responses, matrix
- * containing outcomes/responses for each category as integers 1, 2, 3, .... The
- * matrix has dimensions
+ * containing outcomes/responses for each category as integers 1, 2, 3, ....
+ * Missing values may be encoded as 0. The matrix has dimensions
  * <ul>
  *   <li>dim 0: for each category</li>
  *   <li>dim 1: for each data point</li>
@@ -194,16 +200,17 @@ class EmAlgorithmNanRegress
  *   <li>dim 0: for each data</li>
  *   <li>dim 1: for each cluster</li>
  * </ul>
- * @param estimated_prob Modified to contain the weighted sum of posteriors,
- * conditioned on cluster, for each category. A flattened list in the following
- * order
+ * @param estimated_prob <b>Modified</b> To contain the sum of posteriors for
+ * each outcome, conditioned on the category and cluster. A flattened list in
+ * the following order
  * <ul>
- *   <li>dim 0: for each outcome</li>
- *   <li>dim 1: for each category</li>
- *   <li>dim 2: for each cluster</li>
+ *   <li>
+ *     dim 0: for each outcome | category (inner), for each category (outer)
+ *   </li>
+ *   <li>dim 1: for each cluster</li>
  * </ul>
- * @param posterior_sum Modified to store the cumulative posterior sum for each
- * category
+ * @param posterior_sum <b>Modified</b> To store the cumulative posterior sum
+ * over categories
  */
 void NanWeightedSumProb(const std::size_t cluster_index,
                         std::span<const int> responses,
@@ -213,25 +220,29 @@ void NanWeightedSumProb(const std::size_t cluster_index,
                         std::vector<double>& posterior_sum);
 
 /**
- * Static version of NanNormalWeightedSumProb()
+ * Static version of EmAlgorithmNanTemplate::NormalWeightedSumProb()
  *
- * Static version of NanNormalWeightedSumProb() and the NaN version of
- * NormalWeightedSumProb(). Used to override
- * EmAlgorithm::NormalWeightedSumProb()
+ * Static version of EmAlgorithmNanTemplate::NormalWeightedSumProb() and the NaN
+ * version of EmAlgorithm::NormalWeightedSumProb(). Used to override
+ * EmAlgorithm::NormalWeightedSumProb() in
+ * EmAlgorithmNanTemplate::NormalWeightedSumProb()
  *
- * Override so that it estimate probabilities using posterior_sum
+ * It estimate probabilities using
+ * <code>EmAlgorithmNanTemplate::posterior_sum_</code>, calculated from
+ * NanWeightedSumProb() or EmAlgorithmNanTemplate::WeightedSumProb()
  *
- * @param cluster_index which cluster to consider
+ * @param cluster_index Which cluster to consider
  * @param n_outcomes Vector of number of outcomes for each category
  * @param posterior_sum Vector which stores the resulting cumulative posterior
- * sum for each category
- * @param estimated_prob Modified to contain the estimated response
- * probabilities, conditioned on cluster, for each category. A flattened list in
- * the following order
+ * sum over categories
+ * @param estimated_prob <b>Modified</b> to contain the estimated response
+ * probabilities for each outcome, conditioned on the category and cluster. A
+ * flattened list in the following order
  * <ul>
- *   <li>dim 0: for each outcome</li>
- *   <li>dim 1: for each category</li>
- *   <li>dim 2: for each cluster</li>
+ *   <li>
+ *     dim 0: for each outcome | category (inner), for each category (outer)
+ *   </li>
+ *   <li>dim 1: for each cluster</li>
  * </ul>
  */
 void NanNormalWeightedSumProb(const std::size_t cluster_index,

@@ -27,13 +27,27 @@
 
 namespace polca_parallel {
 
+/**
+ * Number of outcomes for each category
+ *
+ * For storing the number of outcomes for each category. This is class extends
+ * <code>std::span<const std::size_t></code> and behaves similarly. A method
+ * sum() is implemented to get the sum of outcomes (over all categories)
+ *
+ */
 class NOutcomes : public std::span<const std::size_t> {
  private:
+  /** Sum of outcomes, calculated on construction */
   const std::size_t sum_;
 
  public:
+  /**
+   * @param data Number of outcomes for each category
+   * @param size Number of categories
+   */
   NOutcomes(const std::size_t* data, std::size_t size);
 
+  /** Get the sum of outcomes over all categories */
   [[nodiscard]] std::size_t sum() const;
 };
 
@@ -58,7 +72,8 @@ class NOutcomes : public std::span<const std::size_t> {
  * @param n_data Number of data points
  * @param n_outcomes Number of outcomes for each category
  * @param rng Random number generator
- * @param response To store results, design matrix transpose of responses
+ * @param response <b>Modified</b> To store the resulting design matrix
+ * <b>transposed</b> of responses
  * <ul>
  *   <li>dim 0: for each category</li>
  *   <li>dim 1: for each data point</li>
@@ -71,12 +86,12 @@ void Random(std::span<const double> prior, std::span<const double> prob,
 /**
  * Generate random response probabilities
  *
- * @param n_outcomes vector length n_category, number of outcomes for each
- * category
- * @param n_cluster number of clusters
- * @param rng random number generator
- * @param prob output, matrix of random response probabilities, conditioned on
- * cluster, for each outcome, category and cluster
+ * @param n_outcomes Vector length <code>n_category</code>, number of outcomes
+ * for each category
+ * @param n_cluster Number of clusters
+ * @param rng Random number generator
+ * @param prob <b>Modified</b> To store the matrix of random response
+ * probabilities, conditioned on cluster, for each outcome, category and cluster
  * <ul>
  *   <li>dim 0: for each outcome (inner), for each category (outer)</li>
  *   <li>dim 1: for each cluster</li>
@@ -89,13 +104,13 @@ void RandomProb(std::span<const std::size_t> n_outcomes,
 /**
  * Generate random response probabilities to initalise the EmAlgorithmArray
  *
- * @param n_outcomes vector length n_category, number of outcomes for each
- * category
- * @param n_cluster number of clusters
+ * @param n_outcomes Vector length <code>n_category</code>, number of outcomes
+ * for each category
+ * @param n_cluster Number of clusters
  * @param n_rep Number of repetition for EmAlgorithmArray
- * @param rng random number generator
- * @return std::vector<double> An array suitable to pass as initial_prob to
- * EmAlgorithmArray
+ * @param rng Random number generator
+ * @return std::vector<double> An array suitable to pass as
+ * <code>initial_prob</code> to EmAlgorithmArray
  */
 std::vector<double> RandomInitialProb(polca_parallel::NOutcomes n_outcomes,
                                       const std::size_t n_cluster,

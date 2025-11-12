@@ -28,6 +28,28 @@
 #include "standard_error_regress.h"
 #include "util.h"
 
+/**
+ * Instantiate a polca_parallel::StandardError object
+ *
+ * Instantiate a polca_parallel::StandardError object (which may also be from a
+ * subclass) according to the user provided <code>n_feature</code> and
+ * <code>use_smooth</code>.
+ *
+ * It uses <code>n_feature</code> to determine if it is a regression problem
+ * or not
+ *
+ * It uses <code>use_smooth</code> to determine whether to use the standard or
+ * regularised error
+ *
+ * @tparam Args
+ * @param n_feature Number of features
+ * @param use_smooth Whether to smooth the outcome probabilities to produce more
+ *  numerical stable results at the cost of bias
+ * @param args All arguments to pass to the constructor of
+ * polca_parallel::StandardError, including <code>n_feature</code>, in order.
+ * See polca_parallel::StandardError::StandardError
+ * @return std::unique_ptr<polca_parallel::StandardError>
+ */
 template <typename... Args>
 std::unique_ptr<polca_parallel::StandardError> InitStandardError(
     std::size_t n_feature, bool use_smooth, Args... args) {
@@ -59,21 +81,22 @@ std::unique_ptr<polca_parallel::StandardError> InitStandardError(
  *   <li>dim 1: for each feature</li>
  * </ul>
  * @param responses Design matrix of responses, matrix containing
- * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
- * has dimensions
+ * outcomes/responses for each category as integers 1, 2, 3, .... Missing values
+ * may be encoded as 0. The matrix has dimensions
  * <ul>
  *   <li>dim 0: for each data point</li>
  *   <li>dim 1: for each category</li>
  * </ul>
- * @param probs Vector of probabilities for each outcome, for each category,
- * for each cluster flatten list of matrices
+ * @param probs Vector of response probabilities for each outcome, conditioned
+ * on the category and cluster. Can be the return value of
+ * <code>poLCAParallel.vectorize.R</code>. Flatten list in the following order
  * <ul>
  *   <li>dim 0: for each outcome</li>
  *   <li>dim 1: for each category</li>
  *   <li>dim 2: for each cluster</li>
  * </ul>
  * @param prior Design matrix of prior probabilities, probability data point
- * is in cluster m NOT given responses after calculations, it shall be in
+ * is in cluster m <b>not</b> given responses after calculations, it shall be in
  * matrix form with dimensions
  * <ul>
  *   <li>dim 0: for each data</li>
@@ -91,7 +114,26 @@ std::unique_ptr<polca_parallel::StandardError> InitStandardError(
  * @param n_outcomes_int Array of number of outcomes, for each category
  * @param n_cluster Number of clusters fitted
  * @param use_smooth True to smooth the outcome probabilities
- * @return Rcpp::List
+ * @return A list containing
+ * <ul>
+ *   <li>
+ *     <code>[[1]]</code>:
+ *     prior error, vector of length <code>n_cluster</code>
+ *   </li>
+ *   <li>
+ *     <code>[[2]]</code>:
+ *     outcome probabilities error, vector of length
+ *     <code>n_outcomes.sum() * n_cluster</code>
+ *   </li>
+ *   <li>
+ *     <code>[[3]]</code>:
+ *     regress_coeff_error, covariance matrix of size
+ *     <ul>
+ *       <li>dim 0: <code>n_feature * (n_cluster - 1)</code></li>
+ *       <li>dim 1: <code>n_feature * (n_cluster - 1)</code></li>
+ *     </ul>
+ *   </li>
+ * </ul>
  */
 // [[Rcpp::export]]
 Rcpp::List StandardErrorRcpp(Rcpp::NumericVector features,

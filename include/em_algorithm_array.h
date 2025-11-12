@@ -89,7 +89,8 @@ class EmAlgorithmArray {
   /**
    * Design matrix <b>transposed</b> of responses to provide to each
    * EmAlgorithm, matrix containing outcomes/responses for each category as
-   * integers 1, 2, 3, .... The matrix has dimensions
+   * integers 1, 2, 3, .... If supported, 0 can be used to indicate a missing
+   * value. The matrix has dimensions
    * <ul>
    *   <li>dim 0: for each category</li>
    *   <li>dim 1: for each data point</li>
@@ -140,8 +141,8 @@ class EmAlgorithmArray {
    * and writing should be done with locking and unlocking
    * EmAlgorithmArray::results_lock_ when using multiple threads.
    *
-   * Vector of estimated response probabilities for each category, flatten list
-   * in the following order
+   * Vector of estimated response probabilities for each outcome, conditioned
+   * on the category and cluster. Flatten list in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -233,14 +234,15 @@ class EmAlgorithmArray {
    * Can be empty and not used if using only for the non-regression problem
    * @param responses Design matrix <b>transposed</b> of responses, matrix
    * containing outcomes/responses for each category as integers 1, 2, 3, ....
-   * The matrix has dimensions
+   * If supported, 0 can be used to indicate a missing value. The matrix has
+   * dimensions
    * <ul>
    *   <li>dim 0: for each category</li>
    *   <li>dim 1: for each data point</li>
    * </ul>
-   * @param initial_prob Vector of initial probabilities for each outcome, for
-   * each category, for each cluster and for each repetition, flatten list in
-   * the following order
+   * @param initial_prob Vector of initial response probabilities for each
+   * outcome, conditioned on the category, cluster and repetition. Flatten list
+   * in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -256,7 +258,7 @@ class EmAlgorithmArray {
    * sum
    * @param n_cluster Number of clusters to fit
    * @param n_rep Number of repetitions to do, this defines dim 3 of
-   * initial_prob
+   * <code>initial_prob</code>
    * @param n_thread Number of threads to use
    * @param max_iter Maximum number of iterations for EM algorithm
    * @param tolerance Tolerance for the difference in log-likelihood, used for
@@ -307,14 +309,15 @@ class EmAlgorithmArray {
    *
    * @param responses Design matrix <b>transposed</b> of responses, matrix
    * containing outcomes/responses for each category as integers 1, 2, 3, ....
-   * The matrix has dimensions
+   * If supported, 0 can be used to indicate a missing value. The matrix has
+   * dimensions
    * <ul>
    *   <li>dim 0: for each category</li>
    *   <li>dim 1: for each data point</li>
    * </ul>
-   * @param initial_prob Vector of initial probabilities for each outcome, for
-   * each category, for each cluster and for each repetition, flatten list in
-   * the following order
+   * @param initial_prob Vector of initial response probabilities for each
+   * outcome, conditioned on the category, cluster and repetition. Flatten list
+   * in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -322,12 +325,13 @@ class EmAlgorithmArray {
    *   <li>dim 3: for each repetition</li>
    * </ul>
    * Use RandomInitialProb() in util.h to produce random initial probabilities
+   * if required
    * @param n_data Number of data points
    * @param n_outcomes Array of the number of outcomes for each category and its
    * sum
    * @param n_cluster Number of clusters to fit
    * @param n_rep Number of repetitions to do, this defines dim 3 of
-   * initial_prob
+   * <code>initial_prob</code>
    * @param n_thread Number of threads to use
    * @param max_iter Maximum number of iterations for EM algorithm
    * @param tolerance Tolerance for the difference in log-likelihood, used for
@@ -345,8 +349,9 @@ class EmAlgorithmArray {
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
    * </ul>
-   * @param estimated_prob To store results, vector of estimated response
-   * probabilities for each category, flatten list in the following order
+   * @param estimated_prob To store results, vector of response probabilities
+   * for each outcome, conditioned on the category and cluster. Flatten list in
+   * the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -424,8 +429,10 @@ class EmAlgorithmArray {
   [[nodiscard]] unsigned int get_n_iter() const;
 
   /**
-   * Return true if at least one repetition had to restart, eg due to a singular
-   * matrix
+   * Return <code>true</code> if at least one repetition had to restart
+   *
+   * Return <code>true</code> if at least one repetition had to restart, eg due
+   * to a singular matrix
    *
    * Only available after calling Fit()
    */

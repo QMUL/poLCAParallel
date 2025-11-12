@@ -31,9 +31,9 @@ namespace polca_parallel {
 /**
  * Serial version of EmAlgorithmArray
  *
- * Only uses one thread (so the parameter n_thread is not provided) and each
- * repetition reuses one rng, rather than each repetition having a rng each.
- * Thus the member variable EmAlgorithmArraySerial::seed_array_ shall only
+ * Only uses one thread (so the parameter <code>n_thread</code> is not required)
+ * and each repetition reuses one rng, rather than each repetition having a rng
+ * each. Thus the member variable EmAlgorithmArraySerial::seed_array_ shall only
  * contain one seed. The rng is only used for creating new initial values should
  * a repetition fail.
  *
@@ -61,14 +61,15 @@ class EmAlgorithmArraySerial : public polca_parallel::EmAlgorithmArray {
    * Can be empty and not used if using only for the non-regression problem
    * @param responses Design matrix <b>transposed</b> of responses, matrix
    * containing outcomes/responses for each category as integers 1, 2, 3, ....
-   * The matrix has dimensions
+   * If supported, 0 can be used to indicate a missing value. The matrix has
+   * dimensions
    * <ul>
    *   <li>dim 0: for each category</li>
    *   <li>dim 1: for each data point</li>
    * </ul>
-   * @param initial_prob Vector of initial probabilities for each outcome, for
-   * each category, for each cluster and for each repetition, flatten list in
-   * the following order
+   * @param initial_prob Vector of initial response probabilities for each
+   * outcome, conditioned on the category, cluster and repetition. Flatten list
+   * in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -84,7 +85,7 @@ class EmAlgorithmArraySerial : public polca_parallel::EmAlgorithmArray {
    * sum
    * @param n_cluster Number of clusters to fit
    * @param n_rep Number of repetitions to do, this defines dim 3 of
-   * initial_prob
+   * <code>initial_prob</code>
    * @param max_iter Maximum number of iterations for EM algorithm
    * @param tolerance Tolerance for the difference in log-likelihood, used for
    * stopping condition
@@ -101,8 +102,9 @@ class EmAlgorithmArraySerial : public polca_parallel::EmAlgorithmArray {
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
    * </ul>
-   * @param estimated_prob To store results, vector of estimated response
-   * probabilities for each category, flatten list in the following order
+   * @param estimated_prob To store results, vector of response probabilities
+   * for each outcome, conditioned on the category and cluster. Flatten list in
+   * the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -132,14 +134,15 @@ class EmAlgorithmArraySerial : public polca_parallel::EmAlgorithmArray {
    *
    * @param responses Design matrix <b>transposed</b> of responses, matrix
    * containing outcomes/responses for each category as integers 1, 2, 3, ....
-   * The matrix has dimensions
+   * If supported, 0 can be used to indicate a missing value. The matrix has
+   * dimensions
    * <ul>
    *   <li>dim 0: for each category</li>
    *   <li>dim 1: for each data point</li>
    * </ul>
-   * @param initial_prob Vector of initial probabilities for each outcome, for
-   * each category, for each cluster and for each repetition, flatten list in
-   * the following order
+   * @param initial_prob Vector of initial response probabilities for each
+   * outcome, conditioned on the category, cluster and repetition. Flatten list
+   * in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -147,12 +150,13 @@ class EmAlgorithmArraySerial : public polca_parallel::EmAlgorithmArray {
    *   <li>dim 3: for each repetition</li>
    * </ul>
    * Use RandomInitialProb() in util.h to produce random initial probabilities
+   * if required
    * @param n_data Number of data points
    * @param n_outcomes Array of the number of outcomes for each category and its
    * sum
    * @param n_cluster Number of clusters to fit
    * @param n_rep Number of repetitions to do, this defines dim 3 of
-   * initial_prob
+   * <code>initial_prob</code>
    * @param max_iter Maximum number of iterations for EM algorithm
    * @param tolerance Tolerance for the difference in log-likelihood, used for
    * stopping condition
@@ -169,8 +173,9 @@ class EmAlgorithmArraySerial : public polca_parallel::EmAlgorithmArray {
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
    * </ul>
-   * @param estimated_prob To store results, vector of estimated response
-   * probabilities for each category, flatten list in the following order
+   * @param estimated_prob To store results, vector of response probabilities
+   * for each outcome, conditioned on the category and cluster. Flatten list in
+   * the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -188,7 +193,10 @@ class EmAlgorithmArraySerial : public polca_parallel::EmAlgorithmArray {
   ~EmAlgorithmArraySerial() override = default;
 
   /**
-   * Set the seed_array_ to contain only one seed and instantiate the rng_
+   * Set the seed and rng
+   *
+   * Set the EmAlgorithmArray::seed_array_ to contain only one seed and
+   * instantiate the EmAlgorithmArraySerial::rng_
    *
    * The rng is only used if a repetition fails and tries again using new
    * initial values generated by the rng.
@@ -196,7 +204,10 @@ class EmAlgorithmArraySerial : public polca_parallel::EmAlgorithmArray {
   void SetSeed(std::seed_seq& seed) override;
 
   /**
-   * Set the seed_array_ to contain only one seed and instantiate the rng_
+   * Set the seed and rng
+   *
+   * Set the EmAlgorithmArray::seed_array_ to contain only one seed and
+   * instantiate the EmAlgorithmArraySerial::rng_
    *
    * The rng is only used if a repetition fails and tries again using new
    * initial values generated by the rng.
@@ -204,10 +215,10 @@ class EmAlgorithmArraySerial : public polca_parallel::EmAlgorithmArray {
   void SetSeed(unsigned seed);
 
   /**
-   * Transfer ownership of a rng to this object and set rng_
+   * Transfer ownership of a rng to EmAlgorithmArraySerial::rng_
    *
-   * Transfer ownership of a rng to this object and set rng_. This rng is only
-   * used if a repetition fails and tries again using new initial values
+   * Transfer ownership of a rng to EmAlgorithmArraySerial::rng_. This rng is
+   * only used if a repetition fails and tries again using new initial values
    * generated by the rng.
    */
   void SetRng(std::unique_ptr<std::mt19937_64> rng);
@@ -224,8 +235,8 @@ class EmAlgorithmArraySerial : public polca_parallel::EmAlgorithmArray {
    * This will transfer ownership of rng_ from this object to the fitter. Ensure
    * to call MoveRngBackFromFitter() to retrieve it back afterwards.
    *
-   * Because each repetition reuses the same rng, the parameter rep_index is
-   * ignored.
+   * Because each repetition reuses the same rng, the parameter
+   * <code>rep_index</code> is ignored.
    */
   void SetFitterRng(std::size_t rep_index,
                     polca_parallel::EmAlgorithm& fitter) override;

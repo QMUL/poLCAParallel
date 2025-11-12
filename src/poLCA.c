@@ -2,12 +2,20 @@
 
 #define MAX_CLASSES 500  // Maximum number of latent classes
 
-// @deprecated
+/**
+ * Original author's likelihood
+ * (for some reason, cannot get the original C code to be recognised by R)
+ * @deprecated Reimplemented in polca_rcpp.cc
+ */
 // function: hello
 //    A little test
 void hello(void) { Rprintf("Hello World\n"); }
 
-// @deprecated
+/**
+ * Original author's likelihood
+ * (for some reason, cannot get the original C code to be recognised by R)
+ * @deprecated Reimplemented in polca_rcpp.cc
+ */
 // Function: ylik
 //       A function to find the likelihood of an observation
 //       given a vector of responses and a set of
@@ -26,17 +34,17 @@ void hello(void) { Rprintf("Hello World\n"); }
 //       Return:
 //            llik (double *): likelihood vector for the observation
 //
-void ylik(double *probs, int *y, int *obs, int *items, int *numChoices,
-          int *classes, double *lik) {
+void ylik(double* probs, int* y, int* obs, int* items, int* numChoices,
+          int* classes, double* lik) {
   int i, j, k;
   const int citems = *items;
   const int cclasses = *classes;
   const int cobs = *obs;
-  const double *firstprobs = probs;
+  const double* firstprobs = probs;
 
   for (i = 0; i < cobs; i++) {
     for (j = 0; j < cclasses; j++) lik[j] = 1.0;
-    probs = (double *)firstprobs;
+    probs = (double*)firstprobs;
     for (k = 0; k < citems; k++) {
       for (j = 0; j < cclasses; j++) {
         if (y[k] > 0) lik[j] *= probs[y[k] - 1];
@@ -48,7 +56,11 @@ void ylik(double *probs, int *y, int *obs, int *items, int *numChoices,
   }
 }
 
-// @deprecated
+/**
+ * Original author's likelihood
+ * (for some reason, cannot get the original C code to be recognised by R)
+ * @deprecated Reimplemented in polca_rcpp.cc
+ */
 // Function: postclass
 //
 //           A function to find the posterior distribution over the
@@ -67,8 +79,8 @@ void ylik(double *probs, int *y, int *obs, int *items, int *numChoices,
 //     Return:
 //           post (double *): Vector of poster probs
 //
-void postclass(double *prior, double *probs, int *y, int *items, int *obs,
-               int *numChoices, int *classes, double *posterior) {
+void postclass(double* prior, double* probs, int* y, int* items, int* obs,
+               int* numChoices, int* classes, double* posterior) {
   int i, j, totalChoices;
   double llik[MAX_CLASSES];  // Should probably calloc, limits num of classes0
   double denom;
@@ -81,7 +93,7 @@ void postclass(double *prior, double *probs, int *y, int *items, int *obs,
   for (i = 0; i < citems; i++) totalChoices += numChoices[i];
 
   for (i = 0; i < cobs; i++) {
-    ylik(probs, y, (int *)&one, items, numChoices, classes, llik);
+    ylik(probs, y, (int*)&one, items, numChoices, classes, llik);
     denom = 0.0;
     for (j = 0; j < cclasses; j++) denom += prior[j] * llik[j];
     for (j = 0; j < cclasses; j++) {
@@ -93,7 +105,11 @@ void postclass(double *prior, double *probs, int *y, int *items, int *obs,
   }
 }
 
-// @deprecated
+/**
+ * Original author's likelihood
+ * (for some reason, cannot get the original C code to be recognised by R)
+ * @deprecated Reimplemented in polca_rcpp.cc
+ */
 // Function: probhat
 //     A function to return updates estimates the response probs
 //     within each class given the data and posterior distributions
@@ -110,9 +126,9 @@ void postclass(double *prior, double *probs, int *y, int *items, int *obs,
 //
 //   Returns:
 //     probhat (double *): Estimates response probs in mat form
-void probhat(int *y, double *post, int *items, int *obs, int *numChoices,
-             int *classes, double *probhat) {
-  double *denom;
+void probhat(int* y, double* post, int* items, int* obs, int* numChoices,
+             int* classes, double* probhat) {
+  double* denom;
   int i, j, k, cumChoices;
   const int citems = *items;
   const int cobs = *obs;
@@ -122,7 +138,7 @@ void probhat(int *y, double *post, int *items, int *obs, int *numChoices,
   for (i = 0; i < citems; i++) totalChoices += numChoices[i];
   for (i = 0; i < (totalChoices * cclasses); i++) probhat[i] = 0.0;
 
-  denom = (double *)calloc((cclasses * citems), sizeof(double));
+  denom = (double*)calloc((cclasses * citems), sizeof(double));
   for (i = 0; i < (cclasses * citems); i++) denom[i] = 0.0;
 
   for (i = 0; i < cobs; i++) {
@@ -155,7 +171,11 @@ void probhat(int *y, double *post, int *items, int *obs, int *numChoices,
   free(denom);
 }
 
-// @deprecated
+/**
+ * Original author's likelihood
+ * (for some reason, cannot get the original C code to be recognised by R)
+ * @deprecated Reimplemented in polca_rcpp.cc
+ */
 // Function: d2lldbeta2
 //	Gives the first and second derivatives of the (cond) likelihood
 //      w.r.t. the vector of betas.
@@ -171,8 +191,8 @@ void probhat(int *y, double *post, int *items, int *obs, int *numChoices,
 //          grad (double *): vector of first derivs.
 //          hess (double *): Matrix of second derivs.
 //
-void d2lldbeta2(double *rgivy, double *prior, double *x, int *obs, int *classes,
-                int *xcols, double *grad, double *hess) {
+void d2lldbeta2(double* rgivy, double* prior, double* x, int* obs, int* classes,
+                int* xcols, double* grad, double* hess) {
   int i, j, k, m, n, row, col, newrow, newcol;
   const int cobs = *obs;
   const int cclasses = *classes;

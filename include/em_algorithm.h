@@ -32,15 +32,13 @@ namespace polca_parallel {
 /**
  * For fitting poLCA using the EM algorithm
  *
- * Provide initial outcome probabilities to initalise the EM algorithm
- *
  * How to use:
  * <ul>
  *   <li>
  *     Pass the data, initial probabilities and other parameters to the
- *     constructor. Also in the constructor, pass an array to store the
- *     posterior and prior probabilities (for each cluster), estimated
- *     outcome probabilities
+ *     constructor to initalise. Also in the constructor, pass an array to store
+ *     the resulting posterior and prior probabilities (for each cluster) and
+ *     estimated outcome probabilities
  *   </li>
  *   <li>
  *     Call optional methods such as set_best_initial_prob(), set_seed()
@@ -48,8 +46,9 @@ namespace polca_parallel {
  *   </li>
  *   <li>
  *      Call Fit() to fit using the EM algorithm, results are stored in the
- *      provided arrays. The EM algorithm restarts with random initial values
- *      should it fail for some reason (more commonly in the regression model)
+ *      user-provided arrays. The EM algorithm restarts with random initial
+ *      values should it fail for some reason (more commonly in the regression
+ *      model)
  *   </li>
  *   <li>
  *     Extract optional results using the methods get_ln_l(), get_n_iter()
@@ -61,8 +60,9 @@ class EmAlgorithm {
  protected:
   /**
    * Design matrix <b>transposed</b> of responses, matrix containing
-   * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
-   * has dimensions
+   * outcomes/responses for each category as integers 1, 2, 3, .... If
+   * supported, 0 can be used to indicate a missing value. The matrix has
+   * dimensions
    * <ul>
    *   <li>dim 0: for each category</li>
    *   <li>dim 1: for each data point</li>
@@ -70,8 +70,8 @@ class EmAlgorithm {
    */
   std::span<const int> responses_;
   /**
-   * Vector of initial probabilities for each category and responses, flatten
-   * list in the following order
+   * Vector of initial response probabilities for each outcome, conditioned on
+   * the category and cluster. Flatten list in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -120,8 +120,8 @@ class EmAlgorithm {
    */
   arma::Mat<double> prior_;
   /**
-   * Matrix of estimated response probabilities, conditioned on cluster, for
-   * each category. A flattened list in the following order
+   * Matrix of estimated response probabilities for each outcome, conditioned
+   * on the category and cluster. A flattened list in the following order
    * <ul>
    *   <li>
    *     dim 0: for each outcome | category (inner), for each category (outer)
@@ -158,7 +158,10 @@ class EmAlgorithm {
    * happen if a matrix is singular for example
    */
   bool has_restarted_ = false;
-  /** Random number generator for generating new initial values if fail */
+  /**
+   * Random number generator for generating new initial values if the EM
+   * algorithm fails
+   */
   std::unique_ptr<std::mt19937_64> rng_;
 
  public:
@@ -178,13 +181,15 @@ class EmAlgorithm {
    * @param features Not used and ignored
    * @param responses Design matrix <b>transposed</b> of responses, matrix
    * containing outcomes/responses for each category as integers 1, 2, 3, ....
-   * The matrix has dimensions
+   * If supported, 0 can be used to indicate a missing value. The matrix has
+   * dimensions
    * <ul>
    *   <li>dim 0: for each category</li>
    *   <li>dim 1: for each data point</li>
    * </ul>
-   * @param initial_prob Vector of initial probabilities for each category and
-   * outcome, flatten list in the following order
+   * @param initial_prob Vector of initial response probabilities for each
+   * outcome, conditioned on the category and cluster. Flatten list in the
+   * following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -198,26 +203,26 @@ class EmAlgorithm {
    * @param max_iter Maximum number of iterations for EM algorithm
    * @param tolerance Tolerance for difference in log-likelihood, used for
    * stopping condition
-   * @param posterior Modified to contain the resulting posterior probabilities
-   * after calling Fit(). Design matrix of posterior probabilities (also called
-   * responsibility). It's the probability a data point is in cluster m given
-   * responses. The matrix has the following dimensions
+   * @param posterior <b>Modified</b> To contain the resulting posterior
+   * probabilities after calling Fit(). Design matrix of posterior probabilities
+   * (also called responsibility). It's the probability a data point is in
+   * cluster m given responses. The matrix has the following dimensions
    * <ul>
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
    * </ul>
-   * @param prior Modified to contain the resulting prior probabilities after
-   * calling Fit(). Design matrix of prior probabilities. It's the probability a
-   * data point is in cluster <code>m</code> <b>not</b> given responses after
-   * calculations. The matrix has the following dimensions
+   * @param prior <b>Modified</b> To contain the resulting prior probabilities
+   * after calling Fit(). Design matrix of prior probabilities. It's the
+   * probability a data point is in cluster <code>m</code> <b>not</b> given
+   * responses after calculations. The matrix has the following dimensions
    * <ul>
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
    * </ul>
-   * @param estimated_prob Modified to contain the resulting outcome
-   * probabilities after calling Fit(). Vector of estimated response
-   * probabilities, conditioned on cluster, for each category. A flatten list in
-   * the following order
+   * @param estimated_prob <b>Modified</b> To contain the resulting outcome
+   * probabilities after calling Fit(). Vector of response probabilities for
+   * each outcome, conditioned on the category and cluster. Flatten list in the
+   * following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -247,13 +252,15 @@ class EmAlgorithm {
    *
    * @param responses Design matrix <b>transposed</b> of responses, matrix
    * containing outcomes/responses for each category as integers 1, 2, 3, ....
-   * The matrix has dimensions
+   * If supported, 0 can be used to indicate a missing value. The matrix has
+   * dimensions
    * <ul>
    *   <li>dim 0: for each category</li>
    *   <li>dim 1: for each data point</li>
    * </ul>
-   * @param initial_prob Vector of initial probabilities for each category and
-   * outcome, flatten list in the following order
+   * @param initial_prob Vector of initial response probabilities for each
+   * outcome, conditioned on the category and cluster. Flatten list in the
+   * following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -266,23 +273,23 @@ class EmAlgorithm {
    * @param max_iter Maximum number of iterations for EM algorithm
    * @param tolerance Tolerance for difference in log-likelihood, used for
    * stopping condition
-   * @param posterior Modified to contain the resulting posterior probabilities
-   * after calling Fit(). Design matrix of posterior probabilities (also called
-   * responsibility). It's the probability a data point is in cluster m given
-   * responses. The matrix has the following dimensions
+   * @param posterior <b>Modified</b> To contain the resulting posterior
+   * probabilities after calling Fit(). Design matrix of posterior probabilities
+   * (also called responsibility). It's the probability a data point is in
+   * cluster m given responses. The matrix has the following dimensions
    * <ul>
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
    * </ul>
-   * @param prior Modified to contain the resulting prior probabilities after
-   * calling Fit(). Design matrix of prior probabilities. It's the probability a
-   * data point is in cluster <code>m</code> <b>not</b> given responses after
-   * calculations. The matrix has the following dimensions
+   * @param prior <b>Modified</b> To contain the resulting prior probabilities
+   * after calling Fit(). Design matrix of prior probabilities. It's the
+   * probability a data point is in cluster <code>m</code> <b>not</b> given
+   * responses after calculations. The matrix has the following dimensions
    * <ul>
    *   <li>dim 0: for each data</li>
    *   <li>dim 1: for each cluster</li>
    * </ul>
-   * @param estimated_prob Modified to contain the resulting outcome
+   * @param estimated_prob <b>Modified</b> To contain the resulting outcome
    * probabilities after calling Fit(). Vector of estimated response
    * probabilities, conditioned on cluster, for each category. A flatten list in
    * the following order
@@ -302,10 +309,14 @@ class EmAlgorithm {
   virtual ~EmAlgorithm() = default;
 
   /**
-   * Fit model to data using EM algorithm
+   * Fit the model onto the data using EM algorithm
    *
-   * Data is provided through the constructor, important results are stored in
-   * the member variables:
+   * Fit the model onto the data using EM algorithm. This is done by iteratively
+   * doing the E step and M step until a certain number of iterations or until
+   * the log likelihood improvement meets a threshold
+   *
+   * The following member variables are modified to store and record results
+   * from the fitting
    * <ul>
    *   <li>EmAlgorithm::posterior_</li>
    *   <li>EmAlgorithm::prior_</li>
@@ -407,9 +418,14 @@ class EmAlgorithm {
   /**
    * Get prior, for a specified data point and cluster, during the EM algorithm
    *
-   * @param data_index
-   * @param cluster_index
-   * @return double prior
+   * Get the prior, for a specified data point and cluster, during the EM
+   * algorithm. For the non-regression problem in EmAlgorithm, the prior will be
+   * the same for all data points. For the regression problem in
+   * EmAlgorithmRegress, the prior will be different for all data points
+   *
+   * @param data_index Which data point to consider
+   * @param cluster_index Which cluster to consider
+   * @return double Prior for the specified data point and cluste
    */
   [[nodiscard]] virtual double GetPrior(const std::size_t data_index,
                                         const std::size_t cluster_index) const;
@@ -429,8 +445,8 @@ class EmAlgorithm {
    * Calculates the likelihood. See polca_parallel::Likelihood() for further
    * information
    *
-   * @param responses_i vector of responses for a given cluster
-   * @param estimated_prob the corresponding cluster's column view of
+   * @param responses_i Vector of responses for a given cluster
+   * @param estimated_prob The corresponding cluster's column view of
    * EmAlgorithm::estimated_prob_. A flattened list in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
@@ -444,7 +460,7 @@ class EmAlgorithm {
   /**
    * Check if the likelihood is invalid
    *
-   * @param ln_l_difference the change in log-likelihood after an iteration of
+   * @param ln_l_difference The change in log-likelihood after an iteration of
    * EM
    * @return <code>true</code> if the likelihood is invalid, <code>false</code>
    * if the likelihood is okay
@@ -457,6 +473,11 @@ class EmAlgorithm {
    * Update the prior probabilities and estimated response probabilities given
    * the posterior probabilities. Modifies the member variables
    * EmAlgorithm::prior_ and EmAlgorithm::estimated_prob_
+   *
+   * The return value is <code>true</code> if there is a problem during this
+   * method, else <code>false</code>. In this implementation, it is always
+   * <code>false</code>. Overriding methods may implement a <code>true</code>
+   * return value
    *
    * @return <code>false</code>
    */
@@ -500,7 +521,7 @@ class EmAlgorithm {
    *
    * This is used to estimate outcome probabilities later on
    *
-   * @param cluster_index which cluster to consider
+   * @param cluster_index Which cluster to consider
    */
   virtual void WeightedSumProb(const std::size_t cluster_index);
 
@@ -513,7 +534,7 @@ class EmAlgorithm {
    *
    * Can be overridden as the sum of weights can be calculated differently.
    *
-   * @param cluster_index which cluster to consider
+   * @param cluster_index Which cluster to consider
    */
   virtual void NormalWeightedSumProb(const std::size_t cluster_index);
 
@@ -524,8 +545,8 @@ class EmAlgorithm {
    * EmAlgorithm::estimated_prob_ by a provided normaliser. Each probability for
    * a given cluster is divided by this normaliser.
    *
-   * @param cluster_index which cluster to consider
-   * @param normaliser the scale to divide the weighted sum by, should be the
+   * @param cluster_index Which cluster to consider
+   * @param normaliser The scale to divide the weighted sum by, should be the
    * sum of posteriors
    */
   void NormalWeightedSumProb(const std::size_t cluster_index,
@@ -543,17 +564,19 @@ class EmAlgorithm {
  * probabilities should be done instead, however it was noted that the sum of
  * logs is slower.
  *
- * @tparam is_check_zero to check if the responses are zero or not, for
- * performance reason, use false when the responses do not contain zero values
- * @param responses_i the responses for a given data point, length n_catgeory
- * @param n_outcomes number of outcomes for each category
- * @param estimated_prob A column view of estimated_prob_. A flattened
- * list in the following order
+ * @tparam is_check_zero To check if the responses are zero or not, for
+ * performance reason, use <code>false</code> when the responses do not contain
+ * zero values
+ * @param responses_i The responses for a given data point, length
+ * <code>n_catgeory</code>
+ * @param n_outcomes Number of outcomes for each category
+ * @param estimated_prob A column view of EmAlgorithm::estimated_prob_. A
+ * flattened list in the following order
  * <ul>
  *   <li>dim 0: for each outcome</li>
  *   <li>dim 1: for each category</li>
  * </ul>
- * @return the likelihood
+ * @return The likelihood evaluated
  */
 template <bool is_check_zero = false>
 [[nodiscard]] double Likelihood(std::span<const int> responses_i,
