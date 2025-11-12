@@ -19,6 +19,7 @@
 #define POLCAPARALLEL_INCLUDE_ERROR_SOLVER_H
 
 #include <cstddef>
+#include <optional>
 #include <span>
 
 #include "arma.h"
@@ -44,6 +45,8 @@ class ErrorSolver {
  protected:
   /** Number of data points, ie height of the score matrix */
   const std::size_t n_data_;
+  /** Number of features, only needed for the regression problem*/
+  std::optional<std::size_t> n_feature_;
   /** Sum of n_outcomes */
   const std::size_t sum_outcomes_;
   /** Number of clusters fitted */
@@ -73,6 +76,11 @@ class ErrorSolver {
    * </ul>
    */
   std::span<double> prob_error_;
+  /**
+   * Covariance matrix of the regression coefficient, only needed for the
+   * regression problem
+   */
+  std::optional<arma::Mat<double>> regress_coeff_error_;
 
  public:
   /**
@@ -216,12 +224,6 @@ class InfoEigenSolver : public polca_parallel::ErrorSolver {
  * of the covariance of interest
  */
 class InfoEigenRegressSolver : public polca_parallel::InfoEigenSolver {
- protected:
-  /** Number of features */
-  const std::size_t n_feature_;
-  /** Covariance matrix of the regression coefficient */
-  arma::Mat<double> regress_coeff_error_;
-
  public:
   InfoEigenRegressSolver(std::size_t n_data, std::size_t n_feature,
                          std::size_t sum_outcomes, std::size_t n_cluster,
@@ -326,12 +328,6 @@ class ScoreSvdSolver : public polca_parallel::ErrorSolver {
  * of the covariance of interest
  */
 class ScoreSvdRegressSolver : public polca_parallel::ScoreSvdSolver {
- protected:
-  /** Number of features */
-  const std::size_t n_feature_;
-  /** Covariance matrix of the regression coefficient */
-  arma::Mat<double> regress_coeff_error_;
-
  public:
   ScoreSvdRegressSolver(std::size_t n_data, std::size_t n_feature,
                         std::size_t sum_outcomes, std::size_t n_cluster,
