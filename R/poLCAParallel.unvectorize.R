@@ -30,7 +30,7 @@ poLCAParallel.unvectorize <- function(vp) {
   }
   # copy over probabilities
   index <- 1
-  for (m in 1:vp$classes) {
+  for (m in seq_len(vp$classes)) {
     for (j in seq_len(n_category)) {
       next_index <- index + num_choices[j] - 1
       probs[[j]][m, ] <- vp$vecprobs[index:next_index]
