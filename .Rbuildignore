@@ -1,3 +1,5 @@
+^renv$
+^renv\.lock$
 ^html$
 ^build$
 ^latex$

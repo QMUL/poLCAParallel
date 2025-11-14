@@ -250,6 +250,47 @@ To test the R code, run the following at the repository root
 R -e "testthat::test_local()"
 ```
 
+### R Dependency Management
+
+The package `renv` is used to record and manage R dependencies, with versions
+pinned, for use during development, maintenance and testing. The file
+`renv.lock` contains these dependencies. It shall be regularly updated during
+maintenance. The lock file is also used in the Apptainer definition file
+`poLCAParallel-dev.def` below to further reproduce the environment in a
+container.
+
+#### Restoring the R Environment
+
+From the repository root, run the following commands to set up an R environment
+and install the dependencies, with the specified versions, used for development
+and testing
+
+```bash
+R -e "renv::init(bare=TRUE)"
+R -e "renv::restore()"
+```
+
+Run `R` commands from the repository root to use these dependencies.
+
+#### Taking a Snapshot of the Environment with the Latest Versions
+
+The lock file may need to be updated during maintenance. This can be done by
+starting a fresh R environment, after ensuring the `renv` artifacts are deleted:
+
+* `.Rprofile`
+* `renv.lock`
+* `renv/`
+
+Then take a snapshot of the latest dependencies
+
+```bash
+R -e "renv::init()"
+R -e "renv::snapshot(dev=TRUE)"
+```
+
+This will overwrite the file `renv.lock` specifying dependencies with the latest
+versions.
+
 ### Apptainer
 
 [Apptainer](https://apptainer.org/) definition files are provided, which can be
@@ -288,8 +329,10 @@ R -e "roxygen2::roxygenize('poLCAParallel')"
 
 shall not be included in the `master` branch. Instead, they shall be in the
 `package` branch so that this package can be installed using
-`remotes::install_github("QMUL/poLCAParallel@package")`. This is to avoid
-having duplicate documentation and generated code on the `master` branch.
+`remotes::install_github("QMUL/poLCAParallel@package")`. This is to avoid having
+duplicate documentation and generated code on the `master` branch. *The
+expection to this rule is `renv.lock` which is produced by
+`renv::snapshot(dev=TRUE)`.*
 
 Semantic versioning is used and tagged. Tags on the `master` branch shall have
 `v` prepended and `-master` appended, eg. `v1.1.0-master`. The corresponding

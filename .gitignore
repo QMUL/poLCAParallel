@@ -14,3 +14,5 @@ build/
 *.sif
 .vscode/
 NAMESPACE
+.Rprofile
+renv/*
