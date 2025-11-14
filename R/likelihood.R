@@ -22,7 +22,7 @@
 #' * dim 1: for each data
 #' * dim 2: for each class/cluster
 #'
-#' @export
+#' @noRd
 likelihood <- function(vectorized_probs, responses) {
   likelihood_ <- LikelihoodRcpp(
     t(responses),
