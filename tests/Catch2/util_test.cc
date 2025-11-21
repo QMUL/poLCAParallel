@@ -17,6 +17,7 @@
 
 #include "util_test.h"
 
+#include <armadillo>
 #include <cassert>
 #include <cmath>
 #include <iterator>
@@ -657,8 +658,14 @@ void polca_parallel_test::BlackBoxTestStandardError(
   }
   if constexpr (std::is_base_of<polca_parallel::StandardErrorRegress,
                                 StandardErrorType>::value) {
+    // check diagonal entries are positive
     for (std::size_t i = 0; i < len_regress_coeff; ++i) {
-      CHECK(regress_coeff_error.at(i * (len_regress_coeff + 1)));
+      CHECK(regress_coeff_error.at(i * (len_regress_coeff + 1)) > 0);
     }
+    // check if the covariance is symmetric (up to a tolerance)
+    arma::Mat<double> regress_covariance(regress_coeff_error.data(),
+                                         len_regress_coeff, len_regress_coeff,
+                                         false, true);
+    CHECK(regress_covariance.is_symmetric(kSymmetricTolerance));
   }
 }

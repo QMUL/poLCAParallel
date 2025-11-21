@@ -30,7 +30,10 @@
 
 namespace polca_parallel_test {
 
+/** Tolerance for equality of probabilities */
 inline constexpr double kTolerance = 1e-12;
+/** Tolerance for arma <code>is_symmetric()</code> */
+inline constexpr double kSymmetricTolerance = 1e-15;
 
 /**
  * Calculate the number of fully observed responses
