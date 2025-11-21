@@ -232,13 +232,13 @@ void TestClusterProbs(std::span<const double> cluster_probs, std::size_t n_data,
  * </ul>
  */
 template <typename EmAlgorithmType>
-void TestDefaultOutputs(std::size_t n_data,
-                        polca_parallel::NOutcomes n_outcomes,
-                        std::size_t n_cluster,
-                        std::span<const double> posterior,
-                        std::span<const double> prior,
-                        std::span<const double> estimated_prob,
-                        std::span<const double> regress_coeff);
+void TestEmAlgorithmDefaultOutputs(std::size_t n_data,
+                                   polca_parallel::NOutcomes n_outcomes,
+                                   std::size_t n_cluster,
+                                   std::span<const double> posterior,
+                                   std::span<const double> prior,
+                                   std::span<const double> estimated_prob,
+                                   std::span<const double> regress_coeff);
 
 /**
  * Test the optional outputs from EmAlgorithm
