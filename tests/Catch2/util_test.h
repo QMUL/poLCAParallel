@@ -30,7 +30,7 @@
 
 namespace polca_parallel_test {
 
-inline constexpr double TOLERANCE = 1e-12;
+inline constexpr double kTolerance = 1e-12;
 
 /**
  * Calculate the number of fully observed responses

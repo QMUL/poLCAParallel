@@ -135,13 +135,13 @@ void polca_parallel_test::TestOutcomeProbs(polca_parallel::NOutcomes n_outcomes,
                                            std::span<const double> probs) {
   for (auto i : probs) {
     CHECK(0.0 <= i);
-    CHECK(i <= 1.0 + polca_parallel_test::TOLERANCE);
+    CHECK(i <= 1.0 + polca_parallel_test::kTolerance);
   }
   auto prob_i = probs.begin();
   for (std::size_t m = 0; m < n_cluster; ++m) {
     for (std::size_t n_outcome : n_outcomes) {
       double sum = std::accumulate(prob_i, std::next(prob_i, n_outcome), 0.0);
-      CHECK(std::abs(sum - 1.0) < polca_parallel_test::TOLERANCE);
+      CHECK(std::abs(sum - 1.0) < polca_parallel_test::kTolerance);
       std::advance(prob_i, n_outcome);
     }
   }
@@ -159,7 +159,7 @@ void polca_parallel_test::TestClusterProbs(
       true);
   arma::Col<double> row_sum = arma::sum(cluster_probs_arma, 1);
   for (auto i : row_sum) {
-    CHECK(std::abs(i - 1.0) < polca_parallel_test::TOLERANCE);
+    CHECK(std::abs(i - 1.0) < polca_parallel_test::kTolerance);
   }
 }
 

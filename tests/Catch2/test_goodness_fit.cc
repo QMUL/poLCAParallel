@@ -100,7 +100,7 @@ TEST_CASE("goodness-of-fit", "[gof]") {
 
   REQUIRE(n_obs == n_obs_true);
   REQUIRE(static_cast<double>(n_obs_true) - n_exp >
-          -polca_parallel_test::TOLERANCE);
+          -polca_parallel_test::kTolerance);
 
   auto [ln_l_ratio, chi_squared] = goodness_of_fit.GetStatistics();
   REQUIRE(std::isfinite(ln_l_ratio));
