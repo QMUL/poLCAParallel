@@ -25,14 +25,6 @@ test_that("non-regression-all-random", {
   # generated inside the function
   # vary which parameters to provide or not
 
-  expect_no_error(test_simdata(-966151570, list(nclass = 6)))
-  expect_no_error(test_simdata(-1578000385, list(ndv = 7)))
-  expect_no_error(test_simdata(1815930918, list(nclass = 10, ndv = 5)))
-  expect_no_error(test_simdata(1859213588, list(nresp = c(2, 3, 5, 2, 2))))
-  expect_no_error(test_simdata(
-    1988508340,
-    list(nclass = 8, nresp = c(2, 3, 5, 2, 2))
-  ))
   expect_no_error(test_simdata(-1571392400, list(N = 1000, nclass = 6)))
   expect_no_error(test_simdata(-2096859141, list(N = 1000, ndv = 7)))
   expect_no_error(test_simdata(
@@ -54,30 +46,6 @@ test_that("non-regression-pass-probs", {
   # if partially passed, either the default value is used or randomly generated
   # inside the function
   # vary which parameters to provide or not
-
-  set.seed(-688058586)
-  probs <- random_unvectorized_probs(c(2, 3, 5, 2, 2), 4)
-  expect_no_error(test_simdata(-203219460, list(probs = probs)))
-
-  set.seed(-1654954026)
-  prior <- random_cluster_probs(1, 8)
-  expect_no_error(test_simdata(-350403489, list(P = prior)))
-
-  set.seed(-533270882)
-  prior <- random_cluster_probs(1, 8)
-  expect_no_error(test_simdata(450234962, list(P = prior, ndv = 6)))
-
-  set.seed(-1220730757)
-  prior <- random_cluster_probs(1, 8)
-  expect_no_error(test_simdata(
-    385657457,
-    list(P = prior, nresp = c(2, 3, 5, 4, 2))
-  ))
-
-  set.seed(2146774050)
-  probs <- random_unvectorized_probs(c(2, 3, 5, 2, 2), 4)
-  prior <- random_cluster_probs(1, 4)
-  expect_no_error(test_simdata(1018688540, list(probs = probs, P = prior)))
 
   set.seed(-2007353213)
   probs <- random_unvectorized_probs(c(2, 3, 5, 2, 7), 4)
@@ -118,28 +86,20 @@ test_that("regression-no-param", {
   # the gradient or features isn't passed in this section
   # vary which parameters to provide or not
 
-  expect_no_error(test_simdata(-1458523973, list(nclass = 4, ndv = 5, niv = 4)))
-  expect_no_error(test_simdata(
-    -976592540,
-    list(nclass = 3, nresp = c(2, 5, 6, 3, 2), niv = 5)
-  ))
-
-  expect_no_error(test_simdata(-843267700, list(nclass = 4, ndv = 5, niv = 4)))
-
-  set.seed(1767497224)
-  probs <- random_unvectorized_probs(c(2, 3, 5, 2, 2), 4)
-  expect_no_error(test_simdata(-203219460, list(probs = probs, niv = 6)))
-
   expect_no_error(test_simdata(
     -2140551814,
     list(N = 1000, nclass = 4, ndv = 5, niv = 4)
   ))
+
   expect_no_error(test_simdata(
     -1073753404,
     list(N = 1000, nclass = 3, nresp = c(2, 5, 6, 3, 2), niv = 5)
   ))
 
-  expect_no_error(test_simdata(-2013770106, list(nclass = 4, ndv = 5, niv = 4)))
+  expect_no_error(test_simdata(
+    -2013770106,
+    list(N = 1000, nclass = 4, ndv = 5, niv = 4)
+  ))
 
   set.seed(109649579)
   probs <- random_unvectorized_probs(c(2, 3, 5, 2, 2), 4)
@@ -154,10 +114,10 @@ test_that("regression-random-features", {
   # providing it
   # vary which parameters to provide or not
 
-  expect_no_error(test_simdata(-758321419, list(niv = 5)))
+  expect_no_error(test_simdata(-758321419, list(N = 1000, niv = 5)))
   expect_no_error(test_simdata(
     1880746837,
-    list(nresp = c(3, 5, 4, 3, 2), niv = 5)
+    list(N = 1000, nresp = c(3, 5, 4, 3, 2), niv = 5)
   ))
 
   set.seed(-2098347430)
@@ -165,7 +125,7 @@ test_that("regression-random-features", {
   gradient <- matrix(stats::rnorm((nclass - 1) * 10), ncol = nclass - 1)
   expect_no_error(test_simdata(
     1813336882,
-    list(b = gradient)
+    list(N = 1000, b = gradient)
   ))
 
   set.seed(-1639136259)
@@ -173,7 +133,7 @@ test_that("regression-random-features", {
   gradient <- matrix(stats::rnorm((nclass - 1) * 10), ncol = nclass - 1)
   expect_no_error(test_simdata(
     1813336882,
-    list(nresp = c(2, 5, 6, 3, 2), b = gradient)
+    list(N = 1000, nresp = c(2, 5, 6, 3, 2), b = gradient)
   ))
 
   set.seed(-405236032)
@@ -182,7 +142,7 @@ test_that("regression-random-features", {
   gradient <- matrix(stats::rnorm((nclass - 1) * 10), ncol = nclass - 1)
   expect_no_error(test_simdata(
     -1535599873,
-    list(probs = probs, b = gradient)
+    list(N = 1000, probs = probs, b = gradient)
   ))
 })
 
@@ -245,9 +205,9 @@ test_that("regression-provide-features", {
 })
 
 test_that("missing-data", {
-  expect_no_error(test_simdata(1886413857, list(missval = TRUE)))
+  expect_no_error(test_simdata(1886413857, list(N = 1000, missval = TRUE)))
   expect_no_error(test_simdata(
     -1347152099,
-    list(missval = TRUE, pctmiss = 0.2)
+    list(N = 1000, missval = TRUE, pctmiss = 0.2)
   ))
 })

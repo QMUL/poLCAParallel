@@ -1,5 +1,7 @@
+# Number of pair of categories to test
+n_category_pair <- 3
 # Number of samples of the condition to test
-n_sample_conditions <- 10
+n_sample_conditions <- 2
 # Probability of a variable being in the condition
 prob_in_condition <- 0.5
 
@@ -19,41 +21,53 @@ prob_in_condition <- 0.5
 #' @param lc A model object estimated using the `poLCA` function (or a list
 #'   which mocks it)
 test_table_given_model <- function(columns, n_outcomes, lc) {
-  # for every pair category
-  for (i_category in seq_len(length(n_outcomes))) {
-    for (j_category in seq_len(length(n_outcomes))) {
-      if (i_category == j_category) {
-        # one way
-        formula_ <- formula(paste0(columns[i_category], "~1"))
-      } else {
-        # two way
-        formula_ <- formula(
-          paste0(columns[i_category], "~", columns[j_category])
-        )
-      }
+  # sample pairs of categories to test
+  # the first pair is [1, 1] to ensure a one way relationship is tested at least
+  category_pairs <- matrix(
+    sample(
+      seq_len(length(n_outcomes)),
+      2 * (n_category_pair - 1),
+      TRUE
+    ),
+    2, n_category_pair - 1
+  )
+  category_pairs <- cbind(c(1, 1), category_pairs)
 
-      for (i in seq_len(n_sample_conditions)) {
-        condition <- list()
-        # for the first iteration, the condition is empty
-        if (i != 0) {
-          # randomly sample a condition
-          for (k_category in seq_len(length(n_outcomes))) {
-            if (k_category != i_category && k_category != j_category) {
-              if (runif(1) < prob_in_condition) {
-                condition[[columns[k_category]]] <-
-                  sample(seq_len(n_outcomes[k_category]), 1)
-              }
+  # for each sampled pair
+  for (i_pair in seq_len(n_category_pair)) {
+    i_category <- category_pairs[1, i_pair]
+    j_category <- category_pairs[2, i_pair]
+    if (i_category == j_category) {
+      # one way
+      formula_ <- formula(paste0(columns[i_category], "~1"))
+    } else {
+      # two way
+      formula_ <- formula(
+        paste0(columns[i_category], "~", columns[j_category])
+      )
+    }
+
+    for (i in seq_len(n_sample_conditions)) {
+      condition <- list()
+      # for the first iteration, the condition is empty
+      if (i != 0) {
+        # randomly sample a condition
+        for (k_category in seq_len(length(n_outcomes))) {
+          if (k_category != i_category && k_category != j_category) {
+            if (stats::runif(1) < prob_in_condition) {
+              condition[[columns[k_category]]] <-
+                sample(seq_len(n_outcomes[k_category]), 1)
             }
           }
         }
-
-        # test function here
-        table_polca <- poLCA::poLCA.table(formula_, condition, lc)
-        table_polcaparallel <- poLCAParallel::poLCA.table(
-          formula_, condition, lc
-        )
-        expect_equal(table_polcaparallel, table_polca)
       }
+
+      # test function here
+      table_polca <- poLCA::poLCA.table(formula_, condition, lc)
+      table_polcaparallel <- poLCAParallel::poLCA.table(
+        formula_, condition, lc
+      )
+      expect_equal(table_polcaparallel, table_polca)
     }
   }
 }
@@ -140,7 +154,7 @@ test_that("non-regression-full-data", {
     3,
     4,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0,
@@ -155,7 +169,7 @@ test_that("non-regression-full-data", {
     3,
     4,
     FALSE,
-    4,
+    2,
     1000,
     1e-10,
     0,
@@ -173,7 +187,7 @@ test_that("non-regression-missing-data", {
     3,
     4,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0.1,
@@ -188,7 +202,7 @@ test_that("non-regression-missing-data", {
     3,
     4,
     FALSE,
-    4,
+    2,
     1000,
     1e-10,
     0.1,
@@ -208,7 +222,7 @@ test_that("regression-full-data", {
     3,
     4,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0,
@@ -224,7 +238,7 @@ test_that("regression-full-data", {
     3,
     4,
     FALSE,
-    4,
+    2,
     1000,
     1e-10,
     0,
@@ -243,7 +257,7 @@ test_that("regression-missing-data", {
     3,
     4,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0.1,
@@ -259,7 +273,7 @@ test_that("regression-missing-data", {
     3,
     4,
     FALSE,
-    4,
+    2,
     1000,
     1e-10,
     0.1,

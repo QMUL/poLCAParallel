@@ -20,9 +20,9 @@
 #' @param n_data_test Number of data points in the unseen test data
 #' @param prob_na_test Probability of missing data in the unseen test data
 test_non_regress_predcell <- function(n_data, n_outcomes, n_cluster, n_rep,
-                                       na_rm, n_thread, maxiter, tol,
-                                       prob_na_train, n_data_test,
-                                       prob_na_test) {
+                                      na_rm, n_thread, maxiter, tol,
+                                      prob_na_train, n_data_test,
+                                      prob_na_test) {
   responses <- as.data.frame(
     random_response(n_data, n_outcomes, prob_na_train, NaN)
   )
@@ -103,7 +103,7 @@ test_that("non-regression-full-data", {
     3,
     4,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0,
@@ -118,7 +118,7 @@ test_that("non-regression-full-data", {
     3,
     4,
     FALSE,
-    4,
+    2,
     1000,
     1e-10,
     0,
@@ -136,7 +136,7 @@ test_that("non-regression-missing-data", {
     3,
     4,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0.1,
@@ -148,13 +148,14 @@ test_that("non-regression-missing-data", {
 test_that("regression-full-data", {
   # test using na_rm = TRUE and FALSE
   set.seed(-377644738)
-  expect_no_error(test_non_regress_predcell(
+  expect_no_error(test_regress_predcell(
     100,
+    4,
     c(2, 3, 5, 2, 2),
     3,
     4,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0,
@@ -163,13 +164,14 @@ test_that("regression-full-data", {
   ))
 
   set.seed(-1620100671)
-  expect_no_error(test_non_regress_predcell(
+  expect_no_error(test_regress_predcell(
     100,
+    4,
     c(2, 3, 5, 2, 2),
     3,
     4,
     FALSE,
-    4,
+    2,
     1000,
     1e-10,
     0,
@@ -181,13 +183,14 @@ test_that("regression-full-data", {
 test_that("regression-missing-data", {
   # na_rm = FALSE not supported with missing data
   set.seed(215886219)
-  expect_no_error(test_non_regress_predcell(
+  expect_no_error(test_regress_predcell(
     100,
+    4,
     c(2, 3, 5, 2, 2),
     3,
     4,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0.1,

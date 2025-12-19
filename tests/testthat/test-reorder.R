@@ -87,7 +87,7 @@ test_that("reorder", {
     3,
     4,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0

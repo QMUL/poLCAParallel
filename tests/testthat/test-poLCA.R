@@ -171,6 +171,10 @@ test_regression <- function(n_data, n_feature, n_outcomes, n_cluster, n_rep,
 #' Test if the results fitted models, using poLCA and poLCAParallel, are the
 #' same. It tests the attributes of the fitted models
 #'
+#' poLCA and poLCAParallel differ quite a lot in terms of the regression
+#' problem, hence not every variable is tested for equality in the regression
+#' problem
+#'
 #' @param lc_parallel A model object estimated using the `poLCAParallel::poLCA`
 #'   function (or a list which mocks it)
 #' @param lc_polca A model object estimated using the `poLCA::poLCA` function
@@ -370,7 +374,7 @@ test_that("non-regression-full-data", {
     3,
     4,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0
@@ -383,7 +387,7 @@ test_that("non-regression-full-data", {
     3,
     4,
     FALSE,
-    4,
+    2,
     1000,
     1e-10,
     0
@@ -400,7 +404,7 @@ test_that("non-regression-missing-data", {
     3,
     4,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0.1
@@ -413,7 +417,7 @@ test_that("non-regression-missing-data", {
     3,
     4,
     FALSE,
-    4,
+    2,
     1000,
     1e-10,
     0.1
@@ -429,7 +433,7 @@ test_that("regression-full-data", {
     3,
     4,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0
@@ -442,7 +446,7 @@ test_that("regression-full-data", {
     3,
     4,
     FALSE,
-    4,
+    2,
     1000,
     1e-10,
     0
@@ -459,7 +463,7 @@ test_that("regression-missing-data", {
     3,
     4,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0.1
@@ -473,7 +477,7 @@ test_that("regression-missing-data", {
     3,
     4,
     FALSE,
-    4,
+    2,
     1000,
     1e-10,
     0.1
@@ -487,7 +491,7 @@ test_that("reproduce-non-regression-full-data", {
     c(2, 3, 5, 2, 2),
     3,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0,
@@ -499,7 +503,7 @@ test_that("reproduce-non-regression-full-data", {
     c(2, 3, 5, 2, 2),
     3,
     FALSE,
-    4,
+    2,
     1000,
     1e-10,
     0,
@@ -512,7 +516,7 @@ test_that("reproduce-non-regression-full-data", {
     c(2, 3, 5, 2, 2),
     3,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0
@@ -524,7 +528,7 @@ test_that("reproduce-non-regression-full-data", {
     c(2, 3, 5, 2, 2),
     3,
     FALSE,
-    4,
+    2,
     1000,
     1e-10,
     0
@@ -537,7 +541,7 @@ test_that("reproduce-non-regression-missing-data", {
     c(2, 3, 5, 2, 2),
     3,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0.1,
@@ -549,7 +553,7 @@ test_that("reproduce-non-regression-missing-data", {
     c(2, 3, 5, 2, 2),
     3,
     FALSE,
-    4,
+    2,
     1000,
     1e-10,
     0.1,
@@ -563,7 +567,7 @@ test_that("reproduce-non-regression-missing-data", {
     c(2, 3, 5, 2, 2),
     3,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0.1
@@ -575,7 +579,7 @@ test_that("reproduce-non-regression-missing-data", {
     c(2, 3, 5, 2, 2),
     3,
     FALSE,
-    4,
+    2,
     1000,
     1e-10,
     0.1
@@ -591,7 +595,7 @@ test_that("reproduce-regression-full-data", {
     3,
     1,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0,
@@ -605,7 +609,7 @@ test_that("reproduce-regression-full-data", {
     3,
     1,
     FALSE,
-    4,
+    2,
     1000,
     1e-10,
     0,
@@ -621,7 +625,7 @@ test_that("reproduce-regression-missing-data", {
     3,
     1,
     TRUE,
-    4,
+    2,
     1000,
     1e-10,
     0.1,
@@ -635,7 +639,7 @@ test_that("reproduce-regression-missing-data", {
     3,
     1,
     FALSE,
-    4,
+    2,
     1000,
     1e-10,
     0.1,
