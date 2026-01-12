@@ -50,14 +50,14 @@ From: ubuntu:24.04
     cd /usr/src
     git clone https://github.com/catchorg/Catch2.git
     cd Catch2
-    git checkout v3.8.1
+    git checkout v3.12.0
     cmake -B build -S .
     cmake --build build --target install
 
     # armadillo (stand-alone)
     cd /tmp
-    wget https://sourceforge.net/projects/arma/files/armadillo-14.6.3.tar.xz
-    tar -xf armadillo-14.6.3.tar.xz -C /usr/src/
+    wget https://sourceforge.net/projects/arma/files/armadillo-15.0.2.tar.xz
+    tar -xf armadillo-15.0.2.tar.xz -C /usr/src/
     cd /usr/src/armadillo*
     cmake .
     make install

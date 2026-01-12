@@ -1,7 +1,7 @@
 Package: poLCAParallel
 Type: Package
 Title: Polytomous variable Latent Class Analysis Parallel
-Version: 1.2.5
+Version: 1.2.6
 Author: Sherman Lo <s.lo@qmul.ac.uk>,
         Drew Linzer <drew@votamatic.org>,
         Jeffrey Lewis <jblewis@ucla.edu>.
@@ -14,7 +14,7 @@ License: GPL (>= 2)
 URL: https://github.com/shermanlo77/poLCAParallel
 LazyLoad: yes
 NeedsCompilation: yes
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Encoding: UTF-8
 Suggests:
     testthat (>= 3.0.0),
