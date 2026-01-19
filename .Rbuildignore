@@ -3,3 +3,7 @@
 ^html$
 ^build$
 ^latex$
+^CMakeLists.txt
+^Doxyfile
+^poLCAParallel.def
+^poLCAParallel-dev.def

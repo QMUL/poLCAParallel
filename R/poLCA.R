@@ -54,28 +54,33 @@
 #' or "concomitant-variable latent class analysis," both of which are accurate
 #' descriptions of this model.
 #'
-#' The library poLCAParallel reimplements `poLCA` in C++. This was done using
-#' [Rcpp](https://cran.r-project.org/web/packages/Rcpp) and
-#' [RcppArmadillo](https://cran.r-project.org/web/packages/RcppArmadillo) which
-#' allows C++ code to interact with R. Additional notes include:
+#' The package poLCAParallel reimplements the poLCA fitting, standard error
+#' calculations, goodness of fit tests and the bootstrap log-likelihood ratio
+#' test in C++. This was done using
+#' [Rcpp](https://cran.r-project.org/package=Rcpp) and
+#' [RcppArmadillo](https://cran.r-project.org/package=RcppArmadillo) which
+#' allows R to run fast C++ code. Additional notes include:
 #'
-#' * The code uses [Armadillo](http://arma.sourceforge.net/) for linear algebra
+#' * The API remains the same as the original poLCA with a few additions
+#' * It tries to reproduce results from the original poLCA
+#' * The code uses [Armadillo](https://arma.sourceforge.net/) for linear algebra
 #' * Multiple repetitions are done in parallel using
-#'   [`<thread>`](https://www.cplusplus.com/reference/thread/) for multi-thread
-#'   programming and [`<mutex>`](https://www.cplusplus.com/reference/mutex/) to
+#'   [`std::jthread`](https://en.cppreference.com/w/cpp/thread/jthread.html)
+#'   for multi-thread programming and
+#'   [`std::mutex`](https://en.cppreference.com/w/cpp/thread/mutex.html) to
 #'   prevent data races
 #' * Direct inversion of matrices is avoided to improve numerical stability and
 #'   performance
 #' * Response probabilities are reordered to increase cache efficiency
-#' * Use of [`std::map`](https://en.cppreference.com/w/cpp/container/map) for
-#'   the chi-squared calculations
+#' * Use of [`std::map`](https://en.cppreference.com/w/cpp/container/map.html)
+#'   for the chi-squared calculations to improve performance
 #'
-#' Further reading available on a
-#' [QMUL ITS Research Blog](https://blog.hpc.qmul.ac.uk/speeding_up_r_packages.html).
+#' Further reading is available on the
+#' [QMUL ITS Research Blog](https://blog.hpc.qmul.ac.uk/speeding_up_r_packages/).
 #'
 #' References:
 #' * Agresti, Alan. 2002. *Categorical Data Analysis, second edition*.
-#'   Hoboken: John Wiley \& Sons.
+#'   Hoboken: John Wiley & Sons.
 #' * Bandeen-Roche, Karen, Diana L. Miglioretti, Scott L. Zeger, and Paul J.
 #'   Rathouz. 1997. "Latent Variable Regression for Multiple Discrete
 #'   Outcomes." *Journal of the American Statistical Association*.
@@ -84,7 +89,7 @@
 #'   *Applied Latent Class Analysis*. Cambridge: Cambridge University
 #'   Press.
 #' * McLachlan, Geoffrey J. and Thriyambakam Krishnan. 1997.
-#'   *The EM Algorithm and Extensions*. New York: John Wiley \& Sons.
+#'   *The EM Algorithm and Extensions*. New York: John Wiley & Sons.
 #'
 #' @param formula A formula expression of the form `response ~ predictors`. The
 #' details of model specification are given below.

@@ -6,8 +6,7 @@
 
 Sherman E. Lo, Queen Mary, University of London
 
-A reimplementation of poLCA
-\[[CRAN](https://cran.r-project.org/web/packages/poLCA/index.html),
+A reimplementation of poLCA \[[CRAN](https://cran.r-project.org/package=poLCA),
 [GitHub](https://github.com/dlinzer/poLCA)\] in C++. It attempts to reproduce
 results and be as similar as possible to the original code, while running
 faster, especially with multiple repetitions, by utilising multiple threads.
@@ -16,13 +15,13 @@ faster, especially with multiple repetitions, by utilising multiple threads.
 
 The package poLCAParallel reimplements the poLCA fitting, standard error
 calculations, goodness of fit tests and the bootstrap log-likelihood ratio test
-in C++. This was done using [Rcpp](https://cran.r-project.org/web/packages/Rcpp)
-and [RcppArmadillo](https://cran.r-project.org/web/packages/RcppArmadillo) which
+in C++. This was done using [Rcpp](https://cran.r-project.org/package=Rcpp)
+and [RcppArmadillo](https://cran.r-project.org/package=RcppArmadillo) which
 allows R to run fast C++ code. Additional notes include:
 
 * The API remains the same as the original poLCA with a few additions
 * It tries to reproduce results from the original poLCA
-* The code uses [Armadillo](http://arma.sourceforge.net/) for linear algebra
+* The code uses [Armadillo](https://arma.sourceforge.net/) for linear algebra
 * Multiple repetitions are done in parallel using
   [`std::jthread`](https://en.cppreference.com/w/cpp/thread/jthread.html)
   for multi-thread programming and
@@ -35,7 +34,7 @@ allows R to run fast C++ code. Additional notes include:
   the chi-squared calculations to improve performance
 
 Further reading is available on the
-[QMUL ITS Research Blog](https://blog.hpc.qmul.ac.uk/speeding_up_r_packages.html).
+[QMUL ITS Research Blog](https://blog.hpc.qmul.ac.uk/speeding_up_r_packages/).
 
 ## About poLCA
 
@@ -68,7 +67,7 @@ class regression models.
 ## Recommended Installation Instructions
 
 The easiest way to install poLCAParallel is to use R with
-[remotes](https://cran.r-project.org/web/packages/remotes/index.html).
+[remotes](https://cran.r-project.org/package=remotes).
 
 ### Install From GitHub
 
@@ -97,11 +96,11 @@ remotes::install_local(<PATH TO .zip OR .tar.gz FILE>)
 ### Citation
 
 Please consider citing the corresponding
-[QMUL ITS Research Blog](https://blog.hpc.qmul.ac.uk/speeding_up_r_packages.html)
+[QMUL ITS Research Blog](https://blog.hpc.qmul.ac.uk/speeding_up_r_packages/)
 
 * Lo, S.E. (2022). Speeding up and Parallelising R packages (using Rcpp and C++)
   | QMUL ITS Research Blog.
-  [[link]](https://blog.hpc.qmul.ac.uk/speeding_up_r_packages.html)
+  [[link]](https://blog.hpc.qmul.ac.uk/speeding_up_r_packages/)
 
 and the publication below which this software was originally created for
 
@@ -181,17 +180,17 @@ code and install a locally modified version of the package.
 
 Requires the R packages for compiling and testing:
 
-* [Rcpp](https://cran.r-project.org/web/packages/Rcpp)
-* [RcppArmadillo](https://cran.r-project.org/web/packages/RcppArmadillo)
-* [roxygen2](https://cran.r-project.org/web/packages/roxygen2/index.html)
-* [testthat](https://cran.r-project.org/web/packages/testthat/index.html)
-* [usethis](https://cloud.r-project.org/web/packages/usethis/index.html)
+* [Rcpp](https://cran.r-project.org/package=Rcpp)
+* [RcppArmadillo](https://cran.r-project.org/package=RcppArmadillo)
+* [roxygen2](https://cran.r-project.org/package=roxygen2)
+* [testthat](https://cran.r-project.org/package=testthat)
+* [usethis](https://cran.r-project.org/package=usethis)
 
 Requires the dependent R packages:
 
-* [MASS](https://cran.r-project.org/web/packages/MASS/index.html)
-* [poLCA](https://cran.r-project.org/web/packages/poLCA/index.html)
-* [scatterplot3d](https://cran.r-project.org/web/packages/scatterplot3d/)
+* [MASS](https://cran.r-project.org/package=MASS)
+* [poLCA](https://cran.r-project.org/package=poLCA)
+* [scatterplot3d](https://cran.r-project.org/package=scatterplot3d)
 
 Git clone this repository
 
@@ -427,17 +426,17 @@ and viewed at `html/index.html`.
   and sample size requirements for the bootstrap likelihood ratio test in latent
   class analysis. *Structural Equation Modeling: A Multidisciplinary Journal*,
   21(4):534-552.
-  [[link]](https://www.tandfonline.com/doi/full/10.1080/10705511.2014.919819?casa_token=LgaSzKeeB8MAAAAA%3AB80XwZEIkLOIVsD4Gvp6O0gfktOnIqA6dOBBvUZIjjhs-7ilLIZJC_TmxCh8Umh45d0sWez4-em9)
+  [[link]](https://www.tandfonline.com/doi/full/10.1080/10705511.2014.919819)
 * Linzer, D.A. & Lewis, J. (2013). poLCA: Polytomous Variable Latent
   Class Analysis. R package version 1.4.
   [[link]](https://github.com/dlinzer/poLCA)
 * Linzer, D.A. & Lewis, J.B. (2011). poLCA: An R package for polytomous
   variable latent class analysis. *Journal of Statistical Software*,
   42(10): 1-29.
-  [[link]](http://www.jstatsoft.org/v42/i10)
+  [[link]](https://www.jstatsoft.org/article/view/v042i10)
 
 ## License
 
 The software is under the GNU GPL 2.0 license, as with the original poLCA code,
 stated in their
-[documentation](https://cran.r-project.org/web/packages/poLCA/index.html).
+[documentation](https://cran.r-project.org/package=poLCA).

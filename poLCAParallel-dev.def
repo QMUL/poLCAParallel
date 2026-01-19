@@ -69,6 +69,11 @@ From: ubuntu:24.04
     cmake ..
     cmake --build .
 
+    # required for R CMD check --as-cran
+    apt install -y pandoc
+    apt install -y tidy
+    R -e "install.packages('V8')"
+
 %test
     cd /usr/src/poLCAParallel/build
     ./test_polca_parallel
@@ -76,7 +81,7 @@ From: ubuntu:24.04
     R -e "testthat::test_local()"
     cd /tmp
     R CMD build /usr/src/poLCAParallel
-    R CMD check poLCAParallel_*.tar.gz
+    R CMD check --as-cran poLCAParallel_*.tar.gz
 
 %runscript
     R "$@"
