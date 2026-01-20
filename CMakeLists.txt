@@ -4,7 +4,7 @@ project(poLCAParallel VERSION 1.2.6 HOMEPAGE_URL https://github.com/QMUL/poLCAPa
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
-include_directories(include)
+include_directories(src)
 
 file(GLOB ALL_SRC_FILES CONFIGURE_DEPENDS src/*.cc)
 file(GLOB TEST_SOURCES CONFIGURE_DEPENDS tests/Catch2/*.cc)
