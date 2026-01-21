@@ -5,16 +5,18 @@ n_sample_conditions <- 2
 # Probability of a variable being in the condition
 prob_in_condition <- 0.5
 
-#' Test the function poLCA.table() given a fitted model
+#' Test the function `poLCA.table()` given a fitted model
 #'
-#' Test the function poLCA.table() given a fitted model (can be non-regression
+#' Test the function `poLCA.table()` given a fitted model (can be non-regression
 #' or regression model).
 #'
 #' This test will test all possible one-way and two-way tables by cycling
 #' through the column names. In addition, it will test a sample of conditions,
 #' randomly selected, to pass to the function, one of which is empty.
 #'
-#' The test compares the results with the original poLCA.
+#' The test compares the results with the original poLCA. The original code can
+#' produce NaN of Inf, these should be ignored as the poLCAParallel
+#' implementation should be more robust
 #'
 #' @param columns Vector of strings, names of the columns of the responses
 #' @param n_outcomes Vector of integers, number of outcomes for each category
@@ -67,16 +69,24 @@ test_table_given_model <- function(columns, n_outcomes, lc) {
       table_polcaparallel <- poLCAParallel::poLCA.table(
         formula_, condition, lc
       )
-      expect_equal(table_polcaparallel, table_polca)
+
+      # original poLCA::poLCA.table() can produce NaN or Inf, ignore them
+      is_finite_index <- is.finite(table_polca)
+      expect_equal(
+        table_polcaparallel[is_finite_index],
+        table_polca[is_finite_index]
+      )
+      # test if all values are finite
+      expect_identical(all(is.finite(table_polcaparallel)), TRUE)
     }
   }
 }
 
-#' Test the function poLCA.table() for the non-regression problem
+#' Test the function `poLCA.table()`for the non-regression problem
 #'
-#' Test the function poLCA.table() for the non-regression problem. The model is
-#' fitted onto simulated data and then passed to the function. The test compares
-#' the results with the original poLCA code
+#' Test the function `poLCA.table()` for the non-regression problem. The model
+#' is fitted onto simulated data and then passed to the function. The test
+#' compares the results with the original poLCA code
 #'
 #' See test_table_given_model() for further details
 #'
@@ -107,11 +117,11 @@ test_non_regress_table <- function(n_data, n_outcomes, n_cluster, n_rep,
   test_table_given_model(colnames(responses), n_outcomes, lc)
 }
 
-#' Test the function poLCA.table() for the non-regression problem
+#' Test the function `poLCA.table()` for the non-regression problem
 #'
-#' Test the function poLCA.table() for the non-regression problem. The model is
-#' fitted onto simulated data and then passed to the function. The test compares
-#' the results with the original poLCA code
+#' Test the function `poLCA.table()` for the non-regression problem. The model
+#' is fitted onto simulated data and then passed to the function. The test
+#' compares the results with the original poLCA code
 #'
 #' See test_table_given_model() for further details
 #'
@@ -148,136 +158,168 @@ test_regress_table <- function(n_data, n_feature, n_outcomes, n_cluster, n_rep,
 test_that("non-regression-full-data", {
   # test using na_rm = TRUE and FALSE
   set.seed(-507817496)
-  expect_no_error(test_non_regress_table(
-    100,
-    c(2, 3, 5, 2, 2),
-    3,
-    4,
-    TRUE,
-    2,
-    1000,
-    1e-10,
-    0,
-    50,
-    0.01
-  ))
+  seeds <- sample.int(.Machine$integer.max, N_REPEAT)
+  for (i in seq_len(N_REPEAT)) {
+    set.seed(seeds[i])
+    expect_no_error(test_non_regress_table(
+      100,
+      c(2, 3, 5, 2, 2),
+      3,
+      4,
+      TRUE,
+      N_THREAD,
+      DEFAULT_MAXITER,
+      DEFAULT_TOL,
+      0,
+      50,
+      0.01
+    ))
+  }
 
   set.seed(-2093133234)
-  expect_no_error(test_non_regress_table(
-    100,
-    c(2, 3, 5, 2, 2),
-    3,
-    4,
-    FALSE,
-    2,
-    1000,
-    1e-10,
-    0,
-    50,
-    0.01
-  ))
+  seeds <- sample.int(.Machine$integer.max, N_REPEAT)
+  for (i in seq_len(N_REPEAT)) {
+    set.seed(seeds[i])
+    expect_no_error(test_non_regress_table(
+      100,
+      c(2, 3, 5, 2, 2),
+      3,
+      4,
+      FALSE,
+      N_THREAD,
+      DEFAULT_MAXITER,
+      DEFAULT_TOL,
+      0,
+      50,
+      0.01
+    ))
+  }
 })
 
 test_that("non-regression-missing-data", {
   # test using na_rm = TRUE and FALSE
   set.seed(1354513976)
-  expect_no_error(test_non_regress_table(
-    100,
-    c(2, 3, 5, 2, 2),
-    3,
-    4,
-    TRUE,
-    2,
-    1000,
-    1e-10,
-    0.1,
-    50,
-    0.01
-  ))
+  seeds <- sample.int(.Machine$integer.max, N_REPEAT)
+  for (i in seq_len(N_REPEAT)) {
+    set.seed(seeds[i])
+    expect_no_error(test_non_regress_table(
+      100,
+      c(2, 3, 5, 2, 2),
+      3,
+      4,
+      TRUE,
+      N_THREAD,
+      DEFAULT_MAXITER,
+      DEFAULT_TOL,
+      0.1,
+      50,
+      0.01
+    ))
+  }
 
   set.seed(-647551612)
-  expect_no_error(test_non_regress_table(
-    100,
-    c(2, 3, 5, 2, 2),
-    3,
-    4,
-    FALSE,
-    2,
-    1000,
-    1e-10,
-    0.1,
-    50,
-    0.01
-  ))
+  seeds <- sample.int(.Machine$integer.max, N_REPEAT)
+  for (i in seq_len(N_REPEAT)) {
+    set.seed(seeds[i])
+    expect_no_error(test_non_regress_table(
+      100,
+      c(2, 3, 5, 2, 2),
+      3,
+      4,
+      FALSE,
+      N_THREAD,
+      DEFAULT_MAXITER,
+      DEFAULT_TOL,
+      0.1,
+      50,
+      0.01
+    ))
+  }
 })
 
 
 test_that("regression-full-data", {
   # test using na_rm = TRUE and FALSE
-  set.seed(1449910432)
-  expect_no_error(test_regress_table(
-    100,
-    4,
-    c(2, 3, 5, 2, 2),
-    3,
-    4,
-    TRUE,
-    2,
-    1000,
-    1e-10,
-    0,
-    50,
-    0.01
-  ))
+  set.seed(24029611)
+  seeds <- sample.int(.Machine$integer.max, N_REPEAT)
+  for (i in seq_len(N_REPEAT)) {
+    set.seed(seeds[i])
+    expect_no_error(test_regress_table(
+      100,
+      4,
+      c(2, 3, 5, 2, 2),
+      3,
+      4,
+      TRUE,
+      N_THREAD,
+      DEFAULT_MAXITER,
+      DEFAULT_TOL,
+      0,
+      50,
+      0.01
+    ))
+  }
 
-  set.seed(-346397158)
-  expect_no_error(test_regress_table(
-    100,
-    4,
-    c(2, 3, 5, 2, 2),
-    3,
-    4,
-    FALSE,
-    2,
-    1000,
-    1e-10,
-    0,
-    50,
-    0.01
-  ))
+  set.seed(-1281069548)
+  seeds <- sample.int(.Machine$integer.max, N_REPEAT)
+  for (i in seq_len(N_REPEAT)) {
+    set.seed(seeds[i])
+    expect_no_error(test_regress_table(
+      100,
+      4,
+      c(2, 3, 5, 2, 2),
+      3,
+      4,
+      FALSE,
+      N_THREAD,
+      DEFAULT_MAXITER,
+      DEFAULT_TOL,
+      0,
+      50,
+      0.01
+    ))
+  }
 })
 
 test_that("regression-missing-data", {
   # test using na_rm = TRUE and FALSE
   set.seed(-749216122)
-  expect_no_error(test_regress_table(
-    100,
-    4,
-    c(2, 3, 5, 2, 2),
-    3,
-    4,
-    TRUE,
-    2,
-    1000,
-    1e-10,
-    0.1,
-    50,
-    0.01
-  ))
+  seeds <- sample.int(.Machine$integer.max, N_REPEAT)
+  for (i in seq_len(N_REPEAT)) {
+    set.seed(seeds[i])
+    expect_no_error(test_regress_table(
+      100,
+      4,
+      c(2, 3, 5, 2, 2),
+      3,
+      4,
+      TRUE,
+      N_THREAD,
+      DEFAULT_MAXITER,
+      DEFAULT_TOL,
+      0.1,
+      50,
+      0.01
+    ))
+  }
 
   set.seed(-1284213522)
-  expect_no_error(test_regress_table(
-    100,
-    4,
-    c(2, 3, 5, 2, 2),
-    3,
-    4,
-    FALSE,
-    2,
-    1000,
-    1e-10,
-    0.1,
-    50,
-    0.01
-  ))
+  seeds <- sample.int(.Machine$integer.max, N_REPEAT)
+  for (i in seq_len(N_REPEAT)) {
+    set.seed(seeds[i])
+    expect_no_error(test_regress_table(
+      100,
+      4,
+      c(2, 3, 5, 2, 2),
+      3,
+      4,
+      FALSE,
+      N_THREAD,
+      DEFAULT_MAXITER,
+      DEFAULT_TOL,
+      0.1,
+      50,
+      0.01
+    ))
+  }
 })

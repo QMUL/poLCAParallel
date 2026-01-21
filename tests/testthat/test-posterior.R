@@ -1,9 +1,35 @@
-#' Test the function poLCA.posterior() for the non-regression problem
+#' Test and compare the resulting `poLCA.posterior()` function
 #'
-#' Test the function poLCA.posterior() for the non-regression problem. The model
-#' is fitted on data and then used to work out the posterior for the training
-#' data, unseen no-missing test data and unseen with-missing test data. The test
-#' compares the results with the orginal poLCA code
+#' Test and compare the resulting `poLCAParallel::poLCA.posterior()` with the
+#' original `poLCA::poLCA.posterior()`. They should produce the same results
+#'
+#' Also tests if the resulting `poLCAParallel::poLCA.posterior()` are valid
+#' probabilities and finite
+#'
+#' It is possible the original `poLCA::poLCA.posterior()` may produce NaN or
+#' Inf. They are ignored in the comparison
+#'
+#' @param posterior_parallel Return value of `poLCAParallel::poLCA.posterior()`
+#' @param posterior_polca Return value of `poLCA::poLCA.posterior()`
+test_posterior <- function(posterior_parallel,
+                           posterior_polca) {
+  expect_identical(all(is.finite(posterior_parallel)), TRUE)
+  test_cluster_probs(
+    posterior_parallel,
+    nrow(posterior_parallel), ncol(posterior_parallel)
+  )
+  # only do a comparison test if the original code produce finite results
+  if (all(is.finite(posterior_polca))) {
+    expect_equal(posterior_parallel, posterior_polca)
+  }
+}
+
+#' Test the function `poLCA.posterior()` for the non-regression problem
+#'
+#' Test the function `poLCA.posterior()` for the non-regression problem. The
+#' model is fitted on data and then used to work out the posterior for the
+#' training data, unseen no-missing test data and unseen with-missing test data.
+#' The test compares the results with the original poLCA code
 #'
 #' @param n_data Number of data points
 #' @param n_outcomes Vector of integers, number of outcomes for each category
@@ -30,29 +56,32 @@ test_non_regress_posterior <- function(n_data, n_outcomes, n_cluster, n_rep,
   )
 
   # using training data
-  posterior_polca <- poLCA::poLCA.posterior(lc, lc$y)
-  posterior_polcaparallel <- poLCAParallel::poLCA.posterior(lc, lc$y)
-  expect_equal(posterior_polcaparallel, posterior_polca)
+  test_posterior(
+    poLCAParallel::poLCA.posterior(lc, lc$y),
+    poLCA::poLCA.posterior(lc, lc$y)
+  )
 
   # fully observed data
   responses <- random_response(n_data_test, n_outcomes, 0, NaN)
-  posterior_polca <- poLCA::poLCA.posterior(lc, responses)
-  posterior_polcaparallel <- poLCAParallel::poLCA.posterior(lc, responses)
-  expect_equal(posterior_polcaparallel, posterior_polca)
+  test_posterior(
+    poLCAParallel::poLCA.posterior(lc, responses),
+    poLCA::poLCA.posterior(lc, responses)
+  )
 
   # partially observed data
   responses <- random_response(n_data_test, n_outcomes, prob_na_test, NaN)
-  posterior_polca <- poLCA::poLCA.posterior(lc, responses)
-  posterior_polcaparallel <- poLCAParallel::poLCA.posterior(lc, responses)
-  expect_equal(posterior_polcaparallel, posterior_polca)
+  test_posterior(
+    poLCAParallel::poLCA.posterior(lc, responses),
+    poLCA::poLCA.posterior(lc, responses)
+  )
 }
 
-#' Test the function poLCA.posterior() for the regression problem
+#' Test the function `poLCA.posterior()` for the regression problem
 #'
-#' Test the function poLCA.posterior() for the non-regression problem. The model
-#' is fitted on data and then used to work out the posterior for the training
-#' data, unseen no-missing test data and unseen with-missing test data. The test
-#' compares the results with the original poLCA code
+#' Test the function `poLCA.posterior()` for the non-regression problem. The
+#' model is fitted on data and then used to work out the posterior for the
+#' training data, unseen no-missing test data and unseen with-missing test data.
+#' The test compares the results with the original poLCA code
 #'
 #' @param n_data Number of data points
 #' @param n_feature Number of features
@@ -79,154 +108,192 @@ test_regress_posterior <- function(n_data, n_feature, n_outcomes, n_cluster,
     verbose = FALSE, n.thread = n_thread
   )
 
-  posterior_polca <- poLCA::poLCA.posterior(lc, lc$y)
-  posterior_polcaparallel <- poLCAParallel::poLCA.posterior(lc, lc$y)
-  expect_equal(posterior_polcaparallel, posterior_polca)
+  # using training data
+  test_posterior(
+    poLCAParallel::poLCA.posterior(lc, lc$y),
+    poLCA::poLCA.posterior(lc, lc$y)
+  )
 
+  # fully observed data
   responses <- random_response(n_data_test, n_outcomes, 0, NaN)
-  posterior_polca <- poLCA::poLCA.posterior(lc, responses)
-  posterior_polcaparallel <- poLCAParallel::poLCA.posterior(lc, responses)
-  expect_equal(posterior_polcaparallel, posterior_polca)
+  test_posterior(
+    poLCAParallel::poLCA.posterior(lc, responses),
+    poLCA::poLCA.posterior(lc, responses)
+  )
 
+  # partially observed data
   responses <- random_response(n_data_test, n_outcomes, prob_na_test, NaN)
-  posterior_polca <- poLCA::poLCA.posterior(lc, responses)
-  posterior_polcaparallel <- poLCAParallel::poLCA.posterior(lc, responses)
-  expect_equal(posterior_polcaparallel, posterior_polca)
+  test_posterior(
+    poLCAParallel::poLCA.posterior(lc, responses),
+    poLCA::poLCA.posterior(lc, responses)
+  )
 }
 
 
 test_that("non-regression-full-data", {
   # test using na_rm = TRUE and FALSE
   set.seed(-1381922797)
-  expect_no_error(test_non_regress_posterior(
-    100,
-    c(2, 3, 5, 2, 2),
-    3,
-    4,
-    TRUE,
-    2,
-    1000,
-    1e-10,
-    0,
-    50,
-    0.01
-  ))
+  seeds <- sample.int(.Machine$integer.max, N_REPEAT)
+  for (i in seq_len(N_REPEAT)) {
+    set.seed(seeds[i])
+    expect_no_error(test_non_regress_posterior(
+      100,
+      c(2, 3, 5, 2, 2),
+      3,
+      4,
+      TRUE,
+      N_THREAD,
+      DEFAULT_MAXITER,
+      DEFAULT_TOL,
+      0,
+      50,
+      0.01
+    ))
+  }
 
   set.seed(481136649)
-  expect_no_error(test_non_regress_posterior(
-    100,
-    c(2, 3, 5, 2, 2),
-    3,
-    4,
-    FALSE,
-    2,
-    1000,
-    1e-10,
-    0,
-    50,
-    0.01
-  ))
+  seeds <- sample.int(.Machine$integer.max, N_REPEAT)
+  for (i in seq_len(N_REPEAT)) {
+    set.seed(seeds[i])
+    expect_no_error(test_non_regress_posterior(
+      100,
+      c(2, 3, 5, 2, 2),
+      3,
+      4,
+      FALSE,
+      N_THREAD,
+      DEFAULT_MAXITER,
+      DEFAULT_TOL,
+      0,
+      50,
+      0.01
+    ))
+  }
 })
 
 test_that("non-regression-missing-data", {
   # test using na_rm = TRUE and FALSE
   set.seed(1210610989)
-  expect_no_error(test_non_regress_posterior(
-    100,
-    c(2, 3, 5, 2, 2),
-    3,
-    4,
-    TRUE,
-    2,
-    1000,
-    1e-10,
-    0.1,
-    50,
-    0.01
-  ))
+  seeds <- sample.int(.Machine$integer.max, N_REPEAT)
+  for (i in seq_len(N_REPEAT)) {
+    set.seed(seeds[i])
+    expect_no_error(test_non_regress_posterior(
+      100,
+      c(2, 3, 5, 2, 2),
+      3,
+      4,
+      TRUE,
+      N_THREAD,
+      DEFAULT_MAXITER,
+      DEFAULT_TOL,
+      0.1,
+      50,
+      0.01
+    ))
+  }
 
   set.seed(1304862690)
-  expect_no_error(test_non_regress_posterior(
-    100,
-    c(2, 3, 5, 2, 2),
-    3,
-    4,
-    FALSE,
-    2,
-    1000,
-    1e-10,
-    0.1,
-    50,
-    0.01
-  ))
+  seeds <- sample.int(.Machine$integer.max, N_REPEAT)
+  for (i in seq_len(N_REPEAT)) {
+    set.seed(seeds[i])
+    expect_no_error(test_non_regress_posterior(
+      100,
+      c(2, 3, 5, 2, 2),
+      3,
+      4,
+      FALSE,
+      N_THREAD,
+      DEFAULT_MAXITER,
+      DEFAULT_TOL,
+      0.1,
+      50,
+      0.01
+    ))
+  }
 })
 
 test_that("regression-full-data", {
   # test using na_rm = TRUE and FALSE
   set.seed(-1529442620)
-  expect_no_error(test_regress_posterior(
-    100,
-    4,
-    c(2, 3, 5, 2, 2),
-    3,
-    4,
-    TRUE,
-    2,
-    1000,
-    1e-10,
-    0,
-    50,
-    0.01
-  ))
+  seeds <- sample.int(.Machine$integer.max, N_REPEAT)
+  for (i in seq_len(N_REPEAT)) {
+    set.seed(seeds[i])
+    expect_no_error(test_regress_posterior(
+      100,
+      4,
+      c(2, 3, 5, 2, 2),
+      3,
+      4,
+      TRUE,
+      N_THREAD,
+      DEFAULT_MAXITER,
+      DEFAULT_TOL,
+      0,
+      50,
+      0.01
+    ))
+  }
 
   set.seed(81779870)
-  expect_no_error(test_regress_posterior(
-    100,
-    4,
-    c(2, 3, 5, 2, 2),
-    3,
-    4,
-    FALSE,
-    2,
-    1000,
-    1e-10,
-    0,
-    50,
-    0.01
-  ))
+  seeds <- sample.int(.Machine$integer.max, N_REPEAT)
+  for (i in seq_len(N_REPEAT)) {
+    set.seed(seeds[i])
+    expect_no_error(test_regress_posterior(
+      100,
+      4,
+      c(2, 3, 5, 2, 2),
+      3,
+      4,
+      FALSE,
+      N_THREAD,
+      DEFAULT_MAXITER,
+      DEFAULT_TOL,
+      0,
+      50,
+      0.01
+    ))
+  }
 })
 
 test_that("regression-missing-data", {
   # test using na_rm = TRUE and FALSE
   set.seed(-1396271961)
-  expect_no_error(test_regress_posterior(
-    100,
-    4,
-    c(2, 3, 5, 2, 2),
-    3,
-    4,
-    TRUE,
-    2,
-    1000,
-    1e-10,
-    0.1,
-    50,
-    0.01
-  ))
+  seeds <- sample.int(.Machine$integer.max, N_REPEAT)
+  for (i in seq_len(N_REPEAT)) {
+    set.seed(seeds[i])
+    expect_no_error(test_regress_posterior(
+      100,
+      4,
+      c(2, 3, 5, 2, 2),
+      3,
+      4,
+      TRUE,
+      N_THREAD,
+      DEFAULT_MAXITER,
+      DEFAULT_TOL,
+      0.1,
+      50,
+      0.01
+    ))
+  }
 
   set.seed(63195066)
-  expect_no_error(test_regress_posterior(
-    100,
-    4,
-    c(2, 3, 5, 2, 2),
-    3,
-    4,
-    FALSE,
-    2,
-    1000,
-    1e-10,
-    0.1,
-    50,
-    0.01
-  ))
+  seeds <- sample.int(.Machine$integer.max, N_REPEAT)
+  for (i in seq_len(N_REPEAT)) {
+    set.seed(seeds[i])
+    expect_no_error(test_regress_posterior(
+      100,
+      4,
+      c(2, 3, 5, 2, 2),
+      3,
+      4,
+      FALSE,
+      N_THREAD,
+      DEFAULT_MAXITER,
+      DEFAULT_TOL,
+      0.1,
+      50,
+      0.01
+    ))
+  }
 })

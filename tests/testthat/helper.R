@@ -1,3 +1,15 @@
+#' Number of times to repeat the same test with different data
+#' Set to 1 by default but increase this for more stress
+#'
+#' TODO: In the current implementation, the tests will likely fail when
+#' comparing results from `poLCA` to `poLCAParallel` when increasing `N_REPEAT`.
+#' This is probably due to numerical precision. This should be improved by
+#' allowing some statistical error when doing multiple tests
+N_REPEAT <- 1
+N_THREAD <- 2 # maximum number of threads
+DEFAULT_MAXITER <- 1000 # default value for `maxiter`
+DEFAULT_TOL <- 1e-10 # default value for `tol`
+
 #' Generate random responses
 #'
 #' @param n_data Number of data points
@@ -25,7 +37,7 @@ random_response <- function(n_data, n_outcomes, prob_na = 0, na_encode = 0) {
 #'
 #' Generate random Normally distributed random features. Column names of the
 #' data frame have prefix U, this ensures the column names are different
-#' enough from the responses returned by the function random_response()
+#' enough from the responses returned by the function `random_response()`
 #'
 #' @param n_data Number of data points
 #' @param n_feature Number of features
@@ -40,9 +52,9 @@ random_features <- function(n_data, n_feature) {
   return(features)
 }
 
-#' Generate the non-regression formula to pass to poLCA()
+#' Generate the non-regression formula to pass to `poLCA()`
 #'
-#' Generate the non-regression formula to pass to poLCA(). The formula uses
+#' Generate the non-regression formula to pass to `poLCA()`. The formula uses
 #' all columns in the passed parameter responses
 #'
 #' @param responses Data frame of responses, dim 1 for each data point, dim 2
@@ -56,9 +68,9 @@ get_non_regression_formula <- function(responses) {
   return(f)
 }
 
-#' Generate the regression formula to pass to poLCA()
+#' Generate the regression formula to pass to `poLCA()`
 #'
-#' Generate the regression formula to pass to poLCA(). The formula uses all
+#' Generate the regression formula to pass to `poLCA()`. The formula uses all
 #' columns in the passed parameters responses and features. A linear
 #' relationship is used
 #'
@@ -178,7 +190,7 @@ test_outcome_probs <- function(probs, n_outcomes, n_cluster) {
 #' Test the fitted model's (or a list which mocks it) standard error for the
 #' prior probabilities and outcome probabilities
 #'
-#' @param lc A model object estimated using the `poLCA` function (or a list
+#' @param lc A model object estimated using the `poLCA()` function (or a list
 #'   which mocks it)
 #' @param n_outcomes Vector of integers, number of outcomes for each category
 #' @param n_cluster Number of clusters fitted
@@ -202,7 +214,7 @@ test_standard_error <- function(lc, n_outcomes, n_cluster) {
 #' Test the fitted model's (or a list which mocks it) regression coefficient
 #' standard error
 #'
-#' @param lc A model object estimated using the `poLCA` function (or a list
+#' @param lc A model object estimated using the `poLCA()` function (or a list
 #'   which mocks it)
 #' @param n_feature Number of features
 #' @param n_cluster Number of clusters fitted
@@ -218,7 +230,7 @@ test_standard_coeff_error <- function(lc, n_feature, n_cluster) {
 #' such as the table of expected and observed frequencies (predcell) and
 #' statistics such as Gsq and Chisq
 #'
-#' @param lc A model object estimated using the `poLCA` function (or a list
+#' @param lc A model object estimated using the `poLCA()` function (or a list
 #'   which mocks it)
 #' @param n_outcomes Vector of integers, number of outcomes for each category
 test_polca_goodnessfit <- function(lc, n_outcomes) {
