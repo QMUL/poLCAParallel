@@ -248,7 +248,7 @@ poLCA <- function(formula,
   # nclass == 1 will use original code
   # poLCAParallel edits the original code for the nclass > 1 case
   if (nclass == 1) {
-    cat("\n ALERT: For nclass = 1, using the original poLCA code. \n\n")
+    warning("For nclass = 1, using the original poLCA code")
     return(poLCA::poLCA(
       formula, data, nclass, maxiter, graphs, tol, na.rm,
       probs.start, nrep, verbose, calc.se
@@ -416,10 +416,10 @@ extract_data <- function(formula, data, na.rm) {
   mframe <- stats::model.frame(formula, data, na.action = NULL)
   mf <- stats::model.response(mframe)
   if (any(mf < 1, na.rm = TRUE) || any(round(mf) != mf, na.rm = TRUE)) {
-    stop("\n ALERT: some manifest variables contain values that are not
-              positive integers. For poLCA to run, please recode categorical
-              outcome variables to increment from 1 to the maximum number of
-              outcome categories for each variable. \n\n")
+    stop("Some manifest variables contain values that are not positive integers.
+          For poLCA to run, please recode categorical outcome variables to
+          increment from 1 to the maximum number of outcome categories for each
+          variable.")
   }
   data <- data[rowSums(is.na(stats::model.matrix(formula, mframe))) == 0, ]
   if (na.rm) {
@@ -432,8 +432,8 @@ extract_data <- function(formula, data, na.rm) {
   }
   if (any(sapply(lapply(as.data.frame(y), table), length) == 1)) {
     y <- y[, !(sapply(apply(y, 2, table), length) == 1)]
-    cat("\n ALERT: at least one manifest variable contained only one
-             outcome category, and has been removed from the analysis. \n\n")
+    warning("At least one manifest variable contained only one outcome category,
+             and has been removed from the analysis.")
   }
   x <- stats::model.matrix(formula, mframe)
   return(list(x = x, y = y))

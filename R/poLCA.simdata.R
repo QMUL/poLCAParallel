@@ -143,18 +143,13 @@ poLCA.simdata <- function(N = 5000, probs = NULL, nclass = 2, ndv = 4,
     if (!is.null(x)) {
       niv <- ncol(x)
       if (nrow(x) != N) {
-        cat(paste(
-          "ALERT: number of rows of x does not equal N;",
-          "new covariates will be generated randomly. \n \n"
-        ))
+        warning("Number of rows of x does not equal N; new covariates will be
+                 generated randomly.")
         x <- NULL
       }
       if (ncol(x) != (nrow(b) - 1)) {
-        cat(paste(
-          "ALERT:",
-          "number of columns of x does not conform to number of rows in b;",
-          "new covariates will be generated randomly. \n \n"
-        ))
+        warning("Number of columns of x does not conform to number of rows in
+                 b; new covariates will be generated randomly.")
         x <- NULL
       }
     }
