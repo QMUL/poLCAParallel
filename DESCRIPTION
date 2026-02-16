@@ -17,7 +17,7 @@ Authors@R: c(person(given = "Sherman",
 Depends: R (>= 3.0.2)
 Imports: Rcpp (>= 1.0.7), scatterplot3d, MASS, parallel, poLCA
 LinkingTo: Rcpp, RcppArmadillo (>= 0.12.4.1.0)
-Description: A `C++` reimplementation of `poLCA` - latent class analysis and
+Description: A 'C++' reimplementation of 'poLCA' - latent class analysis and
     latent class regression models for polytomous outcome variables, also known
     as latent structure analysis. It attempts to reproduce results and be as
     similar as possible to the original code, while running faster, especially
