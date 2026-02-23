@@ -264,6 +264,39 @@ class EmAlgorithmRegress : public polca_parallel::EmAlgorithm {
                         std::size_t cluster_index_1);
 
   /**
+   * Calculate the prior posterior interaction for the hessian calculation
+   *
+   * Calculate the prior posterior interaction for the hessian calculation.
+   * Required in CalcHessSubBlock()
+   *
+   * This function produces a vector of length EmAlgorithm::n_data_, dependent
+   * on pair of clusters. For cluster \f$u=1,2,\cdots,\texttt{n_cluster}\f$, let
+   * \f$r_u\f$ be a vector of posteriors, for every data point, and \f$\pi_u\f$
+   * be a vector of priors, for every data point. Thus vectors \f$r_u\f$ and
+   * \f$\pi_u\f$ are of length EmAlgorithm::n_data_.
+   * For a cluster pair \f$u\f$ and \f$v\f$, the calculated return vector is:
+   * <ul>
+   *   <li>For \f$u=v\f$: \f$r_u(1-r_u) - \pi_u(1-\pi_u)\f$</li>
+   *   <li>Otherwise: \f$\pi_u \pi_v - r_u r_v\f$</li>
+   * </ul>
+   * where multiplication is an elementwise multiplication
+   *
+   * The zeroth cluster isn't used or considered, thus the parameters
+   * <code>cluster_index_0</code> and <code>cluster_index_1</code> will
+   * be shifted by one when referring to a cluster
+   *
+   * @param cluster_index_0 Cluster index, can take values of 0, 1, 2, ...,
+   * EmAlgorithmRegress::n_cluster_ - 2 which corresponds to cluster 1, 2, ...,
+   * EmAlgorithmRegress::n_cluster_ - 2 respectively
+   * @param cluster_index_1 Cluster index, can take values of 0, 1, 2, ...,
+   * EmAlgorithmRegress::n_cluster_ - 2 which corresponds to cluster 1, 2, ...,
+   * EmAlgorithmRegress::n_cluster_ - 2 respectively
+   * @return arma::Col<double> Vector of length EmAlgorithm::n_data_
+   */
+  [[nodiscard]] arma::Col<double> CalcPriorPostInter(
+      std::size_t cluster_index_0, std::size_t cluster_index_1);
+
+  /**
    * Calculate an element of a block from the Hessian
    *
    * Calculate an element of a block from the Hessian for a given pair of
@@ -271,17 +304,8 @@ class EmAlgorithmRegress : public polca_parallel::EmAlgorithm {
    *
    * @param feature_index_0 Column index of one of the features
    * @param feature_index_1 Column index of one of the features
-   * @param prior_post_inter Vector of length EmAlgorithm::n_data_, dependent on
-   * pair of clusters. For cluster \f$u=1,2,\cdots,\texttt{n_cluster}\f$, let
-   * \f$r_u\f$ be a vector of posteriors, for every data point, and \f$\pi_u\f$
-   * be a vector of priors, for every data point. Thus vectors \f$r_u\f$ and
-   * \f$\pi_u\f$ are of length EmAlgorithm::n_data_.
-   * For a cluster pair \f$u\f$ and \f$v\f$, the argument should be:
-   * <ul>
-   *   <li>For \f$u=v\f$: \f$r_u(1-r_u) - \pi_u(1-\pi_u)\f$</li>
-   *   <li>Otherwise: \f$\pi_u \pi_v - r_u r_v\f$</li>
-   * </ul>
-   * where multiplication is an elementwise multiplication
+   * @param prior_post_inter Return value of CalcPriorPostInter() for a given
+   * pair of clusters
    * @return double Value of an element of the Hessian
    */
   [[nodiscard]] double CalcHessElement(
