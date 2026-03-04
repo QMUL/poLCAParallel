@@ -116,6 +116,11 @@ std::vector<double> RandomInitialProb(polca_parallel::NOutcomes n_outcomes,
                                       const std::size_t n_cluster,
                                       std::size_t n_rep, std::mt19937_64& rng);
 
+// arma input
+
+[[nodiscard]] std::span<const double> VectorToConstSpan(
+    const arma::Mat<double>& vector);
+
 }  // namespace polca_parallel
 
 #endif  // POLCAPARALLEL_INCLUDE_UTIL_H_

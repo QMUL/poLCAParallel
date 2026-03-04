@@ -27,6 +27,7 @@
 
 #include "goodness_fit.h"
 #include "util.h"
+#include "util_rcpp.h"
 
 /**
  * Function to be exported to R, goodness of fit statistics
@@ -75,8 +76,10 @@ Rcpp::List GoodnessFitRcpp(Rcpp::IntegerMatrix responses,
   std::size_t n_category = n_outcomes.size();
 
   polca_parallel::GoodnessOfFit goodness_of_fit;
-  goodness_of_fit.Calc(responses, prior, outcome_prob, n_data, n_outcomes,
-                       n_cluster);
+  goodness_of_fit.Calc(polca_parallel::VectorToConstSpan(responses),
+                       polca_parallel::VectorToConstSpan(prior),
+                       polca_parallel::VectorToConstSpan(outcome_prob), n_data,
+                       n_outcomes, n_cluster);
 
   std::map<std::vector<int>, polca_parallel::Frequency>& frequency_map =
       goodness_of_fit.GetFrequencyMap();

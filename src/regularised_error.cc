@@ -32,7 +32,8 @@ polca_parallel::RegularisedError::RegularisedError(
           features, responses, probs, prior, posterior, n_data, n_feature,
           n_outcomes, n_cluster, prior_error, prob_error, regress_coeff_error) {
   this->smoother_ = std::make_unique<polca_parallel::Smoother>(
-      this->probs_, *this->prior_, *this->posterior_, this->n_data_,
+      this->probs_, polca_parallel::VectorToConstSpan(*this->prior_),
+      polca_parallel::VectorToConstSpan(*this->posterior_), this->n_data_,
       this->n_outcomes_, this->n_cluster_);
 }
 
@@ -58,6 +59,7 @@ polca_parallel::RegularisedErrorRegress::RegularisedErrorRegress(
           features, responses, probs, prior, posterior, n_data, n_feature,
           n_outcomes, n_cluster, prior_error, prob_error, regress_coeff_error) {
   this->smoother_ = std::make_unique<polca_parallel::Smoother>(
-      this->probs_, *this->prior_, *this->posterior_, this->n_data_,
+      this->probs_, polca_parallel::VectorToConstSpan(*this->prior_),
+      polca_parallel::VectorToConstSpan(*this->posterior_), this->n_data_,
       this->n_outcomes_, this->n_cluster_);
 }
