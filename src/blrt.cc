@@ -59,12 +59,16 @@ void polca_parallel::Blrt::SetSeed(std::seed_seq& seed) {
 }
 
 void polca_parallel::Blrt::Run() {
-  std::vector<std::jthread> thread_array(this->n_thread_ - 1);
-  for (std::jthread& thread : thread_array) {
-    thread = std::jthread(&Blrt::RunThread, this);
+  std::vector<std::thread> thread_array(this->n_thread_ - 1);
+  for (std::thread& thread : thread_array) {
+    thread = std::thread(&Blrt::RunThread, this);
   }
   // main thread run
   this->RunThread();
+  // join threads
+  for (std::thread& thread : thread_array) {
+    thread.join();
+  }
 }
 
 void polca_parallel::Blrt::RunThread() {
