@@ -49,8 +49,8 @@ namespace polca_parallel {
 class Smoother {
  private:
   /**
-   * Vector of smoothed probabilities for the outcome probabilities. Flatten
-   * list in the order
+   * Vector of smoothed response probabilities for each outcome, conditioned on
+   * the category and cluster. Flatten list in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -90,8 +90,8 @@ class Smoother {
    * Creates a copy of probs, prior and posterior. Call Smooth() to smooth
    * these probabilities
    *
-   * @param probs Vector of probabilities for each outcome, for each category,
-   * for each cluster flatten list in the order
+   * @param probs Vector of response probabilities for each outcome, conditioned
+   * on the category and cluster. Flatten list in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>

@@ -1,4 +1,4 @@
-#' Reorder latent classes in poLC
+#' Reorder latent classes in poLCA
 #'
 #' A helper function to simplify the reordering of latent classes returned by
 #' `poLCA`
@@ -23,13 +23,13 @@
 #' `probs`, giving the desired reordering of the latent classes.
 #'
 #' @returns A list of matrices containing the rearranged (by row)
-#'   class-conditional response probabilities.
+#' class-conditional response probabilities.
 #'
 #' @examples
 #' ##
 #' ## Using the "cheating" sample data set, make the larger
 #' ## non-cheater class the first ("reference") class in a
-#' ## latent class regression model.  The coefficient on GPA
+#' ## latent class regression model. The coefficient on GPA
 #' ## now maintains a consistent interpretation.
 #' ##
 #' data(cheating)

@@ -6,8 +6,7 @@
 
 Sherman E. Lo, Queen Mary, University of London
 
-A reimplementation of poLCA
-\[[CRAN](https://cran.r-project.org/web/packages/poLCA/index.html),
+A reimplementation of poLCA \[[CRAN](https://cran.r-project.org/package=poLCA),
 [GitHub](https://github.com/dlinzer/poLCA)\] in C++. It attempts to reproduce
 results and be as similar as possible to the original code, while running
 faster, especially with multiple repetitions, by utilising multiple threads.
@@ -16,25 +15,26 @@ faster, especially with multiple repetitions, by utilising multiple threads.
 
 The package poLCAParallel reimplements the poLCA fitting, standard error
 calculations, goodness of fit tests and the bootstrap log-likelihood ratio test
-in C++. This was done using [Rcpp](https://cran.r-project.org/web/packages/Rcpp)
-and [RcppArmadillo](https://cran.r-project.org/web/packages/RcppArmadillo) which
+in C++. This was done using [Rcpp](https://cran.r-project.org/package=Rcpp)
+and [RcppArmadillo](https://cran.r-project.org/package=RcppArmadillo) which
 allows R to run fast C++ code. Additional notes include:
 
 * The API remains the same as the original poLCA with a few additions
 * It tries to reproduce results from the original poLCA
-* The code uses [Armadillo](http://arma.sourceforge.net/) for linear algebra
+* The code uses [Armadillo](https://arma.sourceforge.net/) for linear algebra
 * Multiple repetitions are done in parallel using
-  [`std::thread`](https://www.cplusplus.com/reference/thread/) for multi-thread
-  programming and [`std::mutex`](https://www.cplusplus.com/reference/mutex/) to
+  [`std::jthread`](https://en.cppreference.com/w/cpp/thread/jthread.html)
+  for multi-thread programming and
+  [`std::mutex`](https://en.cppreference.com/w/cpp/thread/mutex.html) to
   prevent data races
 * Direct inversion of matrices is avoided to improve numerical stability and
   performance
 * Response probabilities are reordered to increase cache efficiency
-* Use of [`std::map`](https://en.cppreference.com/w/cpp/container/map) for the
-  chi-squared calculations to improve performance
+* Use of [`std::map`](https://en.cppreference.com/w/cpp/container/map.html) for
+  the chi-squared calculations to improve performance
 
 Further reading is available on the
-[QMUL ITS Research Blog](https://blog.hpc.qmul.ac.uk/speeding_up_r_packages.html).
+[QMUL ITS Research Blog](https://blog.hpc.qmul.ac.uk/speeding_up_r_packages/).
 
 ## About poLCA
 
@@ -67,7 +67,7 @@ class regression models.
 ## Recommended Installation Instructions
 
 The easiest way to install poLCAParallel is to use R with
-[remotes](https://cran.r-project.org/web/packages/remotes/index.html).
+[remotes](https://cran.r-project.org/package=remotes).
 
 ### Install From GitHub
 
@@ -96,11 +96,11 @@ remotes::install_local(<PATH TO .zip OR .tar.gz FILE>)
 ### Citation
 
 Please consider citing the corresponding
-[QMUL ITS Research Blog](https://blog.hpc.qmul.ac.uk/speeding_up_r_packages.html)
+[QMUL ITS Research Blog](https://blog.hpc.qmul.ac.uk/speeding_up_r_packages/)
 
 * Lo, S.E. (2022). Speeding up and Parallelising R packages (using Rcpp and C++)
   | QMUL ITS Research Blog.
-  [[link]](https://blog.hpc.qmul.ac.uk/speeding_up_r_packages.html)
+  [[link]](https://blog.hpc.qmul.ac.uk/speeding_up_r_packages/)
 
 and the publication below which this software was originally created for
 
@@ -164,7 +164,7 @@ An example use of a bootstrap likelihood ratio test is shown in `exec/3_blrt.R`.
 * The output `eflag` is set to `TRUE` if *any* repetition has to be restarted,
   rather than the repetition which achieves maximum log-likelihood.
 * The standard error is not calculated if `calc.se` is set to `FALSE` even in
-  poLCA regression. Previously, the standard error is calculated regardless of
+  poLCA regression. Previously, the standard error was calculated regardless of
   `calc.se` in poLCA regression.
 * In the standard error calculations, an SVD is done on the score matrix,
   rather than inverting the information matrix.
@@ -180,17 +180,17 @@ code and install a locally modified version of the package.
 
 Requires the R packages for compiling and testing:
 
-* [Rcpp](https://cran.r-project.org/web/packages/Rcpp)
-* [RcppArmadillo](https://cran.r-project.org/web/packages/RcppArmadillo)
-* [roxygen2](https://cran.r-project.org/web/packages/roxygen2/index.html)
-* [testthat](https://cran.r-project.org/web/packages/testthat/index.html)
-* [usethis](https://cloud.r-project.org/web/packages/usethis/index.html)
+* [Rcpp](https://cran.r-project.org/package=Rcpp)
+* [RcppArmadillo](https://cran.r-project.org/package=RcppArmadillo)
+* [roxygen2](https://cran.r-project.org/package=roxygen2)
+* [testthat](https://cran.r-project.org/package=testthat)
+* [usethis](https://cran.r-project.org/package=usethis)
 
 Requires the dependent R packages:
 
-* [MASS](https://cran.r-project.org/web/packages/MASS/index.html)
-* [poLCA](https://cran.r-project.org/web/packages/poLCA/index.html)
-* [scatterplot3d](https://cran.r-project.org/web/packages/scatterplot3d/)
+* [MASS](https://cran.r-project.org/package=MASS)
+* [poLCA](https://cran.r-project.org/package=poLCA)
+* [scatterplot3d](https://cran.r-project.org/package=scatterplot3d)
 
 Git clone this repository
 
@@ -250,6 +250,47 @@ To test the R code, run the following at the repository root
 R -e "testthat::test_local()"
 ```
 
+### R Dependency Management
+
+The package `renv` is used to record and manage R dependencies, with versions
+pinned, for use during development, maintenance and testing. The file
+`renv.lock` contains these dependencies. It shall be regularly updated during
+maintenance. The lock file is also used in the Apptainer definition file
+`poLCAParallel-dev.def` below to further reproduce the environment in a
+container.
+
+#### Restoring the R Environment
+
+From the repository root, run the following commands to set up an R environment
+and install the dependencies, with the specified versions, used for development
+and testing
+
+```bash
+R -e "renv::init(bare=TRUE)"
+R -e "renv::restore()"
+```
+
+Run `R` commands from the repository root to use these dependencies.
+
+#### Taking a Snapshot of the Environment with the Latest Versions
+
+The lock file may need to be updated during maintenance. This can be done by
+starting a fresh R environment, after ensuring the `renv` artifacts are deleted:
+
+* `.Rprofile`
+* `renv.lock`
+* `renv/`
+
+Then take a snapshot of the latest dependencies
+
+```bash
+R -e "renv::init()"
+R -e "renv::snapshot(dev=TRUE)"
+```
+
+This will overwrite the file `renv.lock` specifying dependencies with the latest
+versions.
+
 ### Apptainer
 
 [Apptainer](https://apptainer.org/) definition files are provided, which can be
@@ -277,19 +318,21 @@ is located in `/usr/src/poLCAParallel/html`.
 All generated documents and codes, eg from
 
 ```bash
-R -e "Rcpp::compileAttributes('poLCAParallel')"
+R -e "Rcpp::compileAttributes()"
 ```
 
 and
 
 ```bash
-R -e "roxygen2::roxygenize('poLCAParallel')"
+R -e "roxygen2::roxygenize()"
 ```
 
 shall not be included in the `master` branch. Instead, they shall be in the
 `package` branch so that this package can be installed using
-`remotes::install_github("QMUL/poLCAParallel@package")`. This is to avoid
-having duplicate documentation and generated code on the `master` branch.
+`remotes::install_github("QMUL/poLCAParallel@package")`. This is to avoid having
+duplicate documentation and generated code on the `master` branch. *The
+exception to this rule is `renv.lock` which is produced by
+`renv::snapshot(dev=TRUE)`.*
 
 Semantic versioning is used and tagged. Tags on the `master` branch shall have
 `v` prepended and `-master` appended, eg. `v1.1.0-master`. The corresponding
@@ -305,6 +348,10 @@ tag on the `package` branch shall only have `v` prepended, eg. `v1.1.0`.
   ill-conditioned. Consider pre-conditioning the matrix.
 * In the poLCA regression model, consider using multiple Newton steps instead
   of one single step in the EM algorithm.
+* The vocabulary used may differ, for example:
+  * *Latent classes* may be called *clusters*
+  * *Covariates* or *predictors* may be called *features*
+  * *Manifest variables* may be called *categories*
 
 ### Actions for the Next Minor Version(s)
 
@@ -319,6 +366,13 @@ tag on the `package` branch shall only have `v` prepended, eg. `v1.1.0`.
 * The R package MASS is not required as a prerequisite.
 * The default value for `n.thread` should be `1` instead of
   `parallel::detectCores()`
+
+The R code should follow the Tidyverse style guide. In particular, variables,
+functions and parameters should be in snake case. This will result in
+
+* Removing the `poLCA.` and `poLCAParallel.` prefix in function and file names
+* Using an underscore instead of a dot in variable and parameter names, for
+  example, `na.rm` should be called `na_rm`
 
 The following R functions, many of which are internal, are marked as deprecated
 and should be deleted
@@ -335,12 +389,16 @@ and should be deleted
 
 All C code in `poLCA.C` is deprecated because they are reimplemented in C++.
 
-The R code should follow the Tidyverse style guide. In particular, variables,
-functions and parameters should be in snake case. This will result in
+The parameters:
 
-* Removing the `poLCA.` and `poLCAParallel.` prefix in function and file names
-* Using a underscore instead of a dot in variable and parameter names, for
-  example, `na.rm` should be called `na_rm`
+* `results` in `poLCAParallel.goodnessfit()`
+* `polca` in `poLCAParallel.se()`
+
+should be renamed to `lc` to be consistent with other functions with a parameter
+also named `lc`.
+
+Similarly, the parameters `model_null` and `model_alt` in `blrt()` should be
+renamed to `lc_null` and `lc_alt` respectively.
 
 ### C++ Style Guide
 
@@ -368,17 +426,17 @@ and viewed at `html/index.html`.
   and sample size requirements for the bootstrap likelihood ratio test in latent
   class analysis. *Structural Equation Modeling: A Multidisciplinary Journal*,
   21(4):534-552.
-  [[link]](https://www.tandfonline.com/doi/full/10.1080/10705511.2014.919819?casa_token=LgaSzKeeB8MAAAAA%3AB80XwZEIkLOIVsD4Gvp6O0gfktOnIqA6dOBBvUZIjjhs-7ilLIZJC_TmxCh8Umh45d0sWez4-em9)
+  [[link]](https://www.tandfonline.com/doi/full/10.1080/10705511.2014.919819)
 * Linzer, D.A. & Lewis, J. (2013). poLCA: Polytomous Variable Latent
   Class Analysis. R package version 1.4.
   [[link]](https://github.com/dlinzer/poLCA)
 * Linzer, D.A. & Lewis, J.B. (2011). poLCA: An R package for polytomous
   variable latent class analysis. *Journal of Statistical Software*,
   42(10): 1-29.
-  [[link]](http://www.jstatsoft.org/v42/i10)
+  [[link]](https://www.jstatsoft.org/article/view/v042i10)
 
 ## License
 
 The software is under the GNU GPL 2.0 license, as with the original poLCA code,
 stated in their
-[documentation](https://cran.r-project.org/web/packages/poLCA/index.html).
+[documentation](https://cran.r-project.org/package=poLCA).

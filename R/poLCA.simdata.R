@@ -6,67 +6,66 @@
 #'
 #' Note that entering `probs` overrides `nclass`, `ndv`, and `nresp`. It also
 #' overrides `P` if the length of the `P` vector is not equal to the length of
-#' the `probs` list.  Likewise, if `probs=NULL`, then `length(nresp)` overrides
-#' `ndv` and `length(P)` overrides `nclass`.  Setting `niv>1` causes any
+#' the `probs` list. Likewise, if `probs=NULL`, then `length(nresp)` overrides
+#' `ndv` and `length(P)` overrides `nclass`. Setting `niv>1` causes any
 #' user-entered value of `P` to be disregarded.
 #'
 #' @keywords methods
 #' @seealso `poLCA`
 #'
 #' @param N number of observations.
-#' @param probs a list of matrices of dimension  `nclass ` by `nresp ` with each
-#'   matrix corresponding to one manifest variable, and each row containing the
-#'   class-conditional outcome probabilities (which must sum to 1). If `probs`
-#'   is `NULL` (default) then the outcome probabilities are generated randomly.
+#' @param probs a list of matrices of dimension `nclass ` by `nresp ` with each
+#' matrix corresponding to one manifest variable, and each row containing the
+#' class-conditional outcome probabilities (which must sum to 1). If `probs` is
+#' `NULL` (default) then the outcome probabilities are generated randomly.
 #' @param nclass number of latent classes. If `probs` is specified, then
-#'   `nclass` is set equal to the number of rows in each matrix in that list. If
-#'   `P` is specified, then `nclass` is set equal to the length of that vector.
-#'   If `b` is specified, then `nclass` is set equal to one greater than the
-#'   number of columns in `b`. Otherwise, the default is two.
+#' `nclass` is set equal to the number of rows in each matrix in that list. If
+#' `P` is specified, then `nclass` is set equal to the length of that vector. If
+#' `b` is specified, then `nclass` is set equal to one greater than the number
+#' of columns in `b`. Otherwise, the default is two.
 #' @param ndv number of manifest variables. If `probs` is specified, then `ndv`
-#'   is set equal to the number of matrices in that list. If `nresp` is
-#'   specified, then `ndv` is set equal to the length of that vector. Otherwise,
-#'   the default is four.
+#' is set equal to the number of matrices in that list. If `nresp` is specified,
+#' then `ndv` is set equal to the length of that vector. Otherwise, the default
+#' is four.
 #' @param nresp number of possible outcomes for each manifest variable. If
-#'   `probs` is specified, then `ndv` is set equal to the number of columns in
-#'   each matrix in that list. If both `probs` and  `nresp` are `NULL`
-#'   (default), then the manifest variables are assigned a random number of
-#'   outcomes between two and five.
+#' `probs` is specified, then `ndv` is set equal to the number of columns in
+#' each matrix in that list. If both `probs` and `nresp` are `NULL` (default),
+#' then the manifest variables are assigned a random number of outcomes between
+#' two and five.
 #' @param x a matrix of concomicant variables with `N` rows and `niv` columns.
-#'   If `x=NULL` (default), but  `niv>0`, then `niv` concomitant variables will
-#'   be generated as mutually independent random draws from a standard normal
-#'   distribution.
+#' If `x=NULL` (default), but `niv>0`, then `niv` concomitant variables will be
+#' generated as mutually independent random draws from a standard normal
+#' distribution.
 #' @param niv number of concomitant variables (covariates). Setting `niv=0`
-#'   (default) creates a data set assuming no covariates. If `nclass=1` then
-#'   `niv` is automatically set equal to 0. If both `x` and `niv` are entered,
-#'   then the number of columns in `x` overrides the value of `niv`. The number
-#'   of rows in `b`, less one, also overrides `niv`.
-#' @param b when using covariates, an  `niv+1` by `nclass-1` matrix of
-#'   (multinomial) logit coefficients. If `b` is `NULL` (default), then
-#'   coefficients are generated as random integers between -2 and 2.
+#' (default) creates a data set assuming no covariates. If `nclass=1` then `niv`
+#' is automatically set equal to 0. If both `x` and `niv` are entered, then the
+#' number of columns in `x` overrides the value of `niv`. The number of rows in
+#' `b`, less one, also overrides `niv`.
+#' @param b when using covariates, an `niv+1` by `nclass-1` matrix of
+#' (multinomial) logit coefficients. If `b` is `NULL` (default), then
+#' coefficients are generated as random integers between -2 and 2.
 #' @param P a vector of mixing proportions (class population shares) of length
-#'   `nclass`. `P` must sum to 1. Disregarded if `b` is specified or `niv>1`
-#'   because then `P` is, in part, a function of the concomitant variables. If
-#'   `P` is `NULL` (default), then the mixing proportions are generated
-#'   randomly.
+#' `nclass`. `P` must sum to 1. Disregarded if `b` is specified or `niv>1`
+#' because then `P` is, in part, a function of the concomitant variables. If `P`
+#' is `NULL` (default), then the mixing proportions are generated randomly.
 #' @param missval logical. If `TRUE` then a fraction `pctmiss` of the manifest
-#'   variables are randomly dropped as missing values. Default is `FALSE`.
+#' variables are randomly dropped as missing values. Default is `FALSE`.
 #' @param pctmiss percentage of values to be dropped as missing, if
-#'   `missval=TRUE`. If `pctmiss` is `NULL` (default), then a value between 5
-#'   and 40 percent is chosen randomly.
+#' `missval=TRUE`. If `pctmiss` is `NULL` (default), then a value between 5 and
+#' 40 percent is chosen randomly.
 #' @returns A list containing the following
-#'   - `dat`: a data frame containing the simulated variables. Variable names
-#'     for manifest variables are Y1, Y2, etc. Variable names for concomitant
-#'     variables are X1, X2, etc.
-#'   - `probs`: a list of matrices of dimension `nclass` by `nresp` containing
-#'     the class-conditional response probabilities.
-#'   - `nresp`: a vector containing the number of possible outcomes for each
-#'      manifest variable.
-#'   - `b`: coefficients on covariates, if used.
-#'   - `P`: mixing proportions corresponding to each latent class.
-#'   - `pctmiss`: percent of observations missing.
-#'   - `trueclass`: `N` by 1 vector containing the "true" class
-#'     membership for each individual.
+#' * `dat`: a data frame containing the simulated variables. Variable names for
+#'   manifest variables are Y1, Y2, etc. Variable names for concomitant
+#'   variables are X1, X2, etc.
+#' * `probs`: a list of matrices of dimension `nclass` by `nresp` containing the
+#'   class-conditional response probabilities.
+#' * `nresp`: a vector containing the number of possible outcomes for each
+#'    manifest variable.
+#' * `b`: coefficients on covariates, if used.
+#' * `P`: mixing proportions corresponding to each latent class.
+#' * `pctmiss`: percent of observations missing.
+#' * `trueclass`: `N` by 1 vector containing the "true" class membership for
+#'   each individual.
 #'
 #' @examples
 #' # Create a sample data set with 3 classes and no covariates
@@ -144,18 +143,13 @@ poLCA.simdata <- function(N = 5000, probs = NULL, nclass = 2, ndv = 4,
     if (!is.null(x)) {
       niv <- ncol(x)
       if (nrow(x) != N) {
-        cat(paste(
-          "ALERT: number of rows of x does not equal N;",
-          "new covariates will be generated randomly. \n \n"
-        ))
+        warning("Number of rows of x does not equal N; new covariates will be
+                 generated randomly.")
         x <- NULL
       }
       if (ncol(x) != (nrow(b) - 1)) {
-        cat(paste(
-          "ALERT:",
-          "number of columns of x does not conform to number of rows in b;",
-          "new covariates will be generated randomly. \n \n"
-        ))
+        warning("Number of columns of x does not conform to number of rows in
+                 b; new covariates will be generated randomly.")
         x <- NULL
       }
     }

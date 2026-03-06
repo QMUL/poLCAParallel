@@ -33,31 +33,33 @@
  *
  * Get goodness of fit statistics given fitted probabilities
  *
- * @param responses Design matrix TRANSPOSED of responses, matrix containing
- * outcomes/responses for each category as integers 1, 2, 3, .... The matrix has
- * dimensions
+ * @param responses Design matrix <b>transposed</b> of responses, matrix
+ * containing outcomes/responses for each category as integers 1, 2, 3, ....
+ * Missing values may be encoded as 0. The matrix has dimensions
  * <ul>
  *   <li>dim 0: for each category</li>
  *   <li>dim 1: for each data point</li>
  * </ul>
- * @param prior: vector of prior probabilities, for each cluster
- * @param outcome_prob: vector of response probabilities for each cluster,
- * flatten list of matrices, from the return value of poLCA.vectorize.R, flatten
- * list of matrices
+ * @param prior Vector of prior probabilities, for each cluster
+ * @param outcome_prob Vector of response probabilities for each outcome,
+ * conditioned on the category and cluster. Can be the return value of
+ * <code>poLCAParallel.vectorize.R</code>. Flatten list in the following order
  * <ul>
  *   <li>dim 0: for each outcome</li>
  *   <li>dim 1: for each category</li>
  *   <li>dim 2: for each cluster</li>
  * </ul>
- * @param n_data number of data points
- * @param n_outcomes_int vector, number of possible responses for each category
- * @param n_cluster number of clusters, or classes, to fit
- * @return a list containing:
+ * @param n_data Number of data points
+ * @param n_outcomes_int Vector, number of possible responses for each category
+ * @param n_cluster Number of clusters, or classes, to fit
+ * @return List containing:
  * <ul>
- *   <li>unique_freq_table: data frame of unique responses with their observed
- *   frequency and expected frequency</li>
- *   <li>ln_l_ratio</li>
- *   <li>chi_squared</li>
+ *   <li>
+ *     <code>[[1]]</code>: unique_freq_table, a data frame of unique responses
+ *     with their observed frequency and expected frequency
+ *   </li>
+ *   <li><code>[[2]]</code>: ln_l_ratio</li>
+ *   <li><code>[[3]]</code>: chi_squared</li>
  * </ul>
  */
 // [[Rcpp::export]]

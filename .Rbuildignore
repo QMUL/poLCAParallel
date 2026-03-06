@@ -1,3 +1,9 @@
+^renv$
+^renv\.lock$
 ^html$
 ^build$
 ^latex$
+^CMakeLists.txt
+^Doxyfile
+^poLCAParallel.def
+^poLCAParallel-dev.def

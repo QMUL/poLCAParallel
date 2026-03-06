@@ -28,30 +28,20 @@ From: ubuntu:24.04
     apt install -y libssl-dev
     apt install -y libcurl4-openssl-dev
 
-    # 'MASS' version 7.3-60.2 is in the repositories but depends on R (>= 4.4.0)
-    # 'MASS' version 7.3-60.2 is in the repositories but depends on R (>= 4.5)
-    cd /tmp
-    wget https://cran.r-project.org/src/contrib/Archive/MASS/MASS_7.3-59.tar.gz
+    R -e "install.packages('renv')"
 
-    R -e "install.packages('remotes')"
-    R -e "remotes::install_version('Rcpp', version='1.1.0')"
-    R -e "remotes::install_version('RcppArmadillo', version='14.6.3-1')"
-    R -e "remotes::install_version('roxygen2', version='7.3.2')"
-    R -e "remotes::install_version('poLCA', version='1.6.0.1')"
-    R -e "remotes::install_version('scatterplot3d', version='0.3-44')"
-    R -e "remotes::install_version('testthat', version='3.2.3')"
-    R -e "remotes::install_version('usethis', version='3.2.1')"
-
-    R CMD INSTALL MASS*.tar.gz
-
-    # poLCAParallel
-    cd /usr/src/
+    # clone poLCAParallel and dependencies
+    cd /usr/src
     git clone https://github.com/QMUL/poLCAParallel.git
     cd poLCAParallel
+    R -e "renv::restore()"
 
+    # generate automated code
     R -e "usethis::use_namespace()"
     R -e "Rcpp::compileAttributes()"
     R -e "roxygen2::roxygenize()"
+
+    # install poLCAParallel
     R CMD INSTALL --preclean --no-multiarch .
 
     doxygen
@@ -60,14 +50,14 @@ From: ubuntu:24.04
     cd /usr/src
     git clone https://github.com/catchorg/Catch2.git
     cd Catch2
-    git checkout v3.8.1
+    git checkout v3.12.0
     cmake -B build -S .
     cmake --build build --target install
 
     # armadillo (stand-alone)
     cd /tmp
-    wget https://sourceforge.net/projects/arma/files/armadillo-14.6.3.tar.xz
-    tar -xf armadillo-14.6.3.tar.xz -C /usr/src/
+    wget https://sourceforge.net/projects/arma/files/armadillo-15.0.2.tar.xz
+    tar -xf armadillo-15.0.2.tar.xz -C /usr/src/
     cd /usr/src/armadillo*
     cmake .
     make install
@@ -79,6 +69,11 @@ From: ubuntu:24.04
     cmake ..
     cmake --build .
 
+    # required for R CMD check --as-cran
+    apt install -y pandoc
+    apt install -y tidy
+    R -e "install.packages('V8')"
+
 %test
     cd /usr/src/poLCAParallel/build
     ./test_polca_parallel
@@ -86,7 +81,7 @@ From: ubuntu:24.04
     R -e "testthat::test_local()"
     cd /tmp
     R CMD build /usr/src/poLCAParallel
-    R CMD check poLCAParallel_*.tar.gz
+    R CMD check --as-cran poLCAParallel_*.tar.gz
 
 %runscript
     R "$@"

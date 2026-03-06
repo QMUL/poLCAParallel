@@ -1,15 +1,18 @@
-#' Add predcell, Gsq and Chisq to a fitted poLCA object (or a list)
+#' Add predcell, Gsq and Chisq to a fitted poLCA object
 #'
-#' Wrapper function around the C++ function GoodnessFitRcpp(). Finds unique
-#' responses and put them in a dataframe along with the observed and
-#' expected frequencies. Also calculates the log likelihood ratio and chi
+#' Finds unique responses and put them in a dataframe along with the observed
+#' and expected frequencies. Also calculates the log likelihood ratio and chi
 #' squared statistics.
-#' @param results a poLCA object (see poLCA.R)
-#' @return list with 3 items:
-#'   - predcell: dataframe of unique responses with their observed and expected
-#'     frequencies
-#'   - Gsq: log likelihood ratio
-#'   - Chisq: chi squared statistic
+#'
+#' Wrapper function around the C++ function `GoodnessFitRcpp()`.
+#'
+#' @param results A model object estimated using the `poLCA` function
+#'
+#' @return The model object with three added items:
+#' * `predcell`: dataframe of unique responses with their observed and expected
+#'   frequencies
+#' * `Gsq`: log likelihood ratio
+#' * `Chisq`: chi squared statistic
 #' @export
 poLCAParallel.goodnessfit <- function(results) {
   y <- results$y

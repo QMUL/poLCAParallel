@@ -39,7 +39,6 @@ bootstrap_log_ratio_array <- list()
 
 # do the bootstrap likelihood ratio test for each number of classes
 for (nclass in 2:n_class_max) {
-
   # get the null and alt models
   # these are models with one number of class differences
   null_model <- model_array[[nclass - 1]]
@@ -61,7 +60,8 @@ for (nclass in 2:n_class_max) {
     # do a parametric bootstrap
     # data_bootstrap_some_columns may be missing columns as explained above
     data_bootstrap_some_columns <- poLCAParallel::poLCA.simdata(
-      null_model$Nobs, null_model$probs, P=null_model$P
+      null_model$Nobs, null_model$probs,
+      P = null_model$P
     )$dat
     colnames(data_bootstrap_some_columns) <- colnames(null_model$y)
 
@@ -86,7 +86,6 @@ for (nclass in 2:n_class_max) {
       bootstrap_log_likelihood_ratio,
       2 * alt_model_bootstrap$llik - 2 * null_model_bootstrap$llik
     )
-
   }
 
   # log likelihood ratio to compare the two models
@@ -98,12 +97,11 @@ for (nclass in 2:n_class_max) {
   p <- sum(bootstrap_log_likelihood_ratio > log_likelihood_ratio) / n_bootstrap
   # store the p value for this nclass
   p_value_array <- c(p_value_array, p)
-
 }
 
 # plot the bootstrap distribution of the log likelihood ratios for each class
 # the red line shows the log likelihood ratio using the real data
-pdf("4_blrt_alpha_llik.pdf")
+dev.new()
 boxplot(bootstrap_log_ratio_array,
   xlab = "number of classses", ylab = "log likelihood ratio"
 )
@@ -125,7 +123,7 @@ lines(1:n_class_max, fitted_log_ratio_array,
 #     uniform distribution, so for a class number too high, it should fluctuate
 #     randomly between 0 and 1
 # the solid line is at 5%
-pdf("4_blrt_alpha_p_values.pdf")
+dev.new()
 barplot(p_value_array,
   xlab = "number of classes", ylab = "p-value",
   names.arg = 1:n_class_max

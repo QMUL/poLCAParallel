@@ -5,6 +5,9 @@ plot.poLCA <- function(x, ...) {
   if (max(K.j) == 2) {
     poLCA.makeplot.dich(x$probs, x$P, x$y, NULL)
   } else {
+    on.exit({
+      graphics::layout(1)
+    })
     graphics::layout(
       matrix(seq(1, (R + 1)), R + 1, 1),
       heights = c(rep(5, R), 1)
@@ -16,5 +19,4 @@ plot.poLCA <- function(x, ...) {
       )
     }
   }
-  graphics::par(mfrow = c(1, 1), mar = c(5, 4, 4, 2) + 0.1)
 }

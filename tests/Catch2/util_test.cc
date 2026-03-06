@@ -17,6 +17,7 @@
 
 #include "util_test.h"
 
+#include <armadillo>
 #include <cassert>
 #include <cmath>
 #include <iterator>
@@ -135,13 +136,13 @@ void polca_parallel_test::TestOutcomeProbs(polca_parallel::NOutcomes n_outcomes,
                                            std::span<const double> probs) {
   for (auto i : probs) {
     CHECK(0.0 <= i);
-    CHECK(i <= 1.0 + polca_parallel_test::TOLERANCE);
+    CHECK(i <= 1.0 + polca_parallel_test::kTolerance);
   }
   auto prob_i = probs.begin();
   for (std::size_t m = 0; m < n_cluster; ++m) {
     for (std::size_t n_outcome : n_outcomes) {
       double sum = std::accumulate(prob_i, std::next(prob_i, n_outcome), 0.0);
-      CHECK(std::abs(sum - 1.0) < polca_parallel_test::TOLERANCE);
+      CHECK(std::abs(sum - 1.0) < polca_parallel_test::kTolerance);
       std::advance(prob_i, n_outcome);
     }
   }
@@ -159,37 +160,41 @@ void polca_parallel_test::TestClusterProbs(
       true);
   arma::Col<double> row_sum = arma::sum(cluster_probs_arma, 1);
   for (auto i : row_sum) {
-    CHECK(std::abs(i - 1.0) < polca_parallel_test::TOLERANCE);
+    CHECK(std::abs(i - 1.0) < polca_parallel_test::kTolerance);
   }
 }
 
 template void
-polca_parallel_test::TestDefaultOutputs<polca_parallel::EmAlgorithm>(
+polca_parallel_test::TestEmAlgorithmDefaultOutputs<polca_parallel::EmAlgorithm>(
     std::size_t n_data, polca_parallel::NOutcomes n_outcomes,
     std::size_t n_cluster, std::span<const double> posterior,
     std::span<const double> prior, std::span<const double> estimated_prob,
     std::span<const double> regress_coeff);
-template void
-polca_parallel_test::TestDefaultOutputs<polca_parallel::EmAlgorithmNan>(
-    std::size_t n_data, polca_parallel::NOutcomes n_outcomes,
-    std::size_t n_cluster, std::span<const double> posterior,
-    std::span<const double> prior, std::span<const double> estimated_prob,
-    std::span<const double> regress_coeff);
-template void
-polca_parallel_test::TestDefaultOutputs<polca_parallel::EmAlgorithmRegress>(
-    std::size_t n_data, polca_parallel::NOutcomes n_outcomes,
-    std::size_t n_cluster, std::span<const double> posterior,
-    std::span<const double> prior, std::span<const double> estimated_prob,
-    std::span<const double> regress_coeff);
-template void
-polca_parallel_test::TestDefaultOutputs<polca_parallel::EmAlgorithmNanRegress>(
+template void polca_parallel_test::TestEmAlgorithmDefaultOutputs<
+    polca_parallel::EmAlgorithmNan>(std::size_t n_data,
+                                    polca_parallel::NOutcomes n_outcomes,
+                                    std::size_t n_cluster,
+                                    std::span<const double> posterior,
+                                    std::span<const double> prior,
+                                    std::span<const double> estimated_prob,
+                                    std::span<const double> regress_coeff);
+template void polca_parallel_test::TestEmAlgorithmDefaultOutputs<
+    polca_parallel::EmAlgorithmRegress>(std::size_t n_data,
+                                        polca_parallel::NOutcomes n_outcomes,
+                                        std::size_t n_cluster,
+                                        std::span<const double> posterior,
+                                        std::span<const double> prior,
+                                        std::span<const double> estimated_prob,
+                                        std::span<const double> regress_coeff);
+template void polca_parallel_test::TestEmAlgorithmDefaultOutputs<
+    polca_parallel::EmAlgorithmNanRegress>(
     std::size_t n_data, polca_parallel::NOutcomes n_outcomes,
     std::size_t n_cluster, std::span<const double> posterior,
     std::span<const double> prior, std::span<const double> estimated_prob,
     std::span<const double> regress_coeff);
 
 template <typename EmAlgorithmType>
-void polca_parallel_test::TestDefaultOutputs(
+void polca_parallel_test::TestEmAlgorithmDefaultOutputs(
     std::size_t n_data, polca_parallel::NOutcomes n_outcomes,
     std::size_t n_cluster, std::span<const double> posterior,
     std::span<const double> prior, std::span<const double> estimated_prob,
@@ -293,7 +298,7 @@ void polca_parallel_test::BlackBoxTestEmAlgorithm(
   SECTION("test-outputs") {
     fitter->set_seed(seed);
     fitter->Fit();
-    polca_parallel_test::TestDefaultOutputs<EmAlgorithmType>(
+    polca_parallel_test::TestEmAlgorithmDefaultOutputs<EmAlgorithmType>(
         n_data, n_outcomes, n_cluster, posterior, prior, estimated_prob,
         regress_coeff);
     polca_parallel_test::TestEmAlgorithmOptionalOutputs(*fitter, max_iter);
@@ -305,7 +310,7 @@ void polca_parallel_test::BlackBoxTestEmAlgorithm(
 
     fitter->set_seed(seed);
     fitter->Fit();
-    polca_parallel_test::TestDefaultOutputs<EmAlgorithmType>(
+    polca_parallel_test::TestEmAlgorithmDefaultOutputs<EmAlgorithmType>(
         n_data, n_outcomes, n_cluster, posterior, prior, estimated_prob,
         regress_coeff);
     polca_parallel_test::TestEmAlgorithmOptionalOutputs(*fitter, max_iter);
@@ -495,7 +500,7 @@ void polca_parallel_test::BlackBoxTestEmAlgorithmArray(
   SECTION("test-outputs") {
     fitter->SetSeed(seed_seq);
     fitter->Fit<EmAlgorithmType>();
-    polca_parallel_test::TestDefaultOutputs<EmAlgorithmType>(
+    polca_parallel_test::TestEmAlgorithmDefaultOutputs<EmAlgorithmType>(
         n_data, n_outcomes, n_cluster, posterior, prior, estimated_prob,
         regress_coeff);
     polca_parallel_test::TestEmAlgorithmArrayOptionalOutputs(fitter, n_rep,
@@ -509,7 +514,7 @@ void polca_parallel_test::BlackBoxTestEmAlgorithmArray(
     fitter->set_ln_l_array(ln_l_array);
     fitter->SetSeed(seed_seq);
     fitter->Fit<EmAlgorithmType>();
-    polca_parallel_test::TestDefaultOutputs<EmAlgorithmType>(
+    polca_parallel_test::TestEmAlgorithmDefaultOutputs<EmAlgorithmType>(
         n_data, n_outcomes, n_cluster, posterior, prior, estimated_prob,
         regress_coeff);
     polca_parallel_test::TestEmAlgorithmArrayOptionalOutputs(fitter, n_rep,
@@ -657,8 +662,14 @@ void polca_parallel_test::BlackBoxTestStandardError(
   }
   if constexpr (std::is_base_of<polca_parallel::StandardErrorRegress,
                                 StandardErrorType>::value) {
+    // check diagonal entries are positive
     for (std::size_t i = 0; i < len_regress_coeff; ++i) {
-      CHECK(regress_coeff_error.at(i * (len_regress_coeff + 1)));
+      CHECK(regress_coeff_error.at(i * (len_regress_coeff + 1)) > 0);
     }
+    // check if the covariance is symmetric (up to a tolerance)
+    arma::Mat<double> regress_covariance(regress_coeff_error.data(),
+                                         len_regress_coeff, len_regress_coeff,
+                                         false, true);
+    CHECK(regress_covariance.is_symmetric(kSymmetricTolerance));
   }
 }

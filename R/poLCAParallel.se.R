@@ -1,21 +1,21 @@
 
-#' Calculate the standard errors and adds them to the poLCA object
+#' Calculates the standard errors and adds them to a fitted poLCA model object
 #'
-#' R wrapper function for the C++ function StandardError Rcpp
+#' Calculates the standard errors and adds them, as attributes, to a fitted
+#' poLCA model object `$P.se`, `$probs.se`, `$coeff.se` and `$coeff.V`
 #'
-#' Calculate the standard errors and adds them, as attributes, to the poLCA
-#' object, $P.se, $probs.se $coeff.se and $coeff.V
+#' R wrapper function for the C++ function `StandardErrorRcpp()`
 #'
-#' $coeff.se and $coeff.V are set to NA if the provided poLCA is a standard
-#' poLCA with no regression
+#' `$coeff.se` and `$coeff.V` are set to `NA` if the provided poLCA is a poLCA
+#' problem with no regression
 #'
-#' @param polca the resulting poLCA object from calling poLCA()
+#' @param polca A model object estimated using the `poLCA` function
 #' @param is_smooth Logical, experimental, for calculating the standard errors,
-#'   whether to smooth the outcome probabilities to produce more numerical
-#'   stable results as a cost of bias.
+#' whether to smooth the outcome probabilities to produce more numerical stable
+#' results at the cost of bias.
 #'
-#' @return the poLCA object with the attributes $P.se, $probs.se, $coeff.se and
-#' $coeff.V modified or added
+#' @return the fitted poLCA model object with the attributes `$P.se`,
+#' `$probs.se`, `$coeff.se` and '$coeff.V` modified or added
 #'
 #' @export
 poLCAParallel.se <- function(polca, is_smooth = FALSE) {

@@ -48,7 +48,6 @@ bootstrap_log_ratio_array <- list()
 
 # do the bootstrap likelihood ratio test for each number of classes
 for (nclass in 2:n_class_max) {
-
   # get the null and alt models
   # these are models with one number of class differences
   null_model <- model_array[[nclass - 1]]
@@ -70,7 +69,7 @@ for (nclass in 2:n_class_max) {
 
 # plot the bootstrap distribution of the log likelihood ratios for each class
 # the red line shows the log likelihood ratio using the real data
-pdf("3_blrt_llik.pdf")
+dev.new()
 boxplot(bootstrap_log_ratio_array,
   xlab = "number of classses", ylab = "log likelihood ratio"
 )
@@ -92,7 +91,7 @@ lines(1:n_class_max, fitted_log_ratio_array,
 #     uniform distribution, so for a class number too high, it should fluctuate
 #     randomly between 0 and 1
 # the solid line is at 5%
-pdf("3_blrt_p_values.pdf")
+dev.new()
 barplot(p_value_array,
   xlab = "number of classes", ylab = "p-value",
   names.arg = 1:n_class_max

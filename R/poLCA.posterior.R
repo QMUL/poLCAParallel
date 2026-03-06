@@ -16,15 +16,15 @@
 #'
 #' @param lc A model object estimated using the `poLCA` function.
 #' @param y A vector or matrix containing series of responses on the manifest
-#'   variables in `lc`.
+#' variables in `lc`.
 #' @param x An optional vector or matrix of covariate values, if `lc` was
-#'   specified as a latent class regression model.
+#' specified as a latent class regression model.
 #' @returns A matrix containing posterior probabilities corresponding to the
-#'   specified sets of responses `y`, based on the estimated latent class model
-#'   `lc`. For each row (one case), the first column gives the posterior
-#'   probability of being in class 1, the second column gives the posterior
-#'   probability of being in class 2, and so forth. Across rows, these
-#'   probabilities sum to one.
+#' specified sets of responses `y`, based on the estimated latent class model
+#' `lc`. For each row (one case), the first column gives the posterior
+#' probability of being in class 1, the second column gives the posterior
+#' probability of being in class 2, and so forth. Across rows, these
+#' probabilities sum to one.
 #'
 #' @examples
 #' data(election)

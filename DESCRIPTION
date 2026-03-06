@@ -1,17 +1,31 @@
 Package: poLCAParallel
 Type: Package
-Title: Polytomous variable Latent Class Analysis Parallel
-Version: 1.2.5
-Author: Sherman Lo <s.lo@qmul.ac.uk>,
-        Drew Linzer <drew@votamatic.org>,
-        Jeffrey Lewis <jblewis@ucla.edu>.
-Maintainer: Sherman Lo <s.lo@qmul.ac.uk>
+Title: Polytomous Variable Latent Class Analysis Parallel
+Version: 1.2.6
+Authors@R: c(person(given = "Sherman",
+                    family = "Lo",
+                    role = c("aut", "cre"),
+                    email = "s.lo@qmul.ac.uk"),
+             person(given = "Drew",
+                    family = "Linzer",
+                    role = "aut",
+                    email = "drew@votamatic.org"),
+             person(given = "Jeffrey",
+                    family = "Lewis.",
+                    role = "aut",
+                    email = "jblewis@ucla.edu"))
+Depends: R (>= 3.0.2)
 Imports: Rcpp (>= 1.0.7), scatterplot3d, MASS, parallel, poLCA
 LinkingTo: Rcpp, RcppArmadillo (>= 0.12.4.1.0)
-Description: Latent class analysis and latent class regression models
-    for polytomous outcome variables.  Also known as latent structure analysis.
-License: GPL (>= 2)
-URL: https://github.com/shermanlo77/poLCAParallel
+Description: A 'C++' reimplementation of 'poLCA' - latent class analysis and
+    latent class regression models for polytomous outcome variables, also known
+    as latent structure analysis. It attempts to reproduce results and be as
+    similar as possible to the original code, while running faster, especially
+    with multiple repetitions, by utilising multiple threads. Further reading is
+    available on the Queen Mary, University of London, IT Services Research blog
+    <https://blog.hpc.qmul.ac.uk/speeding_up_r_packages/>.
+License: GPL-2
+URL: https://github.com/QMUL/poLCAParallel
 LazyLoad: yes
 NeedsCompilation: yes
 RoxygenNote: 7.3.3

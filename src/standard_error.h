@@ -49,8 +49,9 @@ namespace polca_parallel {
 class StandardError {
  protected:
   /**
-   * Design matrix of responses, matrix containing outcomes/responses
-   * for each category as integers 1, 2, 3, .... The matrix has dimensions
+   * Design matrix of responses, matrix containing outcomes/responses for each
+   * category as integers 1, 2, 3, .... Missing values may be encoded as 0. The
+   * matrix has dimensions
    * <ul>
    *   <li>dim 0: for each data point</li>
    *   <li>dim 1: for each category</li>
@@ -58,8 +59,8 @@ class StandardError {
    */
   const arma::Mat<int> responses_;
   /**
-   * Vector of probabilities for each category and response,
-   * flatten list of matrices
+   * Vector of response probabilities for each outcome, conditioned on the
+   * category and cluster. Flatten list in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -132,14 +133,14 @@ class StandardError {
    *
    * @param features Not used
    * @param responses Design matrix of responses, matrix containing
-   * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
-   * has dimensions
+   * outcomes/responses for each category as integers 1, 2, 3, .... Missing
+   * values may be encoded as 0. The matrix has dimensions
    * <ul>
    *   <li>dim 0: for each data point</li>
    *   <li>dim 1: for each category</li>
    * </ul>
-   * @param probs Vector of probabilities for each outcome, for each category,
-   * for each cluster flatten list of matrices
+   * @param probs Vector of response probabilities for each outcome, conditioned
+   * on the category and cluster. Flatten list in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -164,11 +165,11 @@ class StandardError {
    * @param n_outcomes Array of number of outcomes, for each category, and its
    * sum
    * @param n_cluster Number of clusters fitted
-   * @param prior_error Vector to contain the standard error for the prior
-   * probabilities for each cluster, modified after calling Calc()
-   * @param prob_error Vector to contain the standard error for the outcome
-   * probabilities category and cluster, modified after calling Calc()
-   * flatten list of matrices
+   * @param prior_error <b>Modified</b> Vector to contain the standard error for
+   * the prior probabilities for each cluster, modified after calling Calc()
+   * @param prob_error <b>Modified</b> Vector to contain the standard error for
+   * the outcome probabilities, conditioned on category and cluster, modified
+   * after calling Calc(). Flatten list of matrices
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -193,14 +194,14 @@ class StandardError {
    * <code>prior_error</code> and <code>prob_error</code>
    *
    * @param responses Design matrix of responses, matrix containing
-   * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
-   * has dimensions
+   * outcomes/responses for each category as integers 1, 2, 3, .... Missing
+   * values may be encoded as 0. The matrix has dimensions
    * <ul>
    *   <li>dim 0: for each data point</li>
    *   <li>dim 1: for each category</li>
    * </ul>
-   * @param probs Vector of probabilities for each outcome, for each category,
-   * for each cluster flatten list of matrices
+   * @param probs Vector of response probabilities for each outcome, conditioned
+   * on the category and cluster. Flatten list in the following order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -224,11 +225,11 @@ class StandardError {
    * @param n_outcomes Array of number of outcomes, for each category, and its
    * sum
    * @param n_cluster Number of clusters fitted
-   * @param prior_error Vector to contain the standard error for the prior
-   * probabilities for each cluster, modified after calling Calc()
-   * @param prob_error Vector to contain the standard error for the outcome
-   * probabilities category and cluster, modified after calling Calc()
-   * flatten list of matrices
+   * @param prior_error <b>Modified</b> Vector to contain the standard error for
+   * the prior probabilities for each cluster, modified after calling Calc()
+   * @param prob_error <b>Modified</b> Vector to contain the standard error for
+   * the outcome probabilities, conditioned on category and cluster, modified
+   * after calling Calc(). Flatten list of matrices
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -262,7 +263,7 @@ class StandardError {
    */
   void SmoothProbs();
 
-  /** Instantiate and return an error_solver_*/
+  /** Instantiate and return an ErrorSolver*/
   virtual std::unique_ptr<polca_parallel::ErrorSolver> InitErrorSolver();
 
   /**
@@ -270,7 +271,7 @@ class StandardError {
    *
    * Calculate the scores and saves it to the provided matrix
    *
-   * @param score matrix to save the scores
+   * @param score <b>Modified</b> Matrix to save the scores
    * <ul>
    *   <li>dim 0: for each data point</li>
    *   <li>dim 1: for each parameter</li>
@@ -284,7 +285,7 @@ class StandardError {
    * Calculate the scores for the prior for all clusters except the zeroth one
    * for all data points
    *
-   * @param score_prior <b>modified</b> submatrix of the complete score matrix,
+   * @param score_prior <b>Modified</b> Submatrix of the complete score matrix,
    * to fill in with scores of the prior probabilities (and regression parameter
    * if applicable)
    */
@@ -297,7 +298,7 @@ class StandardError {
    * categories and outcomes (except for the zeroth outcome) for all data
    * points.
    *
-   * @param score_probs <b>modified</b> submatrix of the complete score matrix,
+   * @param score_probs <b>Modified</b> Submatrix of the complete score matrix,
    * to fill in with the scores of the outcome probabilities
    */
   void CalcScoreProbs(arma::subview<double>& score_probs) const;
@@ -308,11 +309,13 @@ class StandardError {
    * Calculate the scores for the outcome probabilities for a given cluster,
    * category and outcome for all data points.
    *
-   * @param outcome_index 1, 2, ..., n_outcomes[for a given category]
-   * @param prob outcome probability for a given cluster, category and outcome
-   * @param responses_j responses for a given category
-   * @param posterior_i posterior for a given cluster
-   * @param score_col <b>modified</b> column of the score matrix to modify for a
+   * @param outcome_index 1, 2, ...,
+   * <code>n_outcomes[for a given category]</code>
+   * @param prob Outcome probability for a given outcome, conditioned on cluster
+   * and category
+   * @param responses_j Responses for a given category
+   * @param posterior_i Posterior for a given cluster
+   * @param score_col <b>Modified</b> Column of the score matrix to modify for a
    * given cluster, category and outcome
    */
   void CalcScoreProbsCol(std::size_t outcome_index, double prob,
@@ -326,7 +329,7 @@ class StandardError {
    * Calculate the Jacobian matrix, a block diagonal matrix, and save it in the
    * provided armadillo matrix
    *
-   * @param jacobian <b>modified</b> to save the Jacobian matrix
+   * @param jacobian <b>Modified</b> To save the Jacobian matrix
    */
   void CalcJacobian(arma::Mat<double>& jacobian) const;
 
@@ -336,7 +339,7 @@ class StandardError {
    * Calculate the block matrix for the prior in the Jacobian matrix and save
    * it in the provided armadillo subview
    *
-   * @param jacobian_prior <b>modified</b> the subview containing the block
+   * @param jacobian_prior <b>Modified</b> The subview containing the block
    * matrix in the Jacobian matrix
    */
   virtual void CalcJacobianPrior(arma::subview<double>& jacobian_prior) const;
@@ -347,7 +350,7 @@ class StandardError {
    * Calculate all block matrices for the outcome probabilities in the Jacobian
    * matrix and save it in the provided armadillo subview
    *
-   * @param jacobian_probs <b>modified</b> the subview containing the block
+   * @param jacobian_probs <b>Modified</b> The subview containing the block
    * matrix in the Jacobian matrix
    */
   void CalcJacobianProbs(arma::subview<double>& jacobian_probs) const;
@@ -358,8 +361,8 @@ class StandardError {
    * Calculate a block matrix for given probabilities and save it in the
    * provided armadillo subview
    *
-   * @param probs array of probabilities to construct the block matrix with
-   * @param jacobian_block <b>modified</b> the block matrix in the Jacobian
+   * @param probs Array of probabilities to construct the block matrix with
+   * @param jacobian_block <b>Modified</b> The block matrix in the Jacobian
    * matrix
    */
   void CalcJacobianBlock(std::span<const double> probs,

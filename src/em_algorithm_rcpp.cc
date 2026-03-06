@@ -36,49 +36,67 @@
  *   <li>dim 0: for each data point</li>
  *   <li>dim 1: for each feature</li>
  * </ul>
- * @param responses Design matrix TRANSPOSED of responses, matrix containing
- * outcomes/responses for each category as integers 1, 2, 3, .... The matrix
- * has dimensions
+ * @param responses Design matrix <b>transposed</b> of responses, matrix
+ * containing outcomes/responses for each category as integers 1, 2, 3, .... If
+ * supported, 0 can be used to indicate a missing value. The matrix has
+ * dimensions
  * <ul>
  *   <li>dim 0: for each category</li>
  *   <li>dim 1: for each data point</li>
  * </ul>
  * @param initial_prob Vector of initial response probabilities for each
- * outcome, category and cluster. Can be the return value of
- * poLCAParallel.vectorize.R. Flatten list in the following order
+ * outcome, conditioned on the category and cluster. Can be the return value of
+ * <code>poLCAParallel.vectorize.R</code>. Flatten list in the following order
  * <ul>
  *   <li>dim 0: for each outcome</li>
  *   <li>dim 1: for each category</li>
  *   <li>dim 2: for each cluster</li>
  * </ul>
- * @param n_data number of data points
- * @param n_feature number of features
- * @param n_outcomes_int: vector, number of possible outcomes for each category
- * @param n_cluster: number of clusters, or classes, to fit
- * @param n_rep number of repetitions
- * @param na_rm indicate to remove missing values from the responses or include
+ * @param n_data Number of data points
+ * @param n_feature Number of features
+ * @param n_outcomes_int Vector, number of possible outcomes for each category
+ * @param n_cluster Number of clusters, or classes, to fit
+ * @param n_rep Number of repetitions
+ * @param na_rm Indicate to remove missing values from the responses or include
  * them in the calculations. Missing values are coded as 0 in responses
- * @param n_thread number of threads to use, repetitions are distributed across
+ * @param n_thread Number of threads to use, repetitions are distributed across
  * threads
- * @param max_iter: maximum number of iterations for EM algorithm
- * @param tolerance: stop fitting when the change in log likelihood is less than
+ * @param max_iter Maximum number of iterations for EM algorithm
+ * @param tolerance Stop fitting when the change in log likelihood is less than
  * this
- * @param seed: array of integers to seed rng
- * @return a list containing
+ * @param seed Array of integers to seed rng
+ * @return List containing
  * <ul>
- *   <li>[[1]]: matrix of posterior probabilities, dim 0: for each data
- *   point, dim 1: for each cluster</li>
- *   <li>[[2]]: matrix of prior probabilities, dim 0: for each data point,
- *   dim 1: for each cluster</li>
- *   <li>[[3]]: vector of estimated response probabilities, in the same
- *   format as initial_prob</li>
- *   <li>[[4]]: vector of regression coefficients</li>
- *   <li>[[5]]: log likelihood</li>
- *   <li>[[6]]: integer, which repetition achived the best fit</li>
- *   <li>[[7]]: number of iterations taken</li>
- *   <li>[[8]]: vector of initial response probabilities, in the same
- *   format as initial_prob, which achieved the best fit</li>
- *   <li>[[9]]: true if the em algorithm has to ever restart</li>
+ *   <li>
+ *     <code>[[1]]</code>: matrix of posterior probabilities
+ *     <ul>
+ *       <li>dim 0: for each data point</li>
+ *       <li>dim 1: for each cluster</li>
+ *     </ul>
+ *   </li>
+ *   <li>
+ *     <code>[[2]]</code>: matrix of prior probabilities
+ *     <ul>
+ *       <li>dim 0: for each data point</li>
+ *       <li>dim 1: for each cluster</li>
+ *     </ul>
+ *   </li>
+ *   <li>
+ *     <code>[[3]]</code>: vector of estimated response probabilities, in the
+ *     same format as <code>initial_prob</code>
+ *   </li>
+ *   <li><code>[[4]]</code>: vector of regression coefficients</li>
+ *   <li><code>[[5]]</code>: float, log likelihood</li>
+ *   <li><code>[[6]]</code>: integer, which repetition achived the best fit</li>
+ *   <li><code>[[7]]</code>: integer, number of iterations taken</li>
+ *   <li>
+ *     <code>[[8]]</code>: vector of initial response probabilities, in the
+ *     same format as <code>initial_prob</code>, which achieved the best fit
+ *   </li>
+ *   <li>
+ *     <code>[[9]]</code>:
+ *     <code>true</code> if the EM algorithm has to ever restart
+ *   </li>
  * </ul>
  */
 // [[Rcpp::export]]
@@ -146,9 +164,11 @@ Rcpp::List EmAlgorithmRcpp(Rcpp::NumericMatrix features,
   return to_return;
 }
 
-// Original author's likelihood
-// (for some reason, cannot get the original C code to be recognised by R)
-// @deprecated
+/**
+ * Original author's likelihood
+ * (for some reason, cannot get the original C code to be recognised by R)
+ * @deprecated Reimplemented in polca_rcpp.cc
+ */
 // [[Rcpp::export]]
 Rcpp::NumericVector ylik(Rcpp::NumericVector probs, Rcpp::IntegerVector y,
                          int obs, int items, Rcpp::IntegerVector numChoices,
@@ -159,9 +179,11 @@ Rcpp::NumericVector ylik(Rcpp::NumericVector probs, Rcpp::IntegerVector y,
   return lik;
 }
 
-// Original author's posterior
-// (for some reason, cannot get the original C code to be recognised by R)
-// @deprecated
+/**
+ * Original author's likelihood
+ * (for some reason, cannot get the original C code to be recognised by R)
+ * @deprecated Reimplemented in polca_rcpp.cc
+ */
 // [[Rcpp::export]]
 void postclass(Rcpp::NumericVector prior, Rcpp::NumericVector probs,
                Rcpp::IntegerVector y, int items, int obs,

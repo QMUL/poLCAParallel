@@ -20,7 +20,7 @@
  *
  * Functions here are Posterior() and Likelihood(). It could be possible they
  * can be integrated into the polca_parallel namespace. See EmAlgorithm::EStep()
-
+ *
  */
 
 #include <RcppArmadillo.h>
@@ -33,14 +33,15 @@
  * Calculate the posterior for every data point and cluster
  *
  * @param responses Design matrix <b>transposed</b> of responses, matrix
- * containing outcomes/responses for each category as integers 1, 2, 3, .... The
- * matrix has dimensions
+ * containing outcomes/responses for each category as integers 1, 2, 3, .... If
+ * supported, 0 can be used to indicate a missing value. The matrix has
+ * dimensions
  * <ul>
  *   <li>dim 0: for each category</li>
  *   <li>dim 1: for each data point</li>
  * </ul>
- * @param probs Matrix of response probabilities, conditioned on cluster, for
- * each category. A flattened list in the following order
+ * @param probs Matrix of response probabilities for each outcome, conditioned
+ * on the category and cluster. A flattened list in the following order
  * <ul>
  *   <li>
  *     dim 0: for each outcome | category (inner), for each category (outer)
@@ -49,7 +50,8 @@
  * </ul>
  * @param n_outcomes Number of possible outcomes for each category
  * @param prior The probability a data point is in cluster m <b>not</b> given
- * responses after calculations. The matrix has the following dimensions <ul>
+ * responses after calculations. The matrix has the following dimensions
+ * <ul>
  *   <li>dim 0: for each data</li>
  *   <li>dim 1: for each cluster</li>
  * </ul>
@@ -93,21 +95,22 @@ void Posterior(std::span<const int> responses, const arma::Mat<double>& probs,
  * Calculate the posterior for every data point and cluster
  *
  * @param responses Design matrix <b>transposed</b> of responses, matrix
- * containing outcomes/responses for each category as integers 1, 2, 3, .... The
- * matrix has dimensions
+ * containing outcomes/responses for each category as integers 1, 2, 3, .... If
+ * supported, 0 can be used to indicate a missing value. The matrix has
+ * dimensions
  * <ul>
  *   <li>dim 0: for each category</li>
  *   <li>dim 1: for each data point</li>
  * </ul>
- * @param probs Vector of response probabilities for each outcome, category and
- * cluster. Can be the return value of poLCAParallel.vectorize.R. Flatten list
- * in the following order
+ * @param probs Vector of response probabilities for each outcome, conditioned
+ * on the category and cluster. Can be the return value of
+ * <code>poLCAParallel.vectorize.R</code>. Flatten list in the following order
  * <ul>
  *   <li>dim 0: for each outcome</li>
  *   <li>dim 1: for each category</li>
  *   <li>dim 2: for each cluster</li>
  * </ul>
- * @param n_outcomes Number of possible outcomes for each category
+ * @param n_outcomes_int Number of possible outcomes for each category
  * @param prior The probability a data point is in cluster m <b>not</b> given
  * responses after calculations. The matrix has the following dimensions <ul>
  *   <li>dim 0: for each data</li>
@@ -152,14 +155,15 @@ Rcpp::NumericMatrix PosteriorRcpp(Rcpp::IntegerVector responses,
  * Calculate the likelihood for every data point and cluster
  *
  * @param responses Design matrix <b>transposed</b> of responses, matrix
- * containing outcomes/responses for each category as integers 1, 2, 3, .... The
- * matrix has dimensions
+ * containing outcomes/responses for each category as integers 1, 2, 3, .... If
+ * supported, 0 can be used to indicate a missing value. The matrix has
+ * dimensions
  * <ul>
  *   <li>dim 0: for each category</li>
  *   <li>dim 1: for each data point</li>
  * </ul>
- * @param probs Matrix of response probabilities, conditioned on cluster, for
- * each category. A flattened list in the following order
+ * @param probs Matrix of response probabilities for each outcome, conditioned
+ * on the category and cluster. A flattened list in the following order
  * <ul>
  *   <li>
  *     dim 0: for each outcome | category (inner), for each category (outer)
@@ -167,11 +171,6 @@ Rcpp::NumericMatrix PosteriorRcpp(Rcpp::IntegerVector responses,
  *   <li>dim 1: for each cluster</li>
  * </ul>
  * @param n_outcomes Number of possible outcomes for each category
- * @param prior The probability a data point is in cluster m <b>not</b> given
- * responses after calculations. The matrix has the following dimensions <ul>
- *   <li>dim 0: for each data</li>
- *   <li>dim 1: for each cluster</li>
- * </ul>
  * @param n_data Number of data points
  * @param n_cluster Number of clusters
  * @param likelihood <b>Modified</b> The resulting likelihood for each data
@@ -203,26 +202,22 @@ void Likelihood(std::span<const int> responses, const arma::Mat<double>& probs,
  * Calculate the likelihood for every data point and cluster
  *
  * @param responses Design matrix <b>transposed</b> of responses, matrix
- * containing outcomes/responses for each category as integers 1, 2, 3, .... The
- * matrix has dimensions
+ * containing outcomes/responses for each category as integers 1, 2, 3, .... If
+ * supported, 0 can be used to indicate a missing value. The matrix has
+ * dimensions
  * <ul>
  *   <li>dim 0: for each category</li>
  *   <li>dim 1: for each data point</li>
  * </ul>
- * @param probs Vector of response probabilities for each outcome, category and
- * cluster. Can be the return value of poLCAParallel.vectorize.R. Flatten list
- * in the following order
+ * @param probs Vector of response probabilities for each outcome, conditioned
+ * on the category and cluster. Can be the return value of
+ * <code>poLCAParallel.vectorize.R</code>. Flatten list in the following order
  * <ul>
  *   <li>dim 0: for each outcome</li>
  *   <li>dim 1: for each category</li>
  *   <li>dim 2: for each cluster</li>
  * </ul>
- * @param n_outcomes Number of possible outcomes for each category
- * @param prior The probability a data point is in cluster m <b>not</b> given
- * responses after calculations. The matrix has the following dimensions <ul>
- *   <li>dim 0: for each data</li>
- *   <li>dim 1: for each cluster</li>
- * </ul>
+ * @param n_outcomes_int Number of possible outcomes for each category
  * @param n_data Number of data points
  * @param n_cluster Number of clusters
  * @return The resulting likelihood for each data point and cluster. the

@@ -55,8 +55,10 @@ class Blrt {
    */
   std::span<const double> prior_null_;
   /**
-   * Vector of estimated response probabilities, conditioned on cluster, for
-   * each category, for the null model, flatten list in the order
+   * Vector of estimated response probabilities for each outcome, conditioned
+   * on the category and cluster, for the null model. Used as an initial value,
+   * for one repetition, when fitting onto the bootstrap sample. Flatten list in
+   * the order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -70,8 +72,10 @@ class Blrt {
    */
   std::span<const double> prior_alt_;
   /**
-   * Vector of estimated response probabilities, conditioned on cluster, for
-   * each category, for the alt model, flatten list in the order
+   * Vector of estimated response probabilities for each outcome, conditioned
+   * on the category and cluster, for the alt model. Used as an initial value,
+   * for one repetition, when fitting onto the bootstrap sample. Flatten list in
+   * the order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -112,9 +116,10 @@ class Blrt {
    * <ul>
    *   <li>dim 0: for each cluster</li>
    * </ul>
-   * @param prob_null Null model, vector of estimated response probabilities for
-   * each category, flatten list of matrices. Used as an initial value when
-   * fitting onto the bootstrap sample.
+   * @param prob_null Null model, Vector of estimated response probabilities for
+   * each outcome, conditioned on the category and cluster. Used as an initial
+   * value, for one repetition, when fitting onto the bootstrap sample. Flatten
+   * list in the order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -127,8 +132,9 @@ class Blrt {
    *   <li>dim 0: for each cluster</li>
    * </ul>
    * @param prob_alt Alt model, vector of estimated response probabilities for
-   * each category, flatten list of matrices. Used as an initial value when
-   * fitting onto the bootstrap sample.
+   * each outcome, conditioned on the category and cluster. Used as an initial
+   * value, for one repetition, when fitting onto the bootstrap sample. Flatten
+   * list in the order
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
@@ -171,9 +177,10 @@ class Blrt {
    * <ul>
    *   <li>dim 0: for each cluster</li>
    * </ul>
-   * @param prob Vector of estimated response probabilities for
-   * each category, flatten list of matrices. Used as an initial value when
-   * fitting onto the bootstrap sample.
+   * @param prob Vector of estimated response probabilities for each outcome,
+   * conditioned on the category and cluster, flatten list of matrices. Used as
+   * an initial value, for one repetition, when fitting onto the bootstrap
+   * sample
    * <ul>
    *   <li>dim 0: for each outcome</li>
    *   <li>dim 1: for each category</li>
