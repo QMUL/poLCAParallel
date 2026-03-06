@@ -21,71 +21,70 @@ poLCA.simdata(
 \arguments{
 \item{N}{number of observations.}
 
-\item{probs}{a list of matrices of dimension  \code{nclass } by \code{nresp } with each
+\item{probs}{a list of matrices of dimension \code{nclass } by \code{nresp } with each
 matrix corresponding to one manifest variable, and each row containing the
-class-conditional outcome probabilities (which must sum to 1). If \code{probs}
-is \code{NULL} (default) then the outcome probabilities are generated randomly.}
+class-conditional outcome probabilities (which must sum to 1). If \code{probs} is
+\code{NULL} (default) then the outcome probabilities are generated randomly.}
 
 \item{nclass}{number of latent classes. If \code{probs} is specified, then
 \code{nclass} is set equal to the number of rows in each matrix in that list. If
-\code{P} is specified, then \code{nclass} is set equal to the length of that vector.
-If \code{b} is specified, then \code{nclass} is set equal to one greater than the
-number of columns in \code{b}. Otherwise, the default is two.}
+\code{P} is specified, then \code{nclass} is set equal to the length of that vector. If
+\code{b} is specified, then \code{nclass} is set equal to one greater than the number
+of columns in \code{b}. Otherwise, the default is two.}
 
 \item{ndv}{number of manifest variables. If \code{probs} is specified, then \code{ndv}
-is set equal to the number of matrices in that list. If \code{nresp} is
-specified, then \code{ndv} is set equal to the length of that vector. Otherwise,
-the default is four.}
+is set equal to the number of matrices in that list. If \code{nresp} is specified,
+then \code{ndv} is set equal to the length of that vector. Otherwise, the default
+is four.}
 
 \item{nresp}{number of possible outcomes for each manifest variable. If
 \code{probs} is specified, then \code{ndv} is set equal to the number of columns in
-each matrix in that list. If both \code{probs} and  \code{nresp} are \code{NULL}
-(default), then the manifest variables are assigned a random number of
-outcomes between two and five.}
+each matrix in that list. If both \code{probs} and \code{nresp} are \code{NULL} (default),
+then the manifest variables are assigned a random number of outcomes between
+two and five.}
 
 \item{x}{a matrix of concomicant variables with \code{N} rows and \code{niv} columns.
-If \code{x=NULL} (default), but  \code{niv>0}, then \code{niv} concomitant variables will
-be generated as mutually independent random draws from a standard normal
+If \code{x=NULL} (default), but \code{niv>0}, then \code{niv} concomitant variables will be
+generated as mutually independent random draws from a standard normal
 distribution.}
 
 \item{niv}{number of concomitant variables (covariates). Setting \code{niv=0}
-(default) creates a data set assuming no covariates. If \code{nclass=1} then
-\code{niv} is automatically set equal to 0. If both \code{x} and \code{niv} are entered,
-then the number of columns in \code{x} overrides the value of \code{niv}. The number
-of rows in \code{b}, less one, also overrides \code{niv}.}
+(default) creates a data set assuming no covariates. If \code{nclass=1} then \code{niv}
+is automatically set equal to 0. If both \code{x} and \code{niv} are entered, then the
+number of columns in \code{x} overrides the value of \code{niv}. The number of rows in
+\code{b}, less one, also overrides \code{niv}.}
 
-\item{b}{when using covariates, an  \code{niv+1} by \code{nclass-1} matrix of
+\item{b}{when using covariates, an \code{niv+1} by \code{nclass-1} matrix of
 (multinomial) logit coefficients. If \code{b} is \code{NULL} (default), then
 coefficients are generated as random integers between -2 and 2.}
 
 \item{P}{a vector of mixing proportions (class population shares) of length
 \code{nclass}. \code{P} must sum to 1. Disregarded if \code{b} is specified or \code{niv>1}
-because then \code{P} is, in part, a function of the concomitant variables. If
-\code{P} is \code{NULL} (default), then the mixing proportions are generated
-randomly.}
+because then \code{P} is, in part, a function of the concomitant variables. If \code{P}
+is \code{NULL} (default), then the mixing proportions are generated randomly.}
 
 \item{missval}{logical. If \code{TRUE} then a fraction \code{pctmiss} of the manifest
 variables are randomly dropped as missing values. Default is \code{FALSE}.}
 
 \item{pctmiss}{percentage of values to be dropped as missing, if
-\code{missval=TRUE}. If \code{pctmiss} is \code{NULL} (default), then a value between 5
-and 40 percent is chosen randomly.}
+\code{missval=TRUE}. If \code{pctmiss} is \code{NULL} (default), then a value between 5 and
+40 percent is chosen randomly.}
 }
 \value{
 A list containing the following
 \itemize{
-\item \code{dat}: a data frame containing the simulated variables. Variable names
-for manifest variables are Y1, Y2, etc. Variable names for concomitant
+\item \code{dat}: a data frame containing the simulated variables. Variable names for
+manifest variables are Y1, Y2, etc. Variable names for concomitant
 variables are X1, X2, etc.
-\item \code{probs}: a list of matrices of dimension \code{nclass} by \code{nresp} containing
-the class-conditional response probabilities.
+\item \code{probs}: a list of matrices of dimension \code{nclass} by \code{nresp} containing the
+class-conditional response probabilities.
 \item \code{nresp}: a vector containing the number of possible outcomes for each
 manifest variable.
 \item \code{b}: coefficients on covariates, if used.
 \item \code{P}: mixing proportions corresponding to each latent class.
 \item \code{pctmiss}: percent of observations missing.
-\item \code{trueclass}: \code{N} by 1 vector containing the "true" class
-membership for each individual.
+\item \code{trueclass}: \code{N} by 1 vector containing the "true" class membership for
+each individual.
 }
 }
 \description{
@@ -96,8 +95,8 @@ class and latent class regression estimator.
 \details{
 Note that entering \code{probs} overrides \code{nclass}, \code{ndv}, and \code{nresp}. It also
 overrides \code{P} if the length of the \code{P} vector is not equal to the length of
-the \code{probs} list.  Likewise, if \code{probs=NULL}, then \code{length(nresp)} overrides
-\code{ndv} and \code{length(P)} overrides \code{nclass}.  Setting \code{niv>1} causes any
+the \code{probs} list. Likewise, if \code{probs=NULL}, then \code{length(nresp)} overrides
+\code{ndv} and \code{length(P)} overrides \code{nclass}. Setting \code{niv>1} causes any
 user-entered value of \code{P} to be disregarded.
 }
 \examples{

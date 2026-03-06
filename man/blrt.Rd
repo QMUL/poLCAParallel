@@ -2,7 +2,7 @@
 % Please edit documentation in R/blrt.R
 \name{blrt}
 \alias{blrt}
-\title{Bootstrap likelihood ratio test (no regression only)}
+\title{Bootstrap likelihood ratio test (non-regression only)}
 \usage{
 blrt(
   model_null,
@@ -15,9 +15,9 @@ blrt(
 )
 }
 \arguments{
-\item{model_null}{Fitted poLCA object, the null model}
+\item{model_null}{Fitted \code{poLCA} object, the null model}
 
-\item{model_alt}{Fitted poLCA object, the alt model}
+\item{model_alt}{Fitted \code{poLCA} object, the alt model}
 
 \item{n_bootstrap}{Number of bootstrap samples}
 
@@ -28,27 +28,25 @@ samples}
 
 \item{max_iter}{Maximum number of iterations for EM algorithm}
 
-\item{tol}{Tolerance for difference in log likelihood, used for
-stopping condition}
+\item{tol}{Tolerance for difference in log likelihood, used for stopping
+condition}
 }
 \value{
-List containing the following:\if{html}{\out{
-<ul>
-  <li>fitted_log_ratio: log likelihood ratio comparing the null and alt
-model</li>
-  <li>bootstrap_log_ratio: vector of length n_bootstrap, bootstrapped log
-likelihood ratio comparing the null and alt model</li>
-  <li>p_value<: the porportion of bootstrap samples with log likelihood
-ratios greater than the fitted log likelihood ratio/li>
-</ul>
-}}
+List containing the following:
+\itemize{
+\item \code{fitted_log_ratio}: log likelihood ratio comparing the null and alt models
+\item \code{bootstrap_log_ratio}: vector of length \code{n_bootstrap}, bootstrapped log
+likelihood ratio comparing the null and alt models
+\item \code{p_value}: the proportion of bootstrap samples with log likelihood ratios
+greater than the fitted log likelihood ratio
+}
 }
 \description{
-Does the bootstrap likelihood ratio test. Provide two fitted models, the
-null model and the alt model which fits a different number of clusters.
-Bootstrap samples are generated using the null model. The null model and alt
-model are refitted on the bootstrap samples to investigate the log likelihood
-ratio of the two models.
+Does the bootstrap likelihood ratio test. Provide two fitted models, the null
+model and the alt model fitted with a different number of clusters/latent
+classes. Bootstrap samples are generated using the null model. The null model
+and the alt model are refitted on the bootstrap samples to investigate the
+log likelihood ratio of the two models.
 }
 \details{
 Runs in parallel for each bootstrap sample, potentially high memory if the

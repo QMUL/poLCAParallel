@@ -23,8 +23,8 @@ poLCA(
 )
 }
 \arguments{
-\item{formula}{A formula expression of the form \code{response ~ predictors}.
-The details of model specification are given below.}
+\item{formula}{A formula expression of the form \code{response ~ predictors}. The
+details of model specification are given below.}
 
 \item{data}{A data frame containing variables in \code{formula}. Manifest
 variables must contain \emph{only} integer values, and must be coded with
@@ -48,103 +48,104 @@ When the one-iteration change in the estimated log-likelihood is less than
 log-lparameterikelihood to have been found.}
 
 \item{na.rm}{Logical, for how \code{poLCA} handles cases with missing values on
-the manifest variables. If \code{TRUE}, those cases are removed (listwise
-deleted) before estimating the model. If \code{FALSE}, cases with missing values
-are retained. Cases with missing covariates are always removed. The default
-is \code{TRUE}.}
+the manifest variables. If \code{TRUE}, those cases are removed (listwise deleted)
+before estimating the model. If \code{FALSE}, cases with missing values are
+retained. Cases with missing covariates are always removed. The default is
+\code{TRUE}.}
 
 \item{probs.start}{A list of matrices of class-conditional response
-probabilities to be used as the starting values for the estimation
-algorithm. Each matrix in the list corresponds to one manifest variable,
-with one row for each latent class, and one column for each outcome. The
-default is \code{NULL}, producing random starting values.  Note that if
-\code{nrep>1}, then any user-specified \code{probs.start} values are only used in the
-first of the \code{nrep} attempts.}
+probabilities to be used as the starting values for the estimation algorithm.
+Each matrix in the list corresponds to one manifest variable, with one row
+for each latent class, and one column for each outcome. The default is
+\code{NULL}, producing random starting values. Note that if \code{nrep>1}, then any
+user-specified \code{probs.start} values are only used in the first of the \code{nrep}
+attempts.}
 
 \item{nrep}{Number of times to estimate the model, using different values of
-\code{probs.start}. The default is one.  Setting \code{nrep}>1 automates the search
-for the global---rather than just a local---maximum of the log-likelihood
-function. \code{poLCA} returns the parameter estimates corresponding to the
-model with the greatest log-likelihood.}
+\code{probs.start}. The default is one. Setting \code{nrep}>1 automates the search for
+the global---rather than just a local---maximum of the log-likelihood
+function. \code{poLCA} returns the parameter estimates corresponding to the model
+with the greatest log-likelihood.}
 
 \item{verbose}{Logical, indicating whether \code{poLCA} should output to the
 screen the results of the model. If \code{FALSE}, no output is produced. The
 default is \code{TRUE}.}
 
 \item{calc.se}{Logical, indicating whether \code{poLCA} should calculate the
-standard errors of the estimated class-conditional response probabilities
-and mixing proportions. default is \code{TRUE}.}
+standard errors of the estimated class-conditional response probabilities and
+mixing proportions. The default is \code{TRUE}.}
 
-\item{calc.chisq}{Logical, indicate whether to calculate the goodness of fit
-statistics, the chi squared statistics and the log likelihood ratio. The
+\item{calc.chisq}{Logical, indicating whether to calculate the goodness of
+fit statistics, the chi squared statistics and the log likelihood ratio. The
 default is \code{TRUE}.}
 
-\item{n.thread}{Integer, the number of threads used to run each repetition.}
+\item{n.thread}{Integer, the number of threads to use. Each thread processes
+a repetition. By default, all detectable threads are used.}
 
 \item{se.smooth}{Logical, experimental, for calculating the standard errors,
-whether to smooth the outcome probabilities to produce more numerical
-stable results as a cost of bias.}
+whether to smooth the outcome probabilities to produce more numerical stable
+results at the cost of bias.}
 }
 \value{
 an object of class poLCA; a list containing the following elements:
 \itemize{
-\item y: data frame of manifest variables.
-\item x: data frame of covariates, if specified.
-\item N: number of cases used in model.
-\item Nobs: number of fully observed cases (less than or equal to \code{N}).
-\item probs: estimated class-conditional response probabilities.
-\item probs.se: standard errors of estimated class-conditional response
+\item \code{y}: data frame of manifest variables.
+\item \code{x}: data frame of covariates, if specified.
+\item \code{N}: number of cases used in model.
+\item \code{Nobs}: number of fully observed cases (less than or equal to \code{N}).
+\item \code{probs}: estimated class-conditional response probabilities.
+\item \code{probs.se}: standard errors of estimated class-conditional response
 probabilities, in the same format as \code{probs}.
-\item P: sizes of each latent class; equal to the mixing proportions in the
-function basic latent class model, or the mean of the priors in the
-latent class regression model.
-\item P.se: the standard errors of the estimated \code{P}.
-\item prior: matrix of prior class membership probabilities
-\item posterior: matrix of posterior class membership probabilities; also see
-function 'poLCA.posterior'.
-\item predclass: vector of predicted class memberships, by modal assignment.
-\item predcell: table of observed versus predicted cell counts for cases with
+\item \code{P}: sizes of each latent class; equal to the mixing proportions in the
+function basic latent class model, or the mean of the priors in the latent
+class regression model.
+\item \code{P.se}: the standard errors of the estimated \code{P}.
+\item \code{prior}: matrix of prior class membership probabilities
+\item \code{posterior}: matrix of posterior class membership probabilities; also see
+function \code{poLCA.posterior}.
+\item \code{predclass}: vector of predicted class memberships, by modal assignment.
+\item \code{predcell}: table of observed versus predicted cell counts for cases with
 no missing values; also see functions \code{poLCA.table} and \code{poLCA.predcell}
-\item llik: maximum value of the log-likelihood.
-\item numiter: number of iterations until reaching convergence.
-\item maxiter: maximum number of iterations through which the estimation
+\item \code{llik}: maximum value of the log-likelihood.
+\item \code{numiter}: number of iterations until reaching convergence.
+\item \code{maxiter}: maximum number of iterations through which the estimation
 algorithm was set to run.
-\item coeff: multinomial logit coefficient estimates on covariates (when
+\item \code{coeff}: multinomial logit coefficient estimates on covariates (when
 estimated). \code{coeff} is a matrix with \code{nclass-1} columns, and one row for
-each covariate.  All logit coefficients are calculated for classes with
+each covariate. All logit coefficients are calculated for classes with
 respect to class 1.
-\item coeff.se: standard errors of coefficient estimates on covariates (when
+\item \code{coeff.se}: standard errors of coefficient estimates on covariates (when
 estimated), in the same format as \code{coeff}.
-\item coeff.V: covariance matrix of coefficient estimates on covariates (when
+\item \code{coeff.V}: covariance matrix of coefficient estimates on covariates (when
 estimated).
-\item aic: Akaike Information Criterion.
-\item bic: Bayesian Information Criterion.
-\item Gsq: Likelihood ratio/deviance statistic.
-\item Chisq: Pearson Chi-square goodness of fit statistic for fitted vs.
+\item \code{aic}: Akaike Information Criterion.
+\item \code{bic}: Bayesian Information Criterion.
+\item \code{Gsq}: Likelihood ratio/deviance statistic.
+\item \code{Chisq}: Pearson Chi-square goodness of fit statistic for fitted vs.
 observed multiway tables.
-\item time: length of time it took to run the model.
-\item npar: number of degrees of freedom used by the model (estimated
+\item \code{time}: length of time it took to run the model.
+\item \code{npar}: number of degrees of freedom used by the model (estimated
 parameters).
-\item resid.df: number of residual degrees of freedom.
-\item attempts: a vector containing the maximum log-likelihood values found in
+\item \code{resid.df}: number of residual degrees of freedom.
+\item \code{attempts}: a vector containing the maximum log-likelihood values found in
 each of the \code{nrep} attempts to fit the model.
-\item eflag: Logical, error flag. \code{TRUE} if estimation algorithm needed to
+\item \code{eflag}: Logical, error flag. \code{TRUE} if estimation algorithm needed to
 automatically restart with new initial parameters. A restart is caused in
 the event of computational/rounding errors that result in nonsensical
 parameter estimates.
-\item probs.start: A list of matrices containing the class-conditional response
+\item \code{probs.start}: A list of matrices containing the class-conditional response
 probabilities used as starting values in the estimation algorithm. If the
-algorithm needed to restart (see \code{eflag}), then this contains the
-starting values used for the final, successful, run.
-\item probs.start.ok: Logical. \code{FALSE} if \code{probs.start} was incorrectly
+algorithm needed to restart (see \code{eflag}), then this contains the starting
+values used for the final, successful, run.
+\item \code{probs.start.ok}: Logical. \code{FALSE} if \code{probs.start} was incorrectly
 specified by the user, otherwise \code{TRUE}.
-\item call: function call to \code{poLCA}.
+\item \code{call}: function call to \code{poLCA}.
 }
 }
 \description{
 Latent class analysis, also known as latent structure analysis, is a
 technique for the analysis of clustering among observations in multi-way
-tables of qualitative/categorical variables.  The central idea is to fit a
+tables of qualitative/categorical variables. The central idea is to fit a
 model in which any confounding between the manifest variables can be
 explained by a single unobserved "latent" categorical variable. \code{poLCA} uses
 the assumption of local independence to estimate a mixture model of latent
@@ -156,47 +157,18 @@ on any class-predictor covariates, if specified in the model.
 }
 \details{
 Model specification: Latent class models have more than one manifest
-variable, so the response variables are \code{cbind(dv1,dv2,dv3...)} where
-\code{dv#} refer to variable names in the data frame.  For models with no
-covariates, the formula is \code{cbind(dv1,dv2,dv3)~1}.  For models with
-covariates, replace the \code{~1} with the desired function of predictors
-\verb{iv1,iv2,iv3...} as, for example, \code{cbind(dv1,dv2,dv3)~iv1+iv2*iv3}.
+variable, so the response variables are \code{cbind(dv1,dv2,dv3...)} where \code{dv#}
+refer to variable names in the data frame. For models with no covariates, the
+formula is \code{cbind(dv1,dv2,dv3)~1}. For models with covariates, replace the
+\code{~1} with the desired function of predictors \verb{iv1,iv2,iv3...} as, for
+example, \code{cbind(dv1,dv2,dv3)~iv1+iv2*iv3}.
 
 \code{poLCA} treats all manifest variables as qualitative/categorical/nominal
 -- NOT as ordinal.
 
-The library poLCAParallel reimplements poLCA in C++. This was done using
-\href{https://cran.r-project.org/web/packages/Rcpp}{Rcpp} and
-\href{https://cran.r-project.org/web/packages/RcppArmadillo}{RcppArmadillo} which
-allows C++ code to interact with R. Additional notes include:
-\itemize{
-\item The code uses \href{http://arma.sourceforge.net/}{Armadillo} for linear algebra
-\item Multiple repetitions are done in parallel using
-\href{https://www.cplusplus.com/reference/thread/}{\verb{<thread>}} for multi-thread
-programming and \href{https://www.cplusplus.com/reference/mutex/}{\verb{<mutex>}} to
-prevent data races
-\item Response probabilities are reordered to increase cache efficiency
-\item Use of \href{https://en.cppreference.com/w/cpp/container/map}{\code{std::map}} for
-the chi-squared calculations
-}
-
-Further reading available on a
-\href{https://blog.hpc.qmul.ac.uk/speeding_up_r_packages.html}{QMUL ITS Research Blog}.
-
-References:
-\itemize{
-\item Agresti, Alan. 2002. \emph{Categorical Data Analysis, second edition}.
-Hoboken: John Wiley \& Sons.
-\item Bandeen-Roche, Karen, Diana L. Miglioretti, Scott L. Zeger, and Paul J.
-Rathouz. 1997. "Latent Variable Regression for Multiple Discrete
-Outcomes." \emph{Journal of the American Statistical Association}.
-92(440): 1375-1386.
-\item Hagenaars, Jacques A. and Allan L. McCutcheon, eds. 2002.
-\emph{Applied Latent Class Analysis}. Cambridge: Cambridge University
-Press.
-\item McLachlan, Geoffrey J. and Thriyambakam Krishnan. 1997.
-\emph{The EM Algorithm and Extensions}. New York: John Wiley \& Sons.
-}
+The implemention of this function in the package poLCAParallel is rewritten
+in C++. Multiple threads are used, where each thread processes an initial
+value or repetition.
 
 Notes:
 
@@ -207,23 +179,63 @@ more and more of a problem as \code{nclass} increases. It is therefore highly
 advisable to run \code{poLCA} multiple times until you are relatively certain that
 you have located the global maximum log-likelihood. As long as
 \code{probs.start=NULL}, each function call will use different (random) initial
-starting parameters.  Alternatively, setting \code{nrep} to a value greater than
+starting parameters. Alternatively, setting \code{nrep} to a value greater than
 one enables the user to estimate the latent class model multiple times with a
 single call to \code{poLCA}, thus conducting the search for the global maximizer
 automatically.
 
-The term "Latent class regression" (LCR) can have two meanings.  In this
+The term "Latent class regression" (LCR) can have two meanings. In this
 package, LCR models refer to latent class models in which the probability of
-class membership is predicted by one or more covariates.  However, in other
+class membership is predicted by one or more covariates. However, in other
 contexts, LCR is also used to refer to regression models in which the
 manifest variable is partitioned into some specified number of latent classes
 as part of estimating the regression model. It is a way to simultaneously fit
 more than one regression to the data when the latent data partition is
-unknown. The \verb{flexmix`` function in package }flexmix`` will estimate this
-other type of LCR model.  Because of these terminology issues, the LCR models
-this package estimates are sometimes termed "latent class models with
-covariates" or "concomitant-variable latent class analysis," both of which
-are accurate descriptions of this model.
+unknown. The \code{flexmix} function in package \code{flexmix} will estimate this other
+type of LCR model. Because of these terminology issues, the LCR models this
+package estimates are sometimes termed "latent class models with covariates"
+or "concomitant-variable latent class analysis," both of which are accurate
+descriptions of this model.
+
+The package poLCAParallel reimplements the poLCA fitting, standard error
+calculations, goodness of fit tests and the bootstrap log-likelihood ratio
+test in C++. This was done using
+\href{https://cran.r-project.org/package=Rcpp}{Rcpp} and
+\href{https://cran.r-project.org/package=RcppArmadillo}{RcppArmadillo} which
+allows R to run fast C++ code. Additional notes include:
+\itemize{
+\item The API remains the same as the original poLCA with a few additions
+\item It tries to reproduce results from the original poLCA
+\item The code uses \href{https://arma.sourceforge.net/}{Armadillo} for linear algebra
+\item Multiple repetitions are done in parallel using
+\href{https://en.cppreference.com/w/cpp/thread/jthread.html}{\code{std::jthread}}
+for multi-thread programming and
+\href{https://en.cppreference.com/w/cpp/thread/mutex.html}{\code{std::mutex}} to
+prevent data races
+\item Direct inversion of matrices is avoided to improve numerical stability and
+performance
+\item Response probabilities are reordered to increase cache efficiency
+\item Use of \href{https://en.cppreference.com/w/cpp/container/map.html}{\code{std::map}}
+for the chi-squared calculations to improve performance
+}
+
+Further reading is available on the
+\href{https://blog.hpc.qmul.ac.uk/speeding_up_r_packages/}{QMUL ITS Research Blog}.
+
+References:
+\itemize{
+\item Agresti, Alan. 2002. \emph{Categorical Data Analysis, second edition}.
+Hoboken: John Wiley & Sons.
+\item Bandeen-Roche, Karen, Diana L. Miglioretti, Scott L. Zeger, and Paul J.
+Rathouz. 1997. "Latent Variable Regression for Multiple Discrete
+Outcomes." \emph{Journal of the American Statistical Association}.
+92(440): 1375-1386.
+\item Hagenaars, Jacques A. and Allan L. McCutcheon, eds. 2002.
+\emph{Applied Latent Class Analysis}. Cambridge: Cambridge University
+Press.
+\item McLachlan, Geoffrey J. and Thriyambakam Krishnan. 1997.
+\emph{The EM Algorithm and Extensions}. New York: John Wiley & Sons.
+}
 }
 \examples{
 ##

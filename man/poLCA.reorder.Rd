@@ -2,7 +2,7 @@
 % Please edit documentation in R/poLCA.reorder.R
 \name{poLCA.reorder}
 \alias{poLCA.reorder}
-\title{Reorder latent classes in poLC}
+\title{Reorder latent classes in poLCA}
 \usage{
 poLCA.reorder(probs, o.new)
 }
@@ -37,7 +37,7 @@ model having the desired category labels.
 ##
 ## Using the "cheating" sample data set, make the larger
 ## non-cheater class the first ("reference") class in a
-## latent class regression model.  The coefficient on GPA
+## latent class regression model. The coefficient on GPA
 ## now maintains a consistent interpretation.
 ##
 data(cheating)

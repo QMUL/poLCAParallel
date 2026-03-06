@@ -2,25 +2,27 @@
 % Please edit documentation in R/poLCAParallel.goodnessfit.R
 \name{poLCAParallel.goodnessfit}
 \alias{poLCAParallel.goodnessfit}
-\title{Add predcell, Gsq and Chisq to a fitted poLCA object (or a list)}
+\title{Add predcell, Gsq and Chisq to a fitted poLCA object}
 \usage{
 poLCAParallel.goodnessfit(results)
 }
 \arguments{
-\item{results}{a poLCA object (see poLCA.R)}
+\item{results}{A model object estimated using the \code{poLCA} function}
 }
 \value{
-list with 3 items:
+The model object with three added items:
 \itemize{
-\item predcell: dataframe of unique responses with their observed and expected
+\item \code{predcell}: dataframe of unique responses with their observed and expected
 frequencies
-\item Gsq: log likelihood ratio
-\item Chisq: chi squared statistic
+\item \code{Gsq}: log likelihood ratio
+\item \code{Chisq}: chi squared statistic
 }
 }
 \description{
-Wrapper function around the C++ function GoodnessFitRcpp(). Finds unique
-responses and put them in a dataframe along with the observed and
-expected frequencies. Also calculates the log likelihood ratio and chi
+Finds unique responses and put them in a dataframe along with the observed
+and expected frequencies. Also calculates the log likelihood ratio and chi
 squared statistics.
+}
+\details{
+Wrapper function around the C++ function \code{GoodnessFitRcpp()}.
 }

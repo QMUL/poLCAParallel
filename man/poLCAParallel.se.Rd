@@ -2,28 +2,28 @@
 % Please edit documentation in R/poLCAParallel.se.R
 \name{poLCAParallel.se}
 \alias{poLCAParallel.se}
-\title{Calculate the standard errors and adds them to the poLCA object}
+\title{Calculates the standard errors and adds them to a fitted poLCA model object}
 \usage{
 poLCAParallel.se(polca, is_smooth = FALSE)
 }
 \arguments{
-\item{polca}{the resulting poLCA object from calling poLCA()}
+\item{polca}{A model object estimated using the \code{poLCA} function}
 
 \item{is_smooth}{Logical, experimental, for calculating the standard errors,
-whether to smooth the outcome probabilities to produce more numerical
-stable results as a cost of bias.}
+whether to smooth the outcome probabilities to produce more numerical stable
+results at the cost of bias.}
 }
 \value{
-the poLCA object with the attributes $P.se, $probs.se, $coeff.se and
-$coeff.V modified or added
+the fitted poLCA model object with the attributes \verb{$P.se},
+\verb{$probs.se}, \verb{$coeff.se} and '$coeff.V` modified or added
 }
 \description{
-R wrapper function for the C++ function StandardError Rcpp
+Calculates the standard errors and adds them, as attributes, to a fitted
+poLCA model object \verb{$P.se}, \verb{$probs.se}, \verb{$coeff.se} and \verb{$coeff.V}
 }
 \details{
-Calculate the standard errors and adds them, as attributes, to the poLCA
-object, $P.se, $probs.se $coeff.se and $coeff.V
+R wrapper function for the C++ function \code{StandardErrorRcpp()}
 
-$coeff.se and $coeff.V are set to NA if the provided poLCA is a standard
-poLCA with no regression
+\verb{$coeff.se} and \verb{$coeff.V} are set to \code{NA} if the provided poLCA is a poLCA
+problem with no regression
 }

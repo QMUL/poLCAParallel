@@ -2,16 +2,15 @@
 % Please edit documentation in R/rmulti.R
 \name{rmulti}
 \alias{rmulti}
-\title{Random draws from a multinomial distributionintegers}
+\title{Random draws from a multinomial distribution}
 \usage{
 rmulti(p)
 }
 \arguments{
-\item{p}{matrix of dimension \code{n} by \code{r} containing probabilities,
-for each row, of drawing each of \code{r} outcomes. \code{p} may also be
-entered as a vector, in which case \code{rmulti} treats it as a matrix of
-dimension \code{n=1} by \code{r}. Each row of matrix \code{p} must sum to 1
-or \code{rmulti} will not work properly.}
+\item{p}{matrix of dimension \code{n} by \code{r} containing probabilities, for each
+row, of drawing each of \code{r} outcomes. \code{p} may also be entered as a vector, in
+which case \code{rmulti} treats it as a matrix of dimension \code{n=1} by \code{r}. Each row
+of matrix \code{p} must sum to 1 or \code{rmulti} will not work properly.}
 }
 \value{
 A vector of length \code{n}. Each item represents one draw from the
