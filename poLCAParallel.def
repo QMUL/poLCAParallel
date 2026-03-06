@@ -1,14 +1,16 @@
 Bootstrap: docker
-From: ubuntu
+From: ubuntu:26.04
 
 %environment
     export LC_ALL=C.UTF-8
     export R_LIBS_USER=""
+
+%post
     export DEBIAN_FRONTEND="noninteractive"
     export DEBCONF_NONINTERACTIVE_SEEN=true
 
-%post
     apt update -y
+    apt install -y build-essential
     apt install -y wget
     apt install -y git
     apt install -y r-base
