@@ -27,6 +27,7 @@
 #include "standard_error.h"
 #include "standard_error_regress.h"
 #include "util.h"
+#include "util_rcpp.h"
 
 /**
  * Instantiate a polca_parallel::StandardError object
@@ -157,11 +158,14 @@ Rcpp::List StandardErrorRcpp(Rcpp::NumericVector features,
   Rcpp::NumericMatrix regress_coeff_error(len_regress_coeff, len_regress_coeff);
 
   std::unique_ptr<polca_parallel::StandardError> error = InitStandardError(
-      n_feature, use_smooth, std::span<const double>(features),
-      std::span<const int>(responses), std::span<const double>(probs),
-      std::span<const double>(prior), std::span<const double>(posterior),
-      n_data, n_feature, n_outcomes, n_cluster, std::span<double>(prior_error),
-      std::span<double>(probs_error), std::span<double>(regress_coeff_error));
+      n_feature, use_smooth, polca_parallel::VectorToConstSpan(features),
+      polca_parallel::VectorToConstSpan(responses),
+      polca_parallel::VectorToConstSpan(probs),
+      polca_parallel::VectorToConstSpan(prior),
+      polca_parallel::VectorToConstSpan(posterior), n_data, n_feature,
+      n_outcomes, n_cluster, polca_parallel::VectorToSpan(prior_error),
+      polca_parallel::VectorToSpan(probs_error),
+      polca_parallel::VectorToSpan(regress_coeff_error));
   error->Calc();
 
   Rcpp::List to_return;

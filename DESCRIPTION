@@ -1,7 +1,7 @@
 Package: poLCAParallel
 Type: Package
 Title: Polytomous Variable Latent Class Analysis Parallel
-Version: 1.2.6
+Version: 1.2.7
 Authors@R: c(person(given = "Sherman",
                     family = "Lo",
                     role = c("aut", "cre"),
@@ -14,7 +14,7 @@ Authors@R: c(person(given = "Sherman",
                     family = "Lewis.",
                     role = "aut",
                     email = "jblewis@ucla.edu"))
-Depends: R (>= 3.0.2)
+Depends: R (>= 4.1.2)
 Imports: Rcpp (>= 1.0.7), scatterplot3d, MASS, parallel, poLCA
 LinkingTo: Rcpp, RcppArmadillo (>= 0.12.4.1.0)
 Description: A 'C++' reimplementation of 'poLCA' - latent class analysis and
@@ -36,3 +36,4 @@ Suggests:
     usethis
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3
+SystemRequirements: C++20

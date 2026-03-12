@@ -1,34 +1,42 @@
 Bootstrap: docker
-From: ubuntu:24.04
+From: ubuntu:26.04
 
 %environment
     export LC_ALL=C.UTF-8
     export R_LIBS_USER=""
+
+%post
     export DEBIAN_FRONTEND="noninteractive"
     export DEBCONF_NONINTERACTIVE_SEEN=true
 
-%post
     apt update -y
+    apt install -y build-essential
     apt install -y wget
     apt install -y git
-    apt install -y libxml2-dev
     apt install -y cmake
+    apt install -y libblas-dev
+    apt install -y liblapack-dev
+    apt install -y gfortran
+    apt install -y xz-utils
 
     # doxygen
-    apt install -y doxygen=1.9.8+ds-2build5
+    apt install -y doxygen=1.15.0+ds1-1ubuntu3
     apt install -y graphviz
 
-    # R and dependent packages
-    apt install -y r-base=4.3.3-2build2
+    # R and renv
+    apt install -y r-base=4.5.2-1ubuntu2
+    R -e "install.packages('renv')"
 
     # required for R CMD check
     apt install -y texlive-full
 
-    # required for usethis
+    # required for dependent R packages
+    apt install -y libxml2-dev
     apt install -y libssl-dev
     apt install -y libcurl4-openssl-dev
-
-    R -e "install.packages('renv')"
+    apt install -y libicu-dev
+    apt install -y libx11-dev
+    apt install -y pandoc
 
     # clone poLCAParallel and dependencies
     cd /usr/src
@@ -50,14 +58,14 @@ From: ubuntu:24.04
     cd /usr/src
     git clone https://github.com/catchorg/Catch2.git
     cd Catch2
-    git checkout v3.12.0
+    git checkout v3.13.0
     cmake -B build -S .
     cmake --build build --target install
 
     # armadillo (stand-alone)
     cd /tmp
-    wget https://sourceforge.net/projects/arma/files/armadillo-15.0.2.tar.xz
-    tar -xf armadillo-15.0.2.tar.xz -C /usr/src/
+    wget https://sourceforge.net/projects/arma/files/armadillo-15.2.3.tar.xz
+    tar -xf armadillo-15.2.3.tar.xz -C /usr/src/
     cd /usr/src/armadillo*
     cmake .
     make install
@@ -70,7 +78,6 @@ From: ubuntu:24.04
     cmake --build .
 
     # required for R CMD check --as-cran
-    apt install -y pandoc
     apt install -y tidy
     R -e "install.packages('V8')"
 

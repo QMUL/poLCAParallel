@@ -27,6 +27,7 @@
 #include "em_algorithm_nan.h"
 #include "poLCA.c"
 #include "util.h"
+#include "util_rcpp.h"
 
 /**
  * Function to be exported to R, fit using the EM algorithm
@@ -123,14 +124,19 @@ Rcpp::List EmAlgorithmRcpp(Rcpp::NumericMatrix features,
 
   // fit using EM algorithm
   polca_parallel::EmAlgorithmArray fitter(
-      features, responses, initial_prob, n_data, n_feature, n_outcomes,
-      n_cluster, n_rep, n_thread, max_iter, tolerance, posterior, prior,
-      estimated_prob, regress_coeff);
+      polca_parallel::VectorToConstSpan(features),
+      polca_parallel::VectorToConstSpan(responses),
+      polca_parallel::VectorToConstSpan(initial_prob), n_data, n_feature,
+      n_outcomes, n_cluster, n_rep, n_thread, max_iter, tolerance,
+      polca_parallel::VectorToSpan(posterior),
+      polca_parallel::VectorToSpan(prior),
+      polca_parallel::VectorToSpan(estimated_prob),
+      polca_parallel::VectorToSpan(regress_coeff));
 
   std::seed_seq seed_seq(seed.cbegin(), seed.cend());
   fitter.SetSeed(seed_seq);
-  fitter.set_best_initial_prob(best_initial_prob);
-  fitter.set_ln_l_array(ln_l_array);
+  fitter.set_best_initial_prob(polca_parallel::VectorToSpan(best_initial_prob));
+  fitter.set_ln_l_array(polca_parallel::VectorToSpan(ln_l_array));
 
   bool is_regress = n_feature > 1;
   if (is_regress) {

@@ -81,12 +81,16 @@ polca_parallel::EmAlgorithmArray::EmAlgorithmArray(
 template <typename EmAlgorithmType>
 void polca_parallel::EmAlgorithmArray::Fit() {
   // parallel run FitThread
-  std::vector<std::jthread> thread_array(this->n_thread_ - 1);
-  for (std::jthread& thread : thread_array) {
-    thread = std::jthread(&EmAlgorithmArray::FitThread<EmAlgorithmType>, this);
+  std::vector<std::thread> thread_array(this->n_thread_ - 1);
+  for (std::thread& thread : thread_array) {
+    thread = std::thread(&EmAlgorithmArray::FitThread<EmAlgorithmType>, this);
   }
   // main thread run
   this->FitThread<EmAlgorithmType>();
+  // join threads
+  for (std::thread& thread : thread_array) {
+    thread.join();
+  }
 }
 
 void polca_parallel::EmAlgorithmArray::SetSeed(std::seed_seq& seed) {

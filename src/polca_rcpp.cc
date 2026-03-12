@@ -28,6 +28,7 @@
 #include <cstddef>
 
 #include "em_algorithm.h"
+#include "util_rcpp.h"
 
 /**
  * Calculate the posterior for every data point and cluster
@@ -145,8 +146,9 @@ Rcpp::NumericMatrix PosteriorRcpp(Rcpp::IntegerVector responses,
   const arma::Mat<double> probs_arma(probs.begin(), n_outcomes.sum(), n_cluster,
                                      false, true);
 
-  Posterior(responses, probs_arma, n_outcomes, prior, n_data, n_cluster,
-            posterior_arma);
+  Posterior(polca_parallel::VectorToConstSpan(responses), probs_arma,
+            n_outcomes, polca_parallel::VectorToConstSpan(prior), n_data,
+            n_cluster, posterior_arma);
 
   return posterior;
 }
@@ -240,14 +242,12 @@ Rcpp::NumericMatrix LikelihoodRcpp(Rcpp::IntegerVector responses,
   polca_parallel::NOutcomes n_outcomes(n_outcomes_size_t.data(),
                                        n_outcomes_size_t.size());
 
-  arma::Mat<double> likelihood_arma(likelihood.begin(), n_data, n_cluster,
-                                    false, true);
-
   const arma::Mat<double> probs_arma(probs.begin(), n_outcomes.sum(), n_cluster,
                                      false, true);
 
-  Likelihood(responses, probs_arma, n_outcomes, n_data, n_cluster,
-             likelihood_arma);
+  Likelihood(polca_parallel::VectorToConstSpan(responses), probs_arma,
+             n_outcomes, n_data, n_cluster,
+             polca_parallel::VectorToSpan(likelihood));
 
   return likelihood;
 }

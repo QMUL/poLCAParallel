@@ -94,3 +94,10 @@ std::vector<double> polca_parallel::RandomInitialProb(
   }
   return initial_prob;
 }
+
+// arma input
+
+std::span<const double> polca_parallel::VectorToConstSpan(
+    const arma::Mat<double>& vector) {
+  return std::span<const double>(vector.begin(), vector.size());
+}

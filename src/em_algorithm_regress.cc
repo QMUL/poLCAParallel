@@ -153,42 +153,8 @@ void polca_parallel::EmAlgorithmRegress::CalcHess() {
 
 void polca_parallel::EmAlgorithmRegress::CalcHessSubBlock(
     std::size_t cluster_index_0, std::size_t cluster_index_1) {
-  // when retriving the prior and posterior, use cluster_index + 1 because
-  // the hessian does not consider the 0th cluster as the regression
-  // coefficient for the 0th cluster is set to zero
-
-  assert(cluster_index_0 <= this->posterior_.n_cols);
-  assert(cluster_index_0 <= this->prior_.n_cols);
-
-  auto posterior0 = this->posterior_.unsafe_col(cluster_index_0 + 1);
-  auto prior0 = this->prior_.unsafe_col(cluster_index_0 + 1);
-
-  // for the same cluster, copy over results as they will be modified
-  bool is_same_cluster = cluster_index_0 == cluster_index_1;
-
-  assert(std::next(this->posterior_.begin(),
-                   (cluster_index_1 + 2) * this->n_data_) <=
-         this->posterior_.end());
-  arma::Col<double> posterior1(std::next(this->posterior_.begin(),
-                                         (cluster_index_1 + 1) * this->n_data_),
-                               this->n_data_, is_same_cluster);
-
-  assert(
-      std::next(this->prior_.begin(), (cluster_index_1 + 2) * this->n_data_) <=
-      this->prior_.end());
-  arma::Col<double> prior1(
-      std::next(this->prior_.begin(), (cluster_index_1 + 1) * this->n_data_),
-      this->n_data_, is_same_cluster);
-
-  // Suppose r = posterior, pi = prior, u, v = cluster indexs
-  // prior_post_inter is the following:
-  // For same cluster, r_u*(1-r_u) - pi_u(1-pi_u)
-  // For different clusters, pi_u pi_v - r_u r_v
-  if (is_same_cluster) {
-    posterior1 -= 1;
-    prior1 -= 1;
-  }
-  auto prior_post_inter = prior0 % prior1 - posterior0 % posterior1;
+  auto prior_post_inter =
+      this->CalcPriorPostInter(cluster_index_0, cluster_index_1);
 
   // iterate through features i, j, working out the elements of the hessian
   // symmetric matrix, so loop over diagonal and lower triangle
@@ -214,6 +180,29 @@ void polca_parallel::EmAlgorithmRegress::CalcHessSubBlock(
         }
       }
     }
+  }
+}
+
+arma::Col<double> polca_parallel::EmAlgorithmRegress::CalcPriorPostInter(
+    std::size_t cluster_index_0, std::size_t cluster_index_1) {
+  // when retriving the prior and posterior, use cluster_index + 1 because
+  // the hessian does not consider the 0th cluster as the regression
+  // coefficient for the 0th cluster is set to zero
+  assert(cluster_index_0 + 1 < this->posterior_.n_cols);
+  assert(cluster_index_0 + 1 < this->prior_.n_cols);
+  assert(cluster_index_1 + 1 < this->posterior_.n_cols);
+  assert(cluster_index_1 + 1 < this->prior_.n_cols);
+
+  auto posterior0 = this->posterior_.unsafe_col(cluster_index_0 + 1);
+  auto prior0 = this->prior_.unsafe_col(cluster_index_0 + 1);
+
+  // for the same cluster, copy over results as they will be modified
+  if (cluster_index_0 == cluster_index_1) {
+    return posterior0 % (1 - posterior0) - prior0 % (1 - prior0);
+  } else {
+    auto posterior1 = this->posterior_.unsafe_col(cluster_index_1 + 1);
+    auto prior1 = this->prior_.unsafe_col(cluster_index_1 + 1);
+    return prior0 % prior1 - posterior0 % posterior1;
   }
 }
 
