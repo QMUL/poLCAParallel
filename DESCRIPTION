@@ -1,7 +1,7 @@
 Package: poLCAParallel
 Type: Package
 Title: Polytomous Variable Latent Class Analysis Parallel
-Version: 1.2.6
+Version: 1.2.7
 Authors@R: c(person(given = "Sherman",
                     family = "Lo",
                     role = c("aut", "cre"),
