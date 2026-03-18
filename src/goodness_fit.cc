@@ -90,8 +90,7 @@ void polca_parallel::GoodnessOfFit::CalcExpected(
   for (auto iter = this->frequency_map_.begin();
        iter != this->frequency_map_.end(); ++iter) {
     // calculate likelihood
-    std::vector<int> response_i = iter->first;
-    std::span<int> response_i_span(response_i);
+    std::span<const int> response_i(iter->first);
 
     double total_p = 0.0;  // to be summed over all clusters
 
@@ -101,9 +100,9 @@ void polca_parallel::GoodnessOfFit::CalcExpected(
       assert(m < prior.size());
       auto outcome_prob_col = outcome_prob_arma.unsafe_col(m);
       // polca_parallel::Likelihood is located in em_algorithm
-      total_p += polca_parallel::Likelihood(response_i_span, n_outcomes,
-                                            outcome_prob_col) *
-                 prior[m];
+      total_p +=
+          polca_parallel::Likelihood(response_i, n_outcomes, outcome_prob_col) *
+          prior[m];
     }
 
     iter->second.expected = total_p * static_cast<double>(this->n_obs_);
