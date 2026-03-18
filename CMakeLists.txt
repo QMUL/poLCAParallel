@@ -16,6 +16,7 @@ find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
 add_compile_definitions(ARMA_WARN_LEVEL=1)
+add_compile_definitions(_GLIBCXX_DEBUG)
 
 add_executable(test_polca_parallel
   ${ALL_SRC_FILES}
