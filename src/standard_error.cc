@@ -212,18 +212,21 @@ void polca_parallel::StandardError::CalcJacobianProbs(
   // block matrix for probs, one for each cluster and category pair
   std::size_t row_start = 0;
   std::size_t col_start = 0;
-  auto probs = this->probs_.begin();
+
+  std::size_t probs_offset = 0;
+
   for (std::size_t cluster_index = 0; cluster_index < this->n_cluster_;
        ++cluster_index) {
     for (std::size_t n_outcome : this->n_outcomes_) {
-      assert(std::next(probs, n_outcome) <= this->probs_.end());
+      assert(probs_offset + n_outcome <= this->probs_.size());
 
       auto jacobian_block =
           jacobian_probs.submat(row_start, col_start, row_start + n_outcome - 2,
                                 col_start + n_outcome - 1);
-      this->CalcJacobianBlock(std::span<const double>(probs, n_outcome),
+      this->CalcJacobianBlock(this->probs_.subspan(probs_offset, n_outcome),
                               jacobian_block);
-      std::advance(probs, n_outcome);
+
+      probs_offset += n_outcome;
       row_start += n_outcome - 1;
       col_start += n_outcome;
     }

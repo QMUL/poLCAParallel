@@ -19,6 +19,7 @@
 
 #include <cassert>
 #include <iterator>
+#include <memory>
 
 #include "arma.h"
 
@@ -49,7 +50,7 @@ void polca_parallel::Smoother::Smooth() {
     for (std::size_t n_outcome_j : this->n_outcomes_) {
       assert(std::next(probs, n_outcome_j) <= this->probs_.end());
       this->Smooth(n_data_i, 1.0, static_cast<double>(n_outcome_j),
-                   std::span<double>(probs, n_outcome_j));
+                   std::span<double>(std::to_address(probs), n_outcome_j));
       std::advance(probs, n_outcome_j);
     }
   }
