@@ -65,7 +65,7 @@ void polca_parallel::StandardErrorRegress::CalcScorePrior(
 
 void polca_parallel::StandardErrorRegress::CalcJacobianPrior(
     arma::subview<double>& jacobian_prior) const {
-  auto jacobian = jacobian_prior.begin();
+  std::size_t index = 0;
   for (std::size_t j_cluster = 0; j_cluster < this->n_cluster_; ++j_cluster) {
     for (std::size_t i_cluster = 1; i_cluster < this->n_cluster_; ++i_cluster) {
       auto feature = this->features_.cbegin();
@@ -85,13 +85,13 @@ void polca_parallel::StandardErrorRegress::CalcJacobianPrior(
             jac_element += prior_i;
           }
           assert(feature < this->features_.cend());
-          *jacobian += jac_element * *feature;
+          jacobian_prior[index] += jac_element * *feature;
 
           std::advance(feature, 1);
         }
-        assert(&*jacobian < &*jacobian_prior.end());
-        *jacobian /= static_cast<double>(this->n_data_);
-        std::advance(jacobian, 1);
+        assert(index < jacobian_prior.n_elem);
+        jacobian_prior[index] /= static_cast<double>(this->n_data_);
+        ++index;
       }
     }
   }

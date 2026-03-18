@@ -157,25 +157,26 @@ void polca_parallel::StandardError::CalcScoreProbsCol(
     const arma::subview_col<int>& responses_j,
     const arma::subview_col<double>& posterior_i,
     arma::subview_col<double>& score_col) const {
-  auto posterior_iter = posterior_i.cbegin();
-  auto responses_iter = responses_j.cbegin();
+  assert(responses_j.n_elem == score_col.n_elem);
+  assert(posterior_i.n_elem == score_col.n_elem);
+  assert(responses_j.n_elem == posterior_i.n_elem);
 
+  std::size_t index = 0;
   // boolean if the response is the same as the outcome
   // remember response is one index, not zero index
   // iterate for each data point
   for (auto& score_i : score_col) {
-    assert(&*posterior_iter < &*posterior_i.cend());
-    assert(&*responses_iter < &*responses_j.cend());
+    assert(index < posterior_i.n_elem);
+    assert(index < responses_j.n_elem);
 
-    if (*responses_iter > 0) {
+    if (responses_j[index] > 0) {
       bool is_outcome =
-          outcome_index == static_cast<std::size_t>(*responses_iter - 1);
-      score_i = *posterior_iter * (static_cast<double>(is_outcome) - prob);
+          outcome_index == static_cast<std::size_t>(responses_j[index] - 1);
+      score_i = posterior_i[index] * (static_cast<double>(is_outcome) - prob);
     } else {
       score_i = 0.0;
     }
-    std::advance(posterior_iter, 1);
-    std::advance(responses_iter, 1);
+    ++index;
   }
 }
 
@@ -240,17 +241,18 @@ void polca_parallel::StandardError::CalcJacobianBlock(
   // diagonal, but note this method will commonly be used to create small
   // block matrices (ie n_prob typically be 2 or 3, the n_outcomes)
   auto jacobian = jacobian_block.begin();
+  std::size_t index = 0;
   std::size_t n_prob = probs.size();
   // for each col
   for (std::size_t j = 0; j < n_prob; ++j) {
     // for each row
     for (std::size_t i = 1; i < n_prob; ++i) {
-      assert(&*jacobian < &*jacobian_block.end());
-      *jacobian = -probs[i] * probs[j];
+      assert(index < jacobian_block.n_elem);
+      jacobian_block[index] = -probs[i] * probs[j];
       if (i == j) {
-        *jacobian += probs[i];
+        jacobian_block[index] += probs[i];
       }
-      std::advance(jacobian, 1);
+      ++index;
     }
   }
 }

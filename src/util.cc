@@ -87,8 +87,8 @@ std::vector<double> polca_parallel::RandomInitialProb(
     assert(std::next(initial_prob_iter, n_outcomes.sum() * n_cluster) <=
            initial_prob.end());
 
-    arma::Mat<double> prob_i(&*initial_prob_iter, n_outcomes.sum(), n_cluster,
-                             false, true);
+    arma::Mat<double> prob_i(std::to_address(initial_prob_iter),
+                             n_outcomes.sum(), n_cluster, false, true);
     polca_parallel::RandomProb(n_outcomes, n_cluster, rng, prob_i);
     std::advance(initial_prob_iter, n_outcomes.sum() * n_cluster);
   }
