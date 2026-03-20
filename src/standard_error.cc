@@ -240,7 +240,6 @@ void polca_parallel::StandardError::CalcJacobianBlock(
   // dev notes: possible to do outer product of probs and then add to the off
   // diagonal, but note this method will commonly be used to create small
   // block matrices (ie n_prob typically be 2 or 3, the n_outcomes)
-  auto jacobian = jacobian_block.begin();
   std::size_t index = 0;
   std::size_t n_prob = probs.size();
   // for each col
