@@ -380,12 +380,14 @@ and should be deleted
 * `poLCA.se()` and `poLCA.dLL2dBeta.C()` - no longer needed because the standard
   error calculations are reimplemented in `poLCAParallel.se()`
 * `poLCA.probHat.C` - no longer needed because the goodness of fit test is
-    reimplemented in `goodness_fit.cc`
+  reimplemented in `goodness_fit.cc`
 * `poLCA.postClass.C()` and `poLCA.ylik.C()` - no longer needed and
   reimplemented in `polca_rcpp.cc`
 * `poLCA.vectorize()` and `poLCA.unvectorize()` - no longer needed and
   reimplemented in `poLCAParallel.vectorize()` and `poLCAParallel.unvectorize()`
   respectively
+* `poLCA.compress()` - no longer needed. It was originally for the frequency
+  tables but this has been absorbed in `poLCAParallel.goodnessfit()`
 
 All C code in `poLCA.C` is deprecated because they are reimplemented in C++.
 
