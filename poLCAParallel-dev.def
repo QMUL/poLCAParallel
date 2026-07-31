@@ -9,35 +9,30 @@ From: ubuntu:26.04
     export DEBIAN_FRONTEND="noninteractive"
     export DEBCONF_NONINTERACTIVE_SEEN=true
 
+    # graphviz required for doxygen
+    # lib*-dev and pandoc required for the dependent R packages
+    # texlive and tidy required for R CMD check --as-cran
+
     apt update -y
-    apt install -y build-essential
-    apt install -y wget
-    apt install -y curl
-    apt install -y git
-    apt install -y cmake
-    apt install -y libblas-dev
-    apt install -y liblapack-dev
-    apt install -y gfortran
-    apt install -y xz-utils
+    apt install -y \
+      r-base-dev \
+      wget \
+      curl \
+      git \
+      cmake \
+      xz-utils \
+      doxygen \
+      graphviz \
+      libxml2-dev \
+      libssl-dev \
+      libcurl4-openssl-dev \
+      libicu-dev \
+      libx11-dev \
+      pandoc \
+      texlive-full \
+      tidy
 
-    # doxygen
-    apt install -y doxygen
-    apt install -y graphviz
-
-    # R and renv
-    apt install -y r-base
     R -e "install.packages('renv')"
-
-    # required for R CMD check
-    apt install -y texlive-full
-
-    # required for dependent R packages
-    apt install -y libxml2-dev
-    apt install -y libssl-dev
-    apt install -y libcurl4-openssl-dev
-    apt install -y libicu-dev
-    apt install -y libx11-dev
-    apt install -y pandoc
 
     # clone poLCAParallel and dependencies
     cd /usr/src
@@ -79,7 +74,6 @@ From: ubuntu:26.04
     cmake --build .
 
     # required for R CMD check --as-cran
-    apt install -y tidy
     R -e "install.packages('V8')"
 
 %test
