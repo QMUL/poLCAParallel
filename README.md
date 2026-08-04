@@ -259,37 +259,11 @@ maintenance. The lock file is also used in the Apptainer definition file
 `poLCAParallel-dev.def` below to further reproduce the environment in a
 container.
 
-#### Restoring the R Environment
-
-From the repository root, run the following commands to set up an R environment
-and install the dependencies, with the specified versions, used for development
-and testing
+Snapshots are taken using
 
 ```bash
-R -e "renv::init(bare=TRUE)"
-R -e "renv::restore()"
-```
-
-Run `R` commands from the repository root to use these dependencies.
-
-#### Taking a Snapshot of the Environment with the Latest Versions
-
-The lock file may need to be updated during maintenance. This can be done by
-starting a fresh R environment, after ensuring the `renv` artifacts are deleted:
-
-* `.Rprofile`
-* `renv.lock`
-* `renv/`
-
-Then take a snapshot of the latest dependencies
-
-```bash
-R -e "renv::init()"
 R -e "renv::snapshot(dev=TRUE)"
 ```
-
-This will overwrite the file `renv.lock` specifying dependencies with the latest
-versions.
 
 ### Apptainer
 
