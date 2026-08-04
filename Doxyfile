@@ -1,5 +1,5 @@
 PROJECT_NAME = "poLCAParallel"
-PROJECT_NUMBER = "v1.2.7"
+PROJECT_NUMBER = "v1.2.8"
 PROJECT_BRIEF = "C++ Implementation of poLCA (R package)"
 INPUT = src/ tests/Catch2
 INPUT += README.md
