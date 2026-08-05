@@ -48,14 +48,14 @@ void polca_parallel::GoodnessOfFit::CalcUniqueObserved(
     std::span<const int> responses, std::size_t n_data,
     std::span<const std::size_t> n_outcomes) {
   // iterate through each data point
-  auto responses_iter = responses.begin();
+  std::size_t responses_offset = 0;
   for (std::size_t i = 0; i < n_data; ++i) {
     bool fullyobserved = true;  // only considered fully observed responses
 
-    assert(std::next(responses_iter, n_outcomes.size()) <= responses.end());
-    std::span<const int> response_span_i(responses_iter, n_outcomes.size());
+    assert(responses_offset + n_outcomes.size() <= responses.size());
+    auto response_i = responses.subspan(responses_offset, n_outcomes.size());
 
-    for (int response_i_j : response_span_i) {
+    for (int response_i_j : response_i) {
       if (response_i_j == 0) {
         fullyobserved = false;
         break;
@@ -64,8 +64,7 @@ void polca_parallel::GoodnessOfFit::CalcUniqueObserved(
 
     if (fullyobserved) {
       ++this->n_obs_;
-      std::vector<int> response_copy_i(response_span_i.begin(),
-                                       response_span_i.end());
+      std::vector<int> response_copy_i(response_i.begin(), response_i.end());
       // add or update observation count
       try {
         ++this->frequency_map_.at(response_copy_i).observed;
@@ -75,7 +74,7 @@ void polca_parallel::GoodnessOfFit::CalcUniqueObserved(
         this->frequency_map_.insert({response_copy_i, frequency});
       }
     }
-    std::advance(responses_iter, n_outcomes.size());
+    responses_offset += n_outcomes.size();
   }
 }
 
@@ -90,8 +89,7 @@ void polca_parallel::GoodnessOfFit::CalcExpected(
   for (auto iter = this->frequency_map_.begin();
        iter != this->frequency_map_.end(); ++iter) {
     // calculate likelihood
-    std::vector<int> response_i = iter->first;
-    std::span<int> response_i_span(response_i);
+    std::span<const int> response_i(iter->first);
 
     double total_p = 0.0;  // to be summed over all clusters
 
@@ -101,9 +99,9 @@ void polca_parallel::GoodnessOfFit::CalcExpected(
       assert(m < prior.size());
       auto outcome_prob_col = outcome_prob_arma.unsafe_col(m);
       // polca_parallel::Likelihood is located in em_algorithm
-      total_p += polca_parallel::Likelihood(response_i_span, n_outcomes,
-                                            outcome_prob_col) *
-                 prior[m];
+      total_p +=
+          polca_parallel::Likelihood(response_i, n_outcomes, outcome_prob_col) *
+          prior[m];
     }
 
     iter->second.expected = total_p * static_cast<double>(this->n_obs_);

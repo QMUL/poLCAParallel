@@ -1,3 +1,4 @@
+#' \deprecated
 #' @noRd
 poLCA.compress <- function(y) {
   ym.sorted <- y[do.call(order, data.frame(y)), ]

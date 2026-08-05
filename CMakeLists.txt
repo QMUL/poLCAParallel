@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(poLCAParallel VERSION 1.2.7 HOMEPAGE_URL https://github.com/QMUL/poLCAParallel LANGUAGES CXX)
+project(poLCAParallel VERSION 1.2.8 HOMEPAGE_URL https://github.com/QMUL/poLCAParallel LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -16,6 +16,7 @@ find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
 add_compile_definitions(ARMA_WARN_LEVEL=1)
+add_compile_definitions(_GLIBCXX_DEBUG)
 
 add_executable(test_polca_parallel
   ${ALL_SRC_FILES}

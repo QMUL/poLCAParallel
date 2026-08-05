@@ -23,15 +23,15 @@ allows R to run fast C++ code. Additional notes include:
 * It tries to reproduce results from the original poLCA
 * The code uses [Armadillo](https://arma.sourceforge.net/) for linear algebra
 * Multiple repetitions are done in parallel using
-  [`std::jthread`](https://en.cppreference.com/w/cpp/thread/jthread.html)
-  for multi-thread programming and
-  [`std::mutex`](https://en.cppreference.com/w/cpp/thread/mutex.html) to
-  prevent data races
+  [`std::jthread`](https://en.cppreference.com/cpp/thread/jthread) for
+  multi-thread programming and
+  [`std::mutex`](https://en.cppreference.com/cpp/thread/mutex) to prevent data
+  races
 * Direct inversion of matrices is avoided to improve numerical stability and
   performance
 * Response probabilities are reordered to increase cache efficiency
-* Use of [`std::map`](https://en.cppreference.com/w/cpp/container/map.html) for
-  the chi-squared calculations to improve performance
+* Use of [`std::map`](https://en.cppreference.com/cpp/container/map) for the
+  chi-squared calculations to improve performance
 
 Further reading is available on the
 [QMUL ITS Research Blog](https://blog.hpc.qmul.ac.uk/speeding_up_r_packages/).
@@ -259,37 +259,11 @@ maintenance. The lock file is also used in the Apptainer definition file
 `poLCAParallel-dev.def` below to further reproduce the environment in a
 container.
 
-#### Restoring the R Environment
-
-From the repository root, run the following commands to set up an R environment
-and install the dependencies, with the specified versions, used for development
-and testing
+Snapshots are taken using
 
 ```bash
-R -e "renv::init(bare=TRUE)"
-R -e "renv::restore()"
-```
-
-Run `R` commands from the repository root to use these dependencies.
-
-#### Taking a Snapshot of the Environment with the Latest Versions
-
-The lock file may need to be updated during maintenance. This can be done by
-starting a fresh R environment, after ensuring the `renv` artifacts are deleted:
-
-* `.Rprofile`
-* `renv.lock`
-* `renv/`
-
-Then take a snapshot of the latest dependencies
-
-```bash
-R -e "renv::init()"
 R -e "renv::snapshot(dev=TRUE)"
 ```
-
-This will overwrite the file `renv.lock` specifying dependencies with the latest
-versions.
 
 ### Apptainer
 
@@ -380,12 +354,14 @@ and should be deleted
 * `poLCA.se()` and `poLCA.dLL2dBeta.C()` - no longer needed because the standard
   error calculations are reimplemented in `poLCAParallel.se()`
 * `poLCA.probHat.C` - no longer needed because the goodness of fit test is
-    reimplemented in `goodness_fit.cc`
+  reimplemented in `goodness_fit.cc`
 * `poLCA.postClass.C()` and `poLCA.ylik.C()` - no longer needed and
   reimplemented in `polca_rcpp.cc`
 * `poLCA.vectorize()` and `poLCA.unvectorize()` - no longer needed and
   reimplemented in `poLCAParallel.vectorize()` and `poLCAParallel.unvectorize()`
   respectively
+* `poLCA.compress()` - no longer needed. It was originally for the frequency
+  tables but this has been absorbed in `poLCAParallel.goodnessfit()`
 
 All C code in `poLCA.C` is deprecated because they are reimplemented in C++.
 
