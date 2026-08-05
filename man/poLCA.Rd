@@ -208,15 +208,15 @@ allows R to run fast C++ code. Additional notes include:
 \item It tries to reproduce results from the original poLCA
 \item The code uses \href{https://arma.sourceforge.net/}{Armadillo} for linear algebra
 \item Multiple repetitions are done in parallel using
-\href{https://en.cppreference.com/w/cpp/thread/jthread.html}{\code{std::jthread}}
-for multi-thread programming and
-\href{https://en.cppreference.com/w/cpp/thread/mutex.html}{\code{std::mutex}} to
-prevent data races
+\href{https://en.cppreference.com/cpp/thread/jthread}{\code{std::jthread}} for
+multi-thread programming and
+\href{https://en.cppreference.com/cpp/thread/mutex}{\code{std::mutex}} to prevent
+data races
 \item Direct inversion of matrices is avoided to improve numerical stability and
 performance
 \item Response probabilities are reordered to increase cache efficiency
-\item Use of \href{https://en.cppreference.com/w/cpp/container/map.html}{\code{std::map}}
-for the chi-squared calculations to improve performance
+\item Use of \href{https://en.cppreference.com/cpp/container/map}{\code{std::map}} for the
+chi-squared calculations to improve performance
 }
 
 Further reading is available on the
