@@ -23,15 +23,15 @@ allows R to run fast C++ code. Additional notes include:
 * It tries to reproduce results from the original poLCA
 * The code uses [Armadillo](https://arma.sourceforge.net/) for linear algebra
 * Multiple repetitions are done in parallel using
-  [`std::jthread`](https://en.cppreference.com/w/cpp/thread/jthread.html)
-  for multi-thread programming and
-  [`std::mutex`](https://en.cppreference.com/w/cpp/thread/mutex.html) to
-  prevent data races
+  [`std::jthread`](https://en.cppreference.com/cpp/thread/jthread) for
+  multi-thread programming and
+  [`std::mutex`](https://en.cppreference.com/cpp/thread/mutex) to prevent data
+  races
 * Direct inversion of matrices is avoided to improve numerical stability and
   performance
 * Response probabilities are reordered to increase cache efficiency
-* Use of [`std::map`](https://en.cppreference.com/w/cpp/container/map.html) for
-  the chi-squared calculations to improve performance
+* Use of [`std::map`](https://en.cppreference.com/cpp/container/map) for the
+  chi-squared calculations to improve performance
 
 Further reading is available on the
 [QMUL ITS Research Blog](https://blog.hpc.qmul.ac.uk/speeding_up_r_packages/).
